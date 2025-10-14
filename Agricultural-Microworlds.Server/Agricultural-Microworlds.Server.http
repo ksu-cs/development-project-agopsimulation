@@ -1,0 +1,6 @@
+@Agricultural_Microworlds.Server_HostAddress = http://localhost:5093
+
+GET {{Agricultural_Microworlds.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

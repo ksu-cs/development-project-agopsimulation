@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "agricultural-microworlds.client\\agricultural-microworlds.client.esproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Agricultural-Microworlds.Server\\Agricultural-Microworlds.Server.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

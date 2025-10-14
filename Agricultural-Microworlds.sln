@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "agricultural-microworlds.client", "agricultural-microworlds.client\agricultural-microworlds.client.esproj", "{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agricultural-Microworlds.Server", "Agricultural-Microworlds.Server\Agricultural-Microworlds.Server.csproj", "{55018B99-16A9-4A1B-A9BE-A53A2C8ECFE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23D81A5F-DF99-9B9A-0A7C-BF9ACF709ECF}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{55018B99-16A9-4A1B-A9BE-A53A2C8ECFE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55018B99-16A9-4A1B-A9BE-A53A2C8ECFE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55018B99-16A9-4A1B-A9BE-A53A2C8ECFE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55018B99-16A9-4A1B-A9BE-A53A2C8ECFE2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B922E36A-08F6-4841-9604-47A9C77E9169}
+	EndGlobalSection
+EndGlobal
