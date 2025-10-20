@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Blockly Drive Square</title>
+    <title>AGsim</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
         html, body {
@@ -186,7 +186,35 @@
                     "name": "Numbers",
                     "colour": "#5b9aa5",
                     "contents": [
-                        {"kind": "block", "type": "math_number"}
+                        {"kind": "block", "type": "math_number"},
+                        {"kind": "block", "type": "math_random_int"}
+                    ]
+                },      {
+					"kind": "category",
+					"name": "Control",
+					"colour": "#5b12a5",
+					"contents": [
+				{
+						"kind": "block", "type": "controls_if"
+				},
+        ]
+      },
+				                {
+                    "kind": "category",
+                    "name": "Logic",
+                    "colour": "#5b9dd5",
+                    "contents": [
+                        {"kind": "block", "type": "logic_boolean"}
+                    ]
+                },
+								                {
+                    "kind": "category",
+                    "name": "Loops",
+                    "colour": "#5a1dd5",
+                    "contents": [
+                        {"kind": "block", "type": "controls_repeat_ext"},
+                        {"kind": "block", "type": "controls_whileUntil"}
+						
                     ]
                 }
             ]
@@ -202,9 +230,9 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let x = 200;
-        let y = 200;
-        let angle = 0; // 0 degrees = facing right
+        let x = 350;
+        let y = 50;
+        let angle = 180; // 0 degrees = facing right
         let isMoving = false;
         let animationId = null;
 
@@ -215,11 +243,11 @@
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(angle * Math.PI / 180);
-            ctx.fillStyle = 'blue';
+            ctx.fillStyle = 'red';
             ctx.fillRect(-20, -20, 40, 40);
             
             // Draw a red line to show direction
-            ctx.strokeStyle = 'red';
+            ctx.strokeStyle = 'black';
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(0, 0);
@@ -286,9 +314,9 @@
         }
 
         function resetPosition() {
-            x = 200;
-            y = 200;
-            angle = 0;
+            x = 350;
+            y = 50;
+            angle = 180;
             drawSquare();
         }
 
@@ -305,7 +333,11 @@
 
         // Run button - now uses async/await
         document.getElementById('runButton').addEventListener('click', async function() {
+		const runButton = document.getElementById('runButton');
+		runButton.disabled = true;
+		
             isMoving = true;
+			
             const allBlocks = workspace.getAllBlocks(false);
             
             if (allBlocks.length > 0) {
@@ -322,17 +354,20 @@
                 }
             }
             isMoving = false;
+			runButton.disabled = false;
         });
 
         // Stop button
         document.getElementById('stopButton').addEventListener('click', function() {
             stopMovement();
+			runButton.disabled = false;
         });
 
         // Reset button
         document.getElementById('resetButton').addEventListener('click', function() {
             stopMovement();
             resetPosition();
+			runButton.disabled = false;
         });
     </script>
 </body>
