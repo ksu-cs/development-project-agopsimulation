@@ -1,13 +1,339 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>agricultural-microworlds.client</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Blockly Drive Square</title>
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        #blocklyDiv {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        #canvasArea {
+            width: 450px;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 3px solid #ccc;
+            padding: 20px;
+        }
+        
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        #runButton {
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #resetButton {
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #stopButton {
+            padding: 10px 20px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        #debug {
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            min-height: 60px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Blockly workspace -->
+        <div id="blocklyDiv"></div>
+
+        <!-- Canvas + Run button -->
+        <div id="canvasArea">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <button id="runButton">Run Code</button>
+            <button id="stopButton">Stop</button>
+            <button id="resetButton">Reset Position</button>
+            <div id="debug">Drag blocks to workspace, then click Run</div>
+        </div>
+    </div>
+
+    <script>
+        // Define custom blocks
+        Blockly.defineBlocksWithJsonArray([
+            {
+                "type": "move_forward",
+                "message0": "move forward for %1 seconds",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DURATION",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 160,
+                "tooltip": "Move forward for specified seconds"
+            },
+            {
+                "type": "turn_left", 
+                "message0": "turn left",
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Turn the square left"
+            },
+            {
+                "type": "turn_right",
+                "message0": "turn right",
+                "previousStatement": null,
+                "nextStatement": null, 
+                "colour": 210,
+                "tooltip": "Turn the square right"
+            },
+            {
+                "type": "math_number",
+                "message0": "%1",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "NUM",
+                        "value": 1
+                    }
+                ],
+                "output": "Number",
+                "colour": 230
+            }
+        ]);
+
+        // Define JavaScript generators
+        Blockly.JavaScript.forBlock['move_forward'] = function(block) {
+            const duration = Blockly.JavaScript.valueToCode(block, 'DURATION', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await moveForward(${duration});\n`;
+        };
+
+        Blockly.JavaScript.forBlock['turn_left'] = function(block) {
+            return 'turnLeft();\n';
+        };
+
+        Blockly.JavaScript.forBlock['turn_right'] = function(block) {
+            return 'turnRight();\n';
+        };
+
+        Blockly.JavaScript.forBlock['math_number'] = function(block) {
+            const number = block.getFieldValue('NUM');
+            return [number, Blockly.JavaScript.ORDER_ATOMIC];
+        };
+
+        // Toolbox definition
+        const toolbox = {
+            "kind": "categoryToolbox",
+            "contents": [
+                {
+                    "kind": "category",
+                    "name": "Movement",
+                    "colour": "#5b67a5",
+                    "contents": [
+                        {"kind": "block", "type": "move_forward"},
+                        {"kind": "block", "type": "turn_left"},
+                        {"kind": "block", "type": "turn_right"}
+                    ]
+                },
+                {
+                    "kind": "category",
+                    "name": "Numbers",
+                    "colour": "#5b9aa5",
+                    "contents": [
+                        {"kind": "block", "type": "math_number"}
+                    ]
+                }
+            ]
+        };
+
+        // Inject Blockly
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: toolbox,
+            trashcan: true
+        });
+
+        // Canvas and movement code
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let x = 200;
+        let y = 200;
+        let angle = 0; // 0 degrees = facing right
+        let isMoving = false;
+        let animationId = null;
+
+        const SPEED = 50; // pixels per second
+
+        function drawSquare() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(-20, -20, 40, 40);
+            
+            // Draw a red line to show direction
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(30, 0); // Line pointing in the direction the square is facing
+            ctx.stroke();
+            
+            ctx.restore();
+            
+            // Update debug info
+            document.getElementById('debug').innerHTML = 
+                `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+                `Angle: ${angle}°<br>` +
+                `Direction: ${getDirectionName(angle)}<br>` +
+                `Moving: ${isMoving ? 'Yes' : 'No'}`;
+        }
+
+        function getDirectionName(angle) {
+            const normalizedAngle = ((angle % 360) + 360) % 360;
+            if (normalizedAngle === 0) return "Right →";
+            if (normalizedAngle === 90) return "Down ↓";
+            if (normalizedAngle === 180) return "Left ←";
+            if (normalizedAngle === 270) return "Up ↑";
+            return `${normalizedAngle}°`;
+        }
+
+        // New moveForward function that moves over time
+        function moveForward(duration) {
+            return new Promise((resolve) => {
+                const startTime = Date.now();
+                const endTime = startTime + (duration * 1000);
+                
+                const moveX = SPEED * Math.cos(angle * Math.PI / 180);
+                const moveY = SPEED * Math.sin(angle * Math.PI / 180);
+                
+                function animate() {
+                    const currentTime = Date.now();
+                    const elapsed = (currentTime - startTime) / 1000;
+                    
+                    if (currentTime < endTime && isMoving) {
+                        // Calculate how much to move based on frame time
+                        const deltaTime = 1/60; // assuming 60fps
+                        x += moveX * deltaTime;
+                        y += moveY * deltaTime;
+                        
+                        drawSquare();
+                        animationId = requestAnimationFrame(animate);
+                    } else {
+                        resolve();
+                    }
+                }
+                
+                animate();
+            });
+        }
+
+        function turnLeft() {
+            angle -= 90;
+            drawSquare();
+        }
+
+        function turnRight() {
+            angle += 90;
+            drawSquare();
+        }
+
+        function resetPosition() {
+            x = 200;
+            y = 200;
+            angle = 0;
+            drawSquare();
+        }
+
+        function stopMovement() {
+            isMoving = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        // Initial draw
+        drawSquare();
+
+        // Run button - now uses async/await
+        document.getElementById('runButton').addEventListener('click', async function() {
+            isMoving = true;
+            const allBlocks = workspace.getAllBlocks(false);
+            
+            if (allBlocks.length > 0) {
+                const code = Blockly.JavaScript.workspaceToCode(workspace);
+                
+                if (code.trim()) {
+                    try {
+                        // Wrap the code in an async function and execute
+                        const asyncCode = `(async function() { ${code} })()`;
+                        await eval(asyncCode);
+                    } catch (e) {
+                        console.error('ERROR:', e);
+                    }
+                }
+            }
+            isMoving = false;
+        });
+
+        // Stop button
+        document.getElementById('stopButton').addEventListener('click', function() {
+            stopMovement();
+        });
+
+        // Reset button
+        document.getElementById('resetButton').addEventListener('click', function() {
+            stopMovement();
+            resetPosition();
+        });
+    </script>
+</body>
 </html>
