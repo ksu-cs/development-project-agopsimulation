@@ -234,19 +234,40 @@
         let y = 50;
         let angle = 180; // 0 degrees = facing right
         let isMoving = false;
+        let isTractorOn = false;
         let animationId = null;
 
         const SPEED = 50; // pixels per second
 // --- Sprite setup ---
-const tractorSprite = new Image();
-tractorSprite.src = "./tractor-spritesheet.svg"; 
-tractorSprite.onload = () => {
-    console.log("✅ Tractor sprite loaded!");
-    drawTractor();
-};
-tractorSprite.onerror = () => {
-    console.error("❌ Failed to load tractor sprite!");
-};
+        const tractorSprite = new Image();
+        const wheatImage = new Image();
+        const dirtImage = new Image();
+
+        tractorSprite.src = "./tractor-spritesheet.svg";
+        wheatImage.src = "./src/assets/T2D_Planted_Placeholder.png";
+        dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+
+        tractorSprite.onload = () => {
+            console.log("✅ Tractor sprite loaded!");
+        };
+        tractorSprite.onerror = () => {
+            console.error("❌ Failed to load tractor sprite!");
+        };
+        dirtImage.onload = () => {
+            console.log("DirtImage loaded!");
+        }
+        dirtImage.onerror = () => {
+            console.error("failed to load DirtImage");
+        }
+        wheatImage.onload = () => {
+            console.log("WheatImage loaded!");
+            drawFieldAndTractor();
+        }
+        wheatImage.onerror = () => {
+            console.error("failed to load WheatImage");
+        }
+
+
 
 
 const FRAME_WIDTH = 128;  // change to sprite’s frame width
@@ -254,8 +275,6 @@ const FRAME_HEIGHT = 128; // change to sprite’s frame height
 
 // --- Draw the tractor sprite based on current direction ---
 function drawTractor() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const normalizedAngle = ((angle % 360) + 360) % 360;
     let frameIndex = 0;
 
@@ -279,6 +298,25 @@ function drawTractor() {
         `Direction: ${getDirectionName(angle)}<br>` +
         `Moving: ${isMoving ? 'Yes' : 'No'}`;
 }
+        const fieldScale = 2;
+        const rows =  Math.floor(canvas.height / wheatImage.height)*fieldScale+1;
+        const columns = Math.floor(canvas.width / wheatImage.width)*fieldScale+1;
+
+        const field = Array.from({ length: rows }, () => new Array(columns).fill(1));
+
+        function drawField() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    let dirtOrWheat = ((field[i][j] === 1) ? wheatImage : dirtImage);
+                    ctx.drawImage(dirtOrWheat, 0, 0, wheatImage.width, wheatImage.height, (j * wheatImage.width/fieldScale), (i * wheatImage.height/fieldScale), wheatImage.width/fieldScale, wheatImage.height/fieldScale);
+                }
+            }
+        }
+        function drawFieldAndTractor() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawField();
+            drawTractor();
+        }
 
 
         function getDirectionName(angle) {
@@ -308,14 +346,13 @@ function drawTractor() {
                         const deltaTime = 1/60; // assuming 60fps
                         x += moveX * deltaTime;
                         y += moveY * deltaTime;
-                        
-                        drawTractor();
+
+                        drawFieldAndTractor();
                         animationId = requestAnimationFrame(animate);
                     } else {
                         resolve();
                     }
                 }
-                
                 animate();
             });
         }
@@ -345,8 +382,12 @@ function drawTractor() {
             }
         }
 
+        function turnOnTractor() {
+            isTractorOn = true;
+        }
+
         // Initial draw
-        drawTractor();
+        drawFieldAndTractor();
 
         // Run button - now uses async/await
         document.getElementById('runButton').addEventListener('click', async function() {
