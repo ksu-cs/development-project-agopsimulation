@@ -145,6 +145,22 @@
                 ],
                 "output": "Number",
                 "colour": 230
+            },
+            {
+                "type": "turn_on_tractor",
+                "message0": "turn on tractor",
+                "previousStatement": null,
+                "nextStatement": null,
+                colour: 210,
+                tooltip: "Turns the tractor on"
+            },
+            {
+                "type": "turn_off_tractor",
+                "message0": "turn off tractor",
+                "previousStatement": null,
+                "nextStatement": null,
+                colour: 210,
+                tooltip: "Turns the tractor off"
             }
         ]);
 
@@ -161,6 +177,12 @@
         Blockly.JavaScript.forBlock['turn_right'] = function(block) {
             return 'turnRight();\n';
         };
+        Blockly.JavaScript.forBlock['turn_on_tractor'] = function (block) {
+            return 'turnOnTractor();\n';
+        }
+        Blockly.JavaScript.forBlock['turn_off_tractor'] = function (block) {
+            return 'turnOffTractor();\n';
+        }
 
         Blockly.JavaScript.forBlock['math_number'] = function(block) {
             const number = block.getFieldValue('NUM');
@@ -178,7 +200,9 @@
                     "contents": [
                         {"kind": "block", "type": "move_forward"},
                         {"kind": "block", "type": "turn_left"},
-                        {"kind": "block", "type": "turn_right"}
+                        { "kind": "block", "type": "turn_right" },
+                        { "kind": "block", "type":"turn_on_tractor"},
+                        { "kind": "block", "type":"turn_off_tractor"}
                     ]
                 },
                 {
@@ -267,7 +291,12 @@
             console.error("failed to load WheatImage");
         }
 
-
+        function turnOffTractor() {
+            isTractorOn = false;
+        }
+        function turnOnTractor() {
+            isTractorOn = true;
+        }
 
 
 const FRAME_WIDTH = 128;  // change to sprite’s frame width
@@ -296,8 +325,7 @@ function drawTractor() {
         `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
         `Angle: ${angle}°<br>` +
         `Direction: ${getDirectionName(angle)}<br>` +
-        `Moving: ${isMoving ? 'Yes' : 'No'}<br>` +
-        `startingRow: ${Math.floor((y - (FRAME_HEIGHT / 2)) / (wheatImage.height / fieldScale)) }`;
+        `Moving: ${isMoving ? 'Yes' : 'No'}`;
 }
         const fieldScale = 4;
         const rows =  Math.floor(canvas.height / wheatImage.height)*fieldScale+1;
@@ -316,29 +344,42 @@ function drawTractor() {
         function drawField() {
             const normalizedAngle = ((angle % 360) + 360) % 360;
 
-            if (true) { // need block to turn on tractor
+            const xTopLeftCorner = x - (FRAME_WIDTH / 2);
+            const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
+
+            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
+            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
+            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
+            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale))
+
+            if (isTractorOn) { // need block to turn on tractor
                 if (normalizedAngle === 0) { //check left // why is origin of tractor the middle
-                    let xTopLeftCorner = x - (FRAME_WIDTH / 2);
-                    let yTopLeftCorner = y - (FRAME_HEIGHT / 2);
-
-                    let col = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
-
-                    let startingRow = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
-                    let endingRow = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale))-1;
-
-                    for (let i = startingRow; i <= endingRow; i++) {
+                    for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
-                        field[i][col] = 0;
+                        if (left >= columns || i < 0) continue;
+                        field[i][left] = 0;
                     }
                 }
                 else if (normalizedAngle === 90) { //check top
-
+                    for (let i = left; i < right; i++) {
+                        if (i >= columns || i < 0) continue;
+                        if (top >= rows || top < 0) continue;
+                        field[top][i] = 0;
+                    }
                 }
                 else if (normalizedAngle === 180) {// check right
-
+                    for (let i = top; i < bottom; i++) {
+                        if (i >= rows || i < 0) continue;
+                        if (right >= columns || right < 0) continue;
+                        field[i][right] = 0;
+                    }
                 }
                 else if (normalizedAngle === 270) { // check bottom
-
+                    for (let i = left; i < right; i++) {
+                        if (i >= columns || i < 0) continue;
+                        if (bottom >= rows || bottom < 0) continue;
+                        field[bottom][i] = 0;
+                    }
                 }
             }
 
@@ -408,6 +449,7 @@ function drawTractor() {
             x = 350;
             y = 50;
             angle = 180;
+            isTractorOn = false;
             resetField();
             drawFieldAndTractor();
         }
