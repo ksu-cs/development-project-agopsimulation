@@ -237,32 +237,49 @@
         let animationId = null;
 
         const SPEED = 50; // pixels per second
+// --- Sprite setup ---
+const tractorSprite = new Image();
+tractorSprite.src = "./tractor-spritesheet.svg"; 
+tractorSprite.onload = () => {
+    console.log("✅ Tractor sprite loaded!");
+    drawTractor();
+};
+tractorSprite.onerror = () => {
+    console.error("❌ Failed to load tractor sprite!");
+};
 
-        function drawSquare() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.fillStyle = 'red';
-            ctx.fillRect(-20, -20, 40, 40);
-            
-            // Draw a red line to show direction
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(30, 0); // Line pointing in the direction the square is facing
-            ctx.stroke();
-            
-            ctx.restore();
-            
-            // Update debug info
-            document.getElementById('debug').innerHTML = 
-                `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
-                `Angle: ${angle}°<br>` +
-                `Direction: ${getDirectionName(angle)}<br>` +
-                `Moving: ${isMoving ? 'Yes' : 'No'}`;
-        }
+
+const FRAME_WIDTH = 128;  // change to sprite’s frame width
+const FRAME_HEIGHT = 128; // change to sprite’s frame height
+
+// --- Draw the tractor sprite based on current direction ---
+function drawTractor() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const normalizedAngle = ((angle % 360) + 360) % 360;
+    let frameIndex = 0;
+
+    if (normalizedAngle === 0) frameIndex = 0;      // facing right
+    else if (normalizedAngle === 90) frameIndex = 1; // facing down
+    else if (normalizedAngle === 180) frameIndex = 2; // facing left
+    else if (normalizedAngle === 270) frameIndex = 3; // facing up
+
+    // Draw the correct frame
+    ctx.drawImage(
+        tractorSprite,
+        frameIndex * FRAME_WIDTH, 0,           // source x, y (horizontal sheet)
+        FRAME_WIDTH, FRAME_HEIGHT,             // source width, height
+        x - FRAME_WIDTH / 2, y - FRAME_HEIGHT / 2, // destination x, y
+        FRAME_WIDTH, FRAME_HEIGHT              // destination size
+    );
+
+    document.getElementById('debug').innerHTML =
+        `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+        `Angle: ${angle}°<br>` +
+        `Direction: ${getDirectionName(angle)}<br>` +
+        `Moving: ${isMoving ? 'Yes' : 'No'}`;
+}
+
 
         function getDirectionName(angle) {
             const normalizedAngle = ((angle % 360) + 360) % 360;
@@ -273,7 +290,7 @@
             return `${normalizedAngle}°`;
         }
 
-        // New moveForward function that moves over time
+        // moveForward function that moves over time
         function moveForward(duration) {
             return new Promise((resolve) => {
                 const startTime = Date.now();
@@ -292,7 +309,7 @@
                         x += moveX * deltaTime;
                         y += moveY * deltaTime;
                         
-                        drawSquare();
+                        drawTractor();
                         animationId = requestAnimationFrame(animate);
                     } else {
                         resolve();
@@ -305,19 +322,19 @@
 
         function turnLeft() {
             angle -= 90;
-            drawSquare();
+            drawTractor();
         }
 
         function turnRight() {
             angle += 90;
-            drawSquare();
+            drawTractor();
         }
 
         function resetPosition() {
             x = 350;
             y = 50;
             angle = 180;
-            drawSquare();
+            drawTractor();
         }
 
         function stopMovement() {
@@ -329,7 +346,7 @@
         }
 
         // Initial draw
-        drawSquare();
+        drawTractor();
 
         // Run button - now uses async/await
         document.getElementById('runButton').addEventListener('click', async function() {
