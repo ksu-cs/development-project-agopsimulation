@@ -23,16 +23,7 @@
   #stopButton { background: #ff9800; }
   #resetButton { background: #f44336; }
   #debug { background: white; padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; font-family: monospace; font-size: 12px; margin-top: 10px; }
-  /* small helper for the foreignObject contents if needed */
-  .tractor-div {
-    width: 40px;
-    height: 40px;
-    display: block;
-    background-repeat: no-repeat;
-    background-position: 0 0;
-    background-size: 160px 40px; /* will be set dynamically but safe default */
-    image-rendering: -webkit-optimize-contrast; /* make sprite crisper */
-  }
+  .tractor-div { width: 40px; height: 40px; display: block; background-repeat: no-repeat; background-position: 0 0; background-size: 160px 40px; image-rendering: -webkit-optimize-contrast; }
 </style>
 </head>
 <body>
@@ -56,6 +47,8 @@
       "previousStatement":null,"nextStatement":null,"colour":160 },
     { "type": "turn_left", "message0":"turn left", "previousStatement":null,"nextStatement":null,"colour":210 },
     { "type": "turn_right", "message0":"turn right","previousStatement":null,"nextStatement":null,"colour":210 },
+    { "type": "turn_left_x_degrees","message0":"turn %1 degrees left","args0":[{"type":"input_value","name":"DEGREES","check":"Number"}],"previousStatement":null,"nextStatement":null,"colour":210 },
+    { "type": "turn_right_x_degrees","message0":"turn %1 degrees right","args0":[{"type":"input_value","name":"DEGREES","check":"Number"}],"previousStatement":null,"nextStatement":null,"colour":210 },
     { "type": "math_number","message0":"%1","args0":[{"type":"field_number","name":"NUM","value":1}],"output":"Number","colour":230 },
     { "type": "turn_on_tractor","message0":"turn on tractor","previousStatement":null,"nextStatement":null,"colour":210 },
     { "type": "turn_off_tractor","message0":"turn off tractor","previousStatement":null,"nextStatement":null,"colour":210 }
@@ -65,23 +58,60 @@
     `await moveForward(${Blockly.JavaScript.valueToCode(b,'DURATION',Blockly.JavaScript.ORDER_ATOMIC)||'1'});\n`;
   Blockly.JavaScript.forBlock['turn_left'] = b => 'turnLeft();\n';
   Blockly.JavaScript.forBlock['turn_right'] = b => 'turnRight();\n';
+  Blockly.JavaScript.forBlock['turn_left_x_degrees'] = b => 
+    `turnLeftX(${Blockly.JavaScript.valueToCode(b,'DEGREES',Blockly.JavaScript.ORDER_ATOMIC)||'90'});\n`;
+  Blockly.JavaScript.forBlock['turn_right_x_degrees'] = b => 
+    `turnRightX(${Blockly.JavaScript.valueToCode(b,'DEGREES',Blockly.JavaScript.ORDER_ATOMIC)||'90'});\n`;
   Blockly.JavaScript.forBlock['turn_on_tractor'] = b => 'turnOnTractor();\n';
   Blockly.JavaScript.forBlock['turn_off_tractor'] = b => 'turnOffTractor();\n';
-  Blockly.JavaScript.forBlock['math_number'] = b => 
-    [b.getFieldValue('NUM'), Blockly.JavaScript.ORDER_ATOMIC];
+  Blockly.JavaScript.forBlock['math_number'] = b => [b.getFieldValue('NUM'), Blockly.JavaScript.ORDER_ATOMIC];
 
+  // --- Toolbox ---
   const toolbox = {
-    kind:"categoryToolbox", contents:[
-      {kind:"category",name:"Movement",colour:"#5b67a5",contents:[
-        {kind:"block",type:"move_forward"},
-        {kind:"block",type:"turn_left"},
-        {kind:"block",type:"turn_right"},
-        {kind:"block",type:"turn_on_tractor"},
-        {kind:"block",type:"turn_off_tractor"}
-      ]},
-      {kind:"category",name:"Numbers",colour:"#5b9aa5",contents:[
-        {kind:"block",type:"math_number"}
-      ]}
+    kind: "categoryToolbox",
+    contents: [
+      { kind:"category", name:"Movement", colour:"#5b67a5",
+        contents:[
+          {kind:"block", type:"move_forward"},
+          {kind:"block", type:"turn_left"},
+          {kind:"block", type:"turn_right"},
+          {kind:"block", type:"turn_left_x_degrees"},
+          {kind:"block", type:"turn_right_x_degrees"},
+          {kind:"block", type:"turn_on_tractor"},
+          {kind:"block", type:"turn_off_tractor"}
+        ]
+      },
+      { kind:"category", name:"Numbers", colour:"#5b9aa5",
+        contents:[
+          {kind:"block", type:"math_number"},
+          {kind:"block", type:"math_random_int"},
+          {kind:"block", type:"math_arithmetic"}
+        ]
+      },
+      { kind:"category", name:"Logic", colour:"#5b9dd5",
+        contents:[
+          {kind:"block", type:"logic_boolean"},
+          {kind:"block", type:"logic_compare"},
+          {kind:"block", type:"logic_operation"},
+          {kind:"block", type:"logic_negate"},
+          {kind:"block", type:"logic_null"}
+        ]
+      },
+      { kind:"category", name:"Loops", colour:"#5a1dd5",
+        contents:[
+          {kind:"block", type:"controls_repeat_ext"},
+          {kind:"block", type:"controls_whileUntil"},
+          {kind:"block", type:"controls_for"},
+          {kind:"block", type:"controls_forEach"}
+        ]
+      },
+      { kind:"category", name:"Control", colour:"#5b12a5",
+        contents:[
+          {kind:"block", type:"controls_if"},
+          {kind:"block", type:"controls_ifelse"},
+          {kind:"block", type:"controls_flow_statements"}
+        ]
+      }
     ]
   };
 
@@ -95,12 +125,10 @@
   let tractor = {x:5, y:5, angle:180, isOn:false, yield:0};
   let isMoving=false;
 
-  // --- Images ---
   const wheatImg = './src/assets/T2D_Planted_Placeholder.png';
   const dirtImg = './src/assets/T2D_Dirt_Placeholder.png';
-  const tractorImg = './src/assets/tractor-spritesheet.png'; // <-- your 512x128 PNG
+  const tractorImg = './src/assets/tractor-spritesheet.png';
 
-  // --- Pre-create tile images ---
   const svgTiles = [];
   for(let r=0;r<fieldRows;r++){
     svgTiles[r]=[];
@@ -116,58 +144,40 @@
     }
   }
 
-  // --- TRACTOR via foreignObject (reliable CSS background cropping) ---
-  // Create a foreignObject sized to one tile that will hold a div with background-image
+  // --- Tractor ---
   const fo = document.createElementNS("http://www.w3.org/2000/svg","foreignObject");
   fo.setAttribute("width", tileSize);
   fo.setAttribute("height", tileSize);
-  fo.setAttribute("x", tractor.x * tileSize);
-  fo.setAttribute("y", tractor.y * tileSize);
-
-  // inner div that will display the sprite frame using background-position
   const innerDiv = document.createElement("div");
-  innerDiv.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
-  innerDiv.className = "tractor-div";
-  // set background image and scaled size so 4 frames fit horizontally into 4 * tileSize
+  innerDiv.setAttribute("xmlns","http://www.w3.org/1999/xhtml");
+  innerDiv.className="tractor-div";
   innerDiv.style.backgroundImage = `url("${tractorImg}")`;
-  innerDiv.style.width = `${tileSize}px`;
-  innerDiv.style.height = `${tileSize}px`;
-  innerDiv.style.backgroundSize = `${4 * tileSize}px ${tileSize}px`; // scale sheet to 4 tiles width
-  innerDiv.style.backgroundRepeat = "no-repeat";
-  innerDiv.style.pointerEvents = "none";
-
+  innerDiv.style.width=`${tileSize}px`;
+  innerDiv.style.height=`${tileSize}px`;
+  innerDiv.style.backgroundSize=`${4*tileSize}px ${tileSize}px`;
   fo.appendChild(innerDiv);
   svg.appendChild(fo);
 
-  // Helper: compute frame index from tractor.angle
-  // PNG frame order (from left to right): [Left, Up, Right, Down]
-  // We want indices: left=0, up=1, right=2, down=3
-function getFrameIndex(angle) {
-  const a = ((angle % 360) + 360) % 360;
-  if (a === 0) return 0;   // right -> index 2 originally, now 0 for your sprite sheet? Wait check!
-  if (a === 90) return 3;  // down  -> index 3
-  if (a === 180) return 2; // left  -> index 0 originally, now 2
-  if (a === 270) return 1; // up    -> index 1
-  // nearest for non-multiples
-  if (a < 45 || a >= 315) return 0; // right
-  if (a < 135) return 3;             // down
-  if (a < 225) return 2;             // left
-  return 1;                           // up
+function getFrameIndex(angle){
+  const a = ((angle%360)+360)%360;
+  if(a === 0) return 0; // right
+  if(a === 90) return 3; // up
+  if(a === 180) return 2; // left
+  if(a === 270) return 1; // down
+  if(a < 45 || a >= 315) return 2;
+  if(a < 135) return 1;
+  if(a < 225) return 0;
+  return 3;
 }
 
 
-  function updateTractorVisual() {
-    // place the foreignObject at the grid location
-    fo.setAttribute("x", tractor.x * tileSize);
-    fo.setAttribute("y", tractor.y * tileSize);
-
-    // pick the background-position to show the right frame (each frame = tileSize px in the scaled background)
+  function updateTractorVisual(){
+    fo.setAttribute("x",tractor.x*tileSize);
+    fo.setAttribute("y",tractor.y*tileSize);
     const idx = getFrameIndex(tractor.angle);
-    const posX = -idx * tileSize;
-    innerDiv.style.backgroundPosition = `${posX}px 0px`;
+    innerDiv.style.backgroundPosition=`${-idx*tileSize}px 0px`;
   }
 
-  // --- Drawing function ---
   function drawField(){
     for(let r=0;r<fieldRows;r++){
       for(let c=0;c<fieldCols;c++){
@@ -176,62 +186,52 @@ function getFrameIndex(angle) {
     }
     updateTractorVisual();
     document.getElementById('scoreText').innerText=`Yield: ${tractor.yield}`;
-    document.getElementById('debug').innerHTML=
-      `Tractor: (${tractor.x},${tractor.y})<br>Angle: ${tractor.angle}°<br>Moving: ${isMoving?'Yes':'No'}`;
+    document.getElementById('debug').innerHTML=`Tractor: (${tractor.x},${tractor.y})<br>Angle: ${tractor.angle}°<br>Moving: ${isMoving?'Yes':'No'}`;
   }
 
-  // --- Movement functions ---
   function turnOnTractor(){tractor.isOn=true;}
   function turnOffTractor(){tractor.isOn=false;}
-  function turnLeft(){tractor.angle -= 90; drawField();}
-  function turnRight(){tractor.angle += 90; drawField();}
+  function turnLeft(){tractor.angle-=90; drawField();}
+  function turnRight(){tractor.angle+=90; drawField();}
+  function turnLeftX(deg){tractor.angle-=deg; drawField();}
+  function turnRightX(deg){tractor.angle+=deg; drawField();}
   function resetPosition(){tractor={x:5,y:5,angle:180,isOn:false,yield:0}; field=Array.from({length:fieldRows},()=>new Array(fieldCols).fill(1)); drawField();}
   function stopMovement(){isMoving=false;}
 
-  function moveForward(seconds){
-    return new Promise(resolve=>{
-      isMoving=true;
-      let steps = seconds*10;
-      let stepCount=0;
-      function step(){
-        if(stepCount>=steps || !isMoving){resolve(); return;}
-        const rad = tractor.angle*Math.PI/180;
-        let dx = Math.round(Math.cos(rad));
-        let dy = Math.round(Math.sin(rad));
-        tractor.x = Math.max(0,Math.min(fieldCols-1,tractor.x+dx));
-        tractor.y = Math.max(0,Math.min(fieldRows-1,tractor.y+dy));
-        if(tractor.isOn && field[tractor.y][tractor.x]==1){
-          field[tractor.y][tractor.x]=0; 
-          tractor.yield++;
+function moveForward(seconds) {
+    return new Promise(resolve => {
+        const startTime = performance.now();
+        const durationMs = seconds*1000;
+        isMoving = true;
+
+        function animate(now) {
+            if (!isMoving) return resolve();
+            const elapsed = now - startTime;
+            if (elapsed >= durationMs) return resolve();
+
+            const rad = tractor.angle*Math.PI/180;
+            const speed = tileSize / 0.5; // adjust for smooth speed
+            tractor.x += Math.cos(rad) * 0.1; // fractional movement
+            tractor.y -= Math.sin(rad) * 0.1;
+
+            updateTractorVisual();
+            requestAnimationFrame(animate);
         }
-        drawField();
-        stepCount++;
-        setTimeout(step,100);
-      }
-      step();
+        requestAnimationFrame(animate);
     });
-  }
+}
+
 
   drawField();
 
-  // --- Buttons ---
   document.getElementById('runButton').addEventListener('click',async()=>{
     document.getElementById('runButton').disabled=true;
-    const code = Blockly.JavaScript.workspaceToCode(workspace);
+    const code=Blockly.JavaScript.workspaceToCode(workspace);
     if(code.trim()) try{ await eval(`(async()=>{${code}})()`); } catch(e){console.error(e);}
     document.getElementById('runButton').disabled=false;
   });
-
-  document.getElementById('stopButton').addEventListener('click',()=>{
-    stopMovement();
-    document.getElementById('runButton').disabled=false;
-  });
-
-  document.getElementById('resetButton').addEventListener('click',()=>{
-    stopMovement();
-    resetPosition();
-    document.getElementById('runButton').disabled=false;
-  });
+  document.getElementById('stopButton').addEventListener('click',()=>{stopMovement();document.getElementById('runButton').disabled=false;});
+  document.getElementById('resetButton').addEventListener('click',()=>{stopMovement();resetPosition();document.getElementById('runButton').disabled=false;});
 </script>
 </body>
 </html>
