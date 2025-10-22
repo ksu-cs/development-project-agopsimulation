@@ -23,6 +23,16 @@
   #stopButton { background: #ff9800; }
   #resetButton { background: #f44336; }
   #debug { background: white; padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 100%; font-family: monospace; font-size: 12px; margin-top: 10px; }
+  /* small helper for the foreignObject contents if needed */
+  .tractor-div {
+    width: 40px;
+    height: 40px;
+    display: block;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 160px 40px; /* will be set dynamically but safe default */
+    image-rendering: -webkit-optimize-contrast; /* make sprite crisper */
+  }
 </style>
 </head>
 <body>
@@ -51,12 +61,14 @@
     { "type": "turn_off_tractor","message0":"turn off tractor","previousStatement":null,"nextStatement":null,"colour":210 }
   ]);
 
-  Blockly.JavaScript.forBlock['move_forward'] = b => `await moveForward(${Blockly.JavaScript.valueToCode(b,'DURATION',Blockly.JavaScript.ORDER_ATOMIC)||'1'});\n`;
+  Blockly.JavaScript.forBlock['move_forward'] = b => 
+    `await moveForward(${Blockly.JavaScript.valueToCode(b,'DURATION',Blockly.JavaScript.ORDER_ATOMIC)||'1'});\n`;
   Blockly.JavaScript.forBlock['turn_left'] = b => 'turnLeft();\n';
   Blockly.JavaScript.forBlock['turn_right'] = b => 'turnRight();\n';
   Blockly.JavaScript.forBlock['turn_on_tractor'] = b => 'turnOnTractor();\n';
   Blockly.JavaScript.forBlock['turn_off_tractor'] = b => 'turnOffTractor();\n';
-  Blockly.JavaScript.forBlock['math_number'] = b => [b.getFieldValue('NUM'), Blockly.JavaScript.ORDER_ATOMIC];
+  Blockly.JavaScript.forBlock['math_number'] = b => 
+    [b.getFieldValue('NUM'), Blockly.JavaScript.ORDER_ATOMIC];
 
   const toolbox = {
     kind:"categoryToolbox", contents:[
@@ -86,7 +98,7 @@
   // --- Images ---
   const wheatImg = './src/assets/T2D_Planted_Placeholder.png';
   const dirtImg = './src/assets/T2D_Dirt_Placeholder.png';
-  const tractorImg = './src/assets/tractor-spritesheet.png'; // <-- PNG tractor
+  const tractorImg = './src/assets/tractor-spritesheet.png'; // <-- your 512x128 PNG
 
   // --- Pre-create tile images ---
   const svgTiles = [];
@@ -104,12 +116,56 @@
     }
   }
 
-  // --- Tractor image ---
-  const tractorSVG = document.createElementNS("http://www.w3.org/2000/svg","image");
-  tractorSVG.setAttribute("href",tractorImg);
-  tractorSVG.setAttribute("width",tileSize);
-  tractorSVG.setAttribute("height",tileSize);
-  svg.appendChild(tractorSVG);
+  // --- TRACTOR via foreignObject (reliable CSS background cropping) ---
+  // Create a foreignObject sized to one tile that will hold a div with background-image
+  const fo = document.createElementNS("http://www.w3.org/2000/svg","foreignObject");
+  fo.setAttribute("width", tileSize);
+  fo.setAttribute("height", tileSize);
+  fo.setAttribute("x", tractor.x * tileSize);
+  fo.setAttribute("y", tractor.y * tileSize);
+
+  // inner div that will display the sprite frame using background-position
+  const innerDiv = document.createElement("div");
+  innerDiv.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
+  innerDiv.className = "tractor-div";
+  // set background image and scaled size so 4 frames fit horizontally into 4 * tileSize
+  innerDiv.style.backgroundImage = `url("${tractorImg}")`;
+  innerDiv.style.width = `${tileSize}px`;
+  innerDiv.style.height = `${tileSize}px`;
+  innerDiv.style.backgroundSize = `${4 * tileSize}px ${tileSize}px`; // scale sheet to 4 tiles width
+  innerDiv.style.backgroundRepeat = "no-repeat";
+  innerDiv.style.pointerEvents = "none";
+
+  fo.appendChild(innerDiv);
+  svg.appendChild(fo);
+
+  // Helper: compute frame index from tractor.angle
+  // PNG frame order (from left to right): [Left, Up, Right, Down]
+  // We want indices: left=0, up=1, right=2, down=3
+function getFrameIndex(angle) {
+  const a = ((angle % 360) + 360) % 360;
+  if (a === 0) return 0;   // right -> index 2 originally, now 0 for your sprite sheet? Wait check!
+  if (a === 90) return 3;  // down  -> index 3
+  if (a === 180) return 2; // left  -> index 0 originally, now 2
+  if (a === 270) return 1; // up    -> index 1
+  // nearest for non-multiples
+  if (a < 45 || a >= 315) return 0; // right
+  if (a < 135) return 3;             // down
+  if (a < 225) return 2;             // left
+  return 1;                           // up
+}
+
+
+  function updateTractorVisual() {
+    // place the foreignObject at the grid location
+    fo.setAttribute("x", tractor.x * tileSize);
+    fo.setAttribute("y", tractor.y * tileSize);
+
+    // pick the background-position to show the right frame (each frame = tileSize px in the scaled background)
+    const idx = getFrameIndex(tractor.angle);
+    const posX = -idx * tileSize;
+    innerDiv.style.backgroundPosition = `${posX}px 0px`;
+  }
 
   // --- Drawing function ---
   function drawField(){
@@ -118,10 +174,7 @@
         svgTiles[r][c].setAttribute("href",field[r][c]?wheatImg:dirtImg);
       }
     }
-    tractorSVG.setAttribute("x",tractor.x*tileSize);
-    tractorSVG.setAttribute("y",tractor.y*tileSize);
-    tractorSVG.setAttribute("transform",`rotate(${tractor.angle},${tractor.x*tileSize+tileSize/2},${tractor.y*tileSize+tileSize/2})`);
-
+    updateTractorVisual();
     document.getElementById('scoreText').innerText=`Yield: ${tractor.yield}`;
     document.getElementById('debug').innerHTML=
       `Tractor: (${tractor.x},${tractor.y})<br>Angle: ${tractor.angle}°<br>Moving: ${isMoving?'Yes':'No'}`;
@@ -130,8 +183,8 @@
   // --- Movement functions ---
   function turnOnTractor(){tractor.isOn=true;}
   function turnOffTractor(){tractor.isOn=false;}
-  function turnLeft(){tractor.angle-=90; drawField();}
-  function turnRight(){tractor.angle+=90; drawField();}
+  function turnLeft(){tractor.angle -= 90; drawField();}
+  function turnRight(){tractor.angle += 90; drawField();}
   function resetPosition(){tractor={x:5,y:5,angle:180,isOn:false,yield:0}; field=Array.from({length:fieldRows},()=>new Array(fieldCols).fill(1)); drawField();}
   function stopMovement(){isMoving=false;}
 
@@ -147,7 +200,10 @@
         let dy = Math.round(Math.sin(rad));
         tractor.x = Math.max(0,Math.min(fieldCols-1,tractor.x+dx));
         tractor.y = Math.max(0,Math.min(fieldRows-1,tractor.y+dy));
-        if(tractor.isOn && field[tractor.y][tractor.x]==1){field[tractor.y][tractor.x]=0; tractor.yield++;}
+        if(tractor.isOn && field[tractor.y][tractor.x]==1){
+          field[tractor.y][tractor.x]=0; 
+          tractor.yield++;
+        }
         drawField();
         stepCount++;
         setTimeout(step,100);
