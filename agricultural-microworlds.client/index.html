@@ -91,6 +91,7 @@
 
         <!-- Canvas + Run button -->
         <div id="canvasArea">
+            <p id="scoreText">Yield: 0</p>
             <canvas id="gameCanvas" width="400" height="400"></canvas>
             <button id="runButton">Run Code</button>
             <button id="stopButton">Stop</button>
@@ -254,6 +255,8 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        let yieldScore = 0;
+
         let x = 350;
         let y = 50;
         let angle = 180; // 0 degrees = facing right
@@ -372,6 +375,7 @@ function drawTractor() {
                         if (i >= rows || i < 0) continue;
                         if (left >= columns || i < 0) continue;
                         field[i][left] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 90) { //check top
@@ -379,6 +383,7 @@ function drawTractor() {
                         if (i >= columns || i < 0) continue;
                         if (top >= rows || top < 0) continue;
                         field[top][i] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 180) {// check right
@@ -386,6 +391,7 @@ function drawTractor() {
                         if (i >= rows || i < 0) continue;
                         if (right >= columns || right < 0) continue;
                         field[i][right] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 270) { // check bottom
@@ -393,8 +399,10 @@ function drawTractor() {
                         if (i >= columns || i < 0) continue;
                         if (bottom >= rows || bottom < 0) continue;
                         field[bottom][i] = 0;
+                        yieldScore++;
                     }
                 }
+                document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             }
 
             // draw the entire field
@@ -409,6 +417,7 @@ function drawTractor() {
         // draws the field then the tractor
         function drawFieldAndTractor() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             drawField();
             drawTractor();
         }
@@ -467,6 +476,7 @@ function drawTractor() {
             y = 50;
             angle = 180;
             isTractorOn = false;
+            yieldScore = 0;
             resetField();
             drawFieldAndTractor();
         }
