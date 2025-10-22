@@ -124,7 +124,7 @@
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 210,
-                "tooltip": "Turn the square left"
+                "tooltip": "Turn the tractor left"
             },
             {
                 "type": "turn_right",
@@ -132,7 +132,37 @@
                 "previousStatement": null,
                 "nextStatement": null, 
                 "colour": 210,
-                "tooltip": "Turn the square right"
+                "tooltip": "Turn the tractor right"
+            },
+            {
+                "type": "turn_left_x_degrees",
+                "message0": "Turn %1 degrees left",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Turn the tractor a certain amount of degrees left"
+            },
+            {
+                "type": "turn_right_x_degrees",
+                "message0": "Turn %1 degrees right",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Turn the tractor a certain amount of degrees right"
             },
             {
                 "type": "math_number",
@@ -178,6 +208,17 @@
         Blockly.JavaScript.forBlock['turn_right'] = function(block) {
             return 'turnRight();\n';
         };
+
+        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function(block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXLeft(${amount});\n`;
+        };
+
+        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function(block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXRight(${amount});\n`;
+        };
+
         Blockly.JavaScript.forBlock['turn_on_tractor'] = function (block) {
             return 'turnOnTractor();\n';
         }
@@ -202,6 +243,8 @@
                         {"kind": "block", "type": "move_forward"},
                         {"kind": "block", "type": "turn_left"},
                         { "kind": "block", "type": "turn_right" },
+                        {"kind": "block", "type": "turn_left_x_degrees"},
+                        {"kind": "block", "type": "turn_right_x_degrees"},
                         { "kind": "block", "type":"turn_on_tractor"},
                         { "kind": "block", "type":"turn_off_tractor"}
                     ]
@@ -270,7 +313,7 @@
         const wheatImage = new Image();
         const dirtImage = new Image();
 
-        tractorSprite.src = "./tractor-spritesheet.svg";
+        tractorSprite.src = "./src/assets/combine-harvester.png";
         wheatImage.src = "./src/assets/T2D_Planted_Placeholder.png";
         dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
@@ -310,27 +353,20 @@
         }
 
 
-const FRAME_WIDTH = 128;  // change to sprite’s frame width
-const FRAME_HEIGHT = 128; // change to sprite’s frame height
+const FRAME_WIDTH = 64;  // change to sprite’s frame width
+const FRAME_HEIGHT = 64; // change to sprite’s frame height
 
 // --- Draw the tractor sprite based on current direction ---
 function drawTractor() {
-    const normalizedAngle = ((angle % 360) + 360) % 360;
-    let frameIndex = 0;
+    const normalizedAngle = ((angle % 360) + 450) % 360;
+    var angleInRadians = normalizedAngle * Math.PI / 180;
 
-    if (normalizedAngle === 0) frameIndex = 0;      // facing right
-    else if (normalizedAngle === 90) frameIndex = 1; // facing down
-    else if (normalizedAngle === 180) frameIndex = 2; // facing left
-    else if (normalizedAngle === 270) frameIndex = 3; // facing up
-
-    // Draw the correct frame
-    ctx.drawImage(
-        tractorSprite,
-        frameIndex * FRAME_WIDTH, 0,           // source x, y (horizontal sheet)
-        FRAME_WIDTH, FRAME_HEIGHT,             // source width, height
-        x - FRAME_WIDTH / 2, y - FRAME_HEIGHT / 2, // destination x, y
-        FRAME_WIDTH, FRAME_HEIGHT              // destination size
-    );
+    // tractorsprite
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angleInRadians);
+    ctx.drawImage(tractorSprite, 0, 0);
+    ctx.restore();
 
     document.getElementById('debug').innerHTML =
         `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
@@ -468,6 +504,16 @@ function drawTractor() {
 
         function turnRight() {
             angle += 90;
+            drawFieldAndTractor();
+        }
+
+        function TurnXLeft(amount) {
+            angle -= amount;
+            drawFieldAndTractor();
+        }
+
+        function TurnXRight(amount) {
+            angle += amount;
             drawFieldAndTractor();
         }
 
