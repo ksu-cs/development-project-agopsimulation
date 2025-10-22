@@ -277,7 +277,7 @@
         tractorSprite.onload = () => {
             console.log("✅ Tractor sprite loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) drawFieldAndTractor();
+            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
         };
         tractorSprite.onerror = () => {
             console.error("❌ Failed to load tractor sprite!");
@@ -285,7 +285,7 @@
         dirtImage.onload = () => {
             console.log("DirtImage loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) drawFieldAndTractor();
+            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
         }
         dirtImage.onerror = () => {
             console.error("failed to load DirtImage");
@@ -293,7 +293,7 @@
         wheatImage.onload = () => {
             console.log("WheatImage loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) drawFieldAndTractor();
+            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
         }
         wheatImage.onerror = () => {
             console.error("failed to load WheatImage");
@@ -336,7 +336,7 @@ function drawTractor() {
         `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
 }
         //setting up the array that represents the field
-        const fieldScale = 20;
+        const fieldScale = 4;
         const rows =  Math.floor(canvas.height / wheatImage.height*fieldScale)+1;
         const columns = Math.floor(canvas.width / wheatImage.width*fieldScale)+1;
 
