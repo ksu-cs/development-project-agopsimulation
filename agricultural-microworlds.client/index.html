@@ -271,21 +271,29 @@
         wheatImage.src = "./src/assets/T2D_Planted_Placeholder.png";
         dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
+        let imageLoadCount = 0;
+        const imageCount = 3;
+
         tractorSprite.onload = () => {
             console.log("✅ Tractor sprite loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) drawFieldAndTractor();
         };
         tractorSprite.onerror = () => {
             console.error("❌ Failed to load tractor sprite!");
         };
         dirtImage.onload = () => {
             console.log("DirtImage loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) drawFieldAndTractor();
         }
         dirtImage.onerror = () => {
             console.error("failed to load DirtImage");
         }
         wheatImage.onload = () => {
             console.log("WheatImage loaded!");
-            drawFieldAndTractor();
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) drawFieldAndTractor();
         }
         wheatImage.onerror = () => {
             console.error("failed to load WheatImage");
@@ -325,14 +333,16 @@ function drawTractor() {
         `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
         `Angle: ${angle}°<br>` +
         `Direction: ${getDirectionName(angle)}<br>` +
-        `Moving: ${isMoving ? 'Yes' : 'No'}`;
+        `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
 }
-        const fieldScale = 4;
-        const rows =  Math.floor(canvas.height / wheatImage.height)*fieldScale+1;
-        const columns = Math.floor(canvas.width / wheatImage.width)*fieldScale+1;
+        //setting up the array that represents the field
+        const fieldScale = 20;
+        const rows =  Math.floor(canvas.height / wheatImage.height*fieldScale)+1;
+        const columns = Math.floor(canvas.width / wheatImage.width*fieldScale)+1;
 
         const field = Array.from({ length: rows }, () => new Array(columns).fill(1));
 
+        //set the entire field to planted values
         function resetField() {
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
@@ -341,18 +351,22 @@ function drawTractor() {
             }
         }
 
+        //draws the field onto the canvas
         function drawField() {
             const normalizedAngle = ((angle % 360) + 360) % 360;
 
+            // top left corner coordinates of the tractor 
             const xTopLeftCorner = x - (FRAME_WIDTH / 2);
             const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
 
+            // the four different sides of the the tractor
             const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
             const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
             const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
             const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale))
 
-            if (isTractorOn) { // need block to turn on tractor
+            // check to see if the tractor is harvesting any of the "tiles"
+            if (isTractorOn) {
                 if (normalizedAngle === 0) { //check left // why is origin of tractor the middle
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
@@ -383,6 +397,7 @@ function drawTractor() {
                 }
             }
 
+            // draw the entire field
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
                     let dirtOrWheat = ((field[i][j] === 1) ? wheatImage : dirtImage);
@@ -390,6 +405,8 @@ function drawTractor() {
                 }
             }
         }
+
+        // draws the field then the tractor
         function drawFieldAndTractor() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawField();
