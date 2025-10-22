@@ -23,7 +23,7 @@
         }
         
         #canvasArea {
-            width: 450px;
+            width: 800px;
             background: #f0f0f0;
             display: flex;
             flex-direction: column;
@@ -91,7 +91,7 @@
 
         <!-- Canvas + Run button -->
         <div id="canvasArea">
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
             <button id="runButton">Run Code</button>
             <button id="stopButton">Stop</button>
             <button id="resetButton">Reset Position</button>
@@ -147,20 +147,36 @@
                 "colour": 230
             },
             {
-                "type": "turn_on_tractor",
-                "message0": "turn on tractor",
+                "type": "turn_harvesting_on",
+                "message0": "turn harvesting on",
                 "previousStatement": null,
                 "nextStatement": null,
                 colour: 210,
-                tooltip: "Turns the tractor on"
+                tooltip: "Turns harvesting on tractor on"
             },
             {
-                "type": "turn_off_tractor",
-                "message0": "turn off tractor",
+                "type": "turn_harvesting_off",
+                "message0": "turn harvesting off",
                 "previousStatement": null,
                 "nextStatement": null,
                 colour: 210,
-                tooltip: "Turns the tractor off"
+                tooltip: "Turns harvesting on tractor off"
+            },
+            {
+                "type": "turn_seeding_on",
+                "message0": "turn seeding on",
+                "previousStatement": null,
+                "nextStatement": null,
+                colour: 210,
+                tooltip: "Turns seeding on tractor on"
+            },
+            {
+                "type": "turn_seeding_off",
+                "message0": "turn seeding off",
+                "previousStatement": null,
+                "nextStatement": null,
+                colour: 210,
+                tooltip: "Turns seeding on tractor off"
             }
         ]);
 
@@ -177,11 +193,17 @@
         Blockly.JavaScript.forBlock['turn_right'] = function(block) {
             return 'turnRight();\n';
         };
-        Blockly.JavaScript.forBlock['turn_on_tractor'] = function (block) {
-            return 'turnOnTractor();\n';
+        Blockly.JavaScript.forBlock['turn_harvesting_on'] = function (block) {
+            return 'turnHarvestingOn();\n';
         }
-        Blockly.JavaScript.forBlock['turn_off_tractor'] = function (block) {
-            return 'turnOffTractor();\n';
+        Blockly.JavaScript.forBlock['turn_harvesting_off'] = function (block) {
+            return 'turnHarvestingOff();\n';
+        }
+        Blockly.JavaScript.forBlock['turn_seeding_on'] = function (block) {
+            return 'turnSeedingOn();\n';
+        }
+        Blockly.JavaScript.forBlock['turn_seeding_off'] = function (block) {
+            return 'turnSeedingOff();\n';
         }
 
         Blockly.JavaScript.forBlock['math_number'] = function(block) {
@@ -201,8 +223,10 @@
                         {"kind": "block", "type": "move_forward"},
                         {"kind": "block", "type": "turn_left"},
                         { "kind": "block", "type": "turn_right" },
-                        { "kind": "block", "type":"turn_on_tractor"},
-                        { "kind": "block", "type":"turn_off_tractor"}
+                        { "kind": "block", "type":"turn_harvesting_on"},
+                        { "kind": "block", "type":"turn_harvesting_off"},
+                        { "kind": "block", "type":"turn_seeding_on"},
+                        { "kind": "block", "type":"turn_seeding_off"}
                     ]
                 },
                 {
@@ -258,21 +282,25 @@
         let y = 50;
         let angle = 180; // 0 degrees = facing right
         let isMoving = false;
-        let isTractorOn = false;
+        let isHarvestingOn = false;
+        let isSeedingOn = false;
         let animationId = null;
 
         const SPEED = 50; // pixels per second
 // --- Sprite setup ---
         const tractorSprite = new Image();
         const wheatImage = new Image();
+        const seedImage = new Image();
         const dirtImage = new Image();
 
         tractorSprite.src = "./tractor-spritesheet.svg";
-        wheatImage.src = "./src/assets/T2D_Planted_Placeholder.png";
+        wheatImage.src = "./src/assets/wheat.png";
+        seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
         dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
+
         let imageLoadCount = 0;
-        const imageCount = 3;
+        const imageCount = 4;
 
         tractorSprite.onload = () => {
             console.log("✅ Tractor sprite loaded!");
@@ -290,6 +318,14 @@
         dirtImage.onerror = () => {
             console.error("failed to load DirtImage");
         }
+        seedImage.onload = () => {
+            console.log("SeedImage loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
+        }
+        seedImage.onerror = () => {
+            console.error("failed to load SeedImage");
+        }
         wheatImage.onload = () => {
             console.log("WheatImage loaded!");
             imageLoadCount++;
@@ -299,11 +335,19 @@
             console.error("failed to load WheatImage");
         }
 
-        function turnOffTractor() {
-            isTractorOn = false;
+        function turnHarvestingOn() {
+            isHarvestingOn = true;
+            isSeedingOn = false;
         }
-        function turnOnTractor() {
-            isTractorOn = true;
+        function turnHarvestingOff() {
+            isHarvestingOn = false;
+        }
+        function turnSeedingOn() {
+            isSeedingOn = true;
+            isHarvestingOn = false;
+        }
+        function turnSeedingOff() {
+            isSeedingOn = false;
         }
 
 
@@ -337,22 +381,21 @@ function drawTractor() {
 }
         //setting up the array that represents the field
         const fieldScale = 4;
-        const rows =  Math.floor(canvas.height / wheatImage.height*fieldScale)+1;
-        const columns = Math.floor(canvas.width / wheatImage.width*fieldScale)+1;
+        const rows =  Math.floor(canvas.height / seedImage.height*fieldScale)+1;
+        const columns = Math.floor(canvas.width / seedImage.width*fieldScale)+1;
 
-        const field = Array.from({ length: rows }, () => new Array(columns).fill(1));
+        const field = Array.from({ length: rows }, () => new Array(columns).fill(2));
 
         //set the entire field to planted values
         function resetField() {
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    field[i][j] = 1;                    
+                    field[i][j] = 2;                    
                 }
             }
         }
 
-        //draws the field onto the canvas
-        function drawField() {
+        function changeFieldTilesToDifferentTypeBasedOnTractorPosition(intToChangeTo, boolToCheck){
             const normalizedAngle = ((angle % 360) + 360) % 360;
 
             // top left corner coordinates of the tractor 
@@ -360,48 +403,66 @@ function drawTractor() {
             const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
 
             // the four different sides of the the tractor
-            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
-            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
-            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
-            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale))
+            const top = Math.floor(yTopLeftCorner / (seedImage.height / fieldScale));
+            const left = Math.floor(xTopLeftCorner / (seedImage.width / fieldScale));
+            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (seedImage.height / fieldScale));
+            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (seedImage.width / fieldScale))
 
             // check to see if the tractor is harvesting any of the "tiles"
-            if (isTractorOn) {
+            if (boolToCheck) {
                 if (normalizedAngle === 0) { //check left // why is origin of tractor the middle
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
                         if (left >= columns || i < 0) continue;
-                        field[i][left] = 0;
+                        field[i][left] = intToChangeTo;
                     }
                 }
                 else if (normalizedAngle === 90) { //check top
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (top >= rows || top < 0) continue;
-                        field[top][i] = 0;
+                        field[top][i] = intToChangeTo;
                     }
                 }
                 else if (normalizedAngle === 180) {// check right
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
                         if (right >= columns || right < 0) continue;
-                        field[i][right] = 0;
+                        field[i][right] = intToChangeTo;
                     }
                 }
                 else if (normalizedAngle === 270) { // check bottom
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (bottom >= rows || bottom < 0) continue;
-                        field[bottom][i] = 0;
+                        field[bottom][i] = intToChangeTo;
                     }
                 }
             }
+        }
+
+        //draws the field onto the canvas
+        function drawField() {
+            if(isHarvestingOn) changeFieldTilesToDifferentTypeBasedOnTractorPosition(0, isHarvestingOn); // add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score) 
+            else if (isSeedingOn) changeFieldTilesToDifferentTypeBasedOnTractorPosition(1, isSeedingOn);
 
             // draw the entire field
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    let dirtOrWheat = ((field[i][j] === 1) ? wheatImage : dirtImage);
-                    ctx.drawImage(dirtOrWheat, 0, 0, wheatImage.width, wheatImage.height, (j * wheatImage.width/fieldScale), (i * wheatImage.height/fieldScale), wheatImage.width/fieldScale, wheatImage.height/fieldScale);
+                    let dirtOrWheat;
+                    switch(field[i][j]){
+                        case 0:
+                            dirtOrWheat = dirtImage;
+                            break;
+                        case 1:
+                            dirtOrWheat = seedImage;
+                            break;
+                        case 2:
+                            dirtOrWheat = wheatImage;
+                            break;
+                        default: dirtOrWheat = dirtImage;
+                    }
+                    ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width/fieldScale), (i * seedImage.height/fieldScale), seedImage.width/fieldScale, seedImage.height/fieldScale);
                 }
             }
         }
@@ -466,7 +527,8 @@ function drawTractor() {
             x = 350;
             y = 50;
             angle = 180;
-            isTractorOn = false;
+            isHarvestingOn = false;
+            isSeedingOn = false;
             resetField();
             drawFieldAndTractor();
         }
@@ -479,12 +541,8 @@ function drawTractor() {
             }
         }
 
-        function turnOnTractor() {
-            isTractorOn = true;
-        }
-
         // Initial draw
-        drawFieldAndTractor();
+        if (imageLoadCount === imageCount) drawFieldAndTractor();
 
         // Run button - now uses async/await
         document.getElementById('runButton').addEventListener('click', async function() {
