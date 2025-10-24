@@ -11,17 +11,17 @@
             padding: 0;
             font-family: sans-serif;
         }
-        
+
         .container {
             display: flex;
             height: 100vh;
         }
-        
+
         #blocklyDiv {
             flex: 1;
             min-width: 0;
         }
-        
+
         #canvasArea {
             width: 800px;
             background: #f0f0f0;
@@ -32,13 +32,13 @@
             border-left: 3px solid #ccc;
             padding: 20px;
         }
-        
+
         canvas {
             border: 2px solid #333;
             background-color: #fff;
             margin-bottom: 20px;
         }
-        
+
         #runButton {
             padding: 10px 20px;
             background: #4caf50;
@@ -71,7 +71,7 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
-        
+
         #debug {
             background: white;
             padding: 10px;
@@ -88,7 +88,6 @@
     <div class="container">
         <!-- Blockly workspace -->
         <div id="blocklyDiv"></div>
-
         <!-- Canvas + Run button -->
         <div id="canvasArea">
             <p id="scoreText">Yield: 0</p>
@@ -99,7 +98,6 @@
             <div id="debug">Drag blocks to workspace, then click Run</div>
         </div>
     </div>
-
     <script>
         // Define custom blocks
         Blockly.defineBlocksWithJsonArray([
@@ -119,7 +117,7 @@
                 "tooltip": "Move forward for specified seconds"
             },
             {
-                "type": "turn_left", 
+                "type": "turn_left",
                 "message0": "turn left",
                 "previousStatement": null,
                 "nextStatement": null,
@@ -130,7 +128,7 @@
                 "type": "turn_right",
                 "message0": "turn right",
                 "previousStatement": null,
-                "nextStatement": null, 
+                "nextStatement": null,
                 "colour": 210,
                 "tooltip": "Turn the tractor right"
             },
@@ -212,25 +210,25 @@
         ]);
 
         // Define JavaScript generators
-        Blockly.JavaScript.forBlock['move_forward'] = function(block) {
+        Blockly.JavaScript.forBlock['move_forward'] = function (block) {
             const duration = Blockly.JavaScript.valueToCode(block, 'DURATION', Blockly.JavaScript.ORDER_ATOMIC) || '1';
             return `await moveForward(${duration});\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_left'] = function(block) {
+        Blockly.JavaScript.forBlock['turn_left'] = function (block) {
             return 'turnLeft();\n';
         };
 
-        Blockly.JavaScript.forBlock['turn_right'] = function(block) {
+        Blockly.JavaScript.forBlock['turn_right'] = function (block) {
             return 'turnRight();\n';
         };
 
-        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function(block) {
+        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function (block) {
             const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
             return `await TurnXLeft(${amount});\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function(block) {
+        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function (block) {
             const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
             return `await TurnXRight(${amount});\n`;
         };
@@ -247,7 +245,7 @@
             return 'turnSeedingOff();\n';
         };
 
-        Blockly.JavaScript.forBlock['math_number'] = function(block) {
+        Blockly.JavaScript.forBlock['math_number'] = function (block) {
             const number = block.getFieldValue('NUM');
             return [number, Blockly.JavaScript.ORDER_ATOMIC];
         };
@@ -261,15 +259,11 @@
                     "name": "Movement",
                     "colour": "#5b67a5",
                     "contents": [
-                        {"kind": "block", "type": "move_forward"},
-                        {"kind": "block", "type": "turn_left"},
+                        { "kind": "block", "type": "move_forward" },
+                        { "kind": "block", "type": "turn_left" },
                         { "kind": "block", "type": "turn_right" },
-                        {"kind": "block", "type": "turn_left_x_degrees"},
-                        {"kind": "block", "type": "turn_right_x_degrees"},
-                        { "kind": "block", "type":"turn_harvesting_on"},
-                        { "kind": "block", "type":"turn_harvesting_off"},
-                        { "kind": "block", "type":"turn_seeding_on"},
-                        { "kind": "block", "type":"turn_seeding_off"},
+                        { "kind": "block", "type": "turn_left_x_degrees" },
+                        { "kind": "block", "type": "turn_right_x_degrees" },
                     ]
                 },
                 {
@@ -277,35 +271,39 @@
                     "name": "Numbers",
                     "colour": "#5b9aa5",
                     "contents": [
-                        {"kind": "block", "type": "math_number"},
-                        {"kind": "block", "type": "math_random_int"}
+                        { "kind": "block", "type": "math_number" },
+                        { "kind": "block", "type": "math_random_int" }
                     ]
-                },      {
-					"kind": "category",
-					"name": "Control",
-					"colour": "#5b12a5",
-					"contents": [
-				{
-						"kind": "block", "type": "controls_if"
-				},
-        ]
-      },
-				                {
+                }, {
+                    "kind": "category",
+                    "name": "Control",
+                    "colour": "#5b12a5",
+                    "contents": [
+                        {
+                            "kind": "block", "type": "controls_if"
+                        },
+                        { "kind": "block", "type": "turn_harvesting_on" },
+                        { "kind": "block", "type": "turn_harvesting_off" },
+                        { "kind": "block", "type": "turn_seeding_on" },
+                        { "kind": "block", "type": "turn_seeding_off" },
+                    ]
+                },
+                {
                     "kind": "category",
                     "name": "Logic",
                     "colour": "#5b9dd5",
                     "contents": [
-                        {"kind": "block", "type": "logic_boolean"}
+                        { "kind": "block", "type": "logic_boolean" }
                     ]
                 },
-								                {
+                {
                     "kind": "category",
                     "name": "Loops",
                     "colour": "#5a1dd5",
                     "contents": [
-                        {"kind": "block", "type": "controls_repeat_ext"},
-                        {"kind": "block", "type": "controls_whileUntil"}
-						
+                        { "kind": "block", "type": "controls_repeat_ext" },
+                        { "kind": "block", "type": "controls_whileUntil" }
+
                     ]
                 }
             ]
@@ -323,8 +321,8 @@
 
         let yieldScore = 0;
 
-        let x = 350;
-        let y = 50;
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
         let angle = 180; // 0 degrees = facing right
         let isMoving = false;
         let isHarvestingOn = false;
@@ -332,13 +330,13 @@
         let animationId = -1;
 
         const SPEED = 50; // pixels per second
-// --- Sprite setup ---
+        // --- Sprite setup ---
         const tractorSprite = new Image();
         const wheatImage = new Image();
         const seedImage = new Image();
         const dirtImage = new Image();
 
-        tractorSprite.src = "./tractor-spritesheet.svg";
+        tractorSprite.src = "./src/assets/combine-harvester.png";
         wheatImage.src = "./src/assets/wheat.png";
         seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
         dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
@@ -350,7 +348,7 @@
         tractorSprite.onload = () => {
             console.log("✅ Tractor sprite loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
         };
         tractorSprite.onerror = () => {
             console.error("❌ Failed to load tractor sprite!");
@@ -358,7 +356,7 @@
         dirtImage.onload = () => {
             console.log("DirtImage loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
         }
         dirtImage.onerror = () => {
             console.error("failed to load DirtImage");
@@ -366,7 +364,7 @@
         seedImage.onload = () => {
             console.log("SeedImage loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
         }
         seedImage.onerror = () => {
             console.error("failed to load SeedImage");
@@ -374,7 +372,7 @@
         wheatImage.onload = () => {
             console.log("WheatImage loaded!");
             imageLoadCount++;
-            if (imageLoadCount === imageCount) {drawFieldAndTractor();}
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
         }
         wheatImage.onerror = () => {
             console.error("failed to load WheatImage");
@@ -396,31 +394,44 @@
         }
 
 
-const FRAME_WIDTH = 64;  // change to sprite’s frame width
-const FRAME_HEIGHT = 64; // change to sprite’s frame height
+        const FRAME_WIDTH = 64;  // change to sprite’s frame width
+        const FRAME_HEIGHT = 64; // change to sprite’s frame height
 
-// --- Draw the tractor sprite based on current direction ---
-function drawTractor() {
-    const normalizedAngle = ((angle % 360) + 450) % 360;
-    var angleInRadians = normalizedAngle * Math.PI / 180;
+        // --- Draw the tractor sprite based on current direction ---
+        function drawTractor() {
+            const normalizedAngle = ((angle % 360) + 450) % 360;
+            var angleInRadians = normalizedAngle * Math.PI / 180;
 
-    // tractorsprite
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angleInRadians);
-    ctx.drawImage(tractorSprite, 0, 0);
-    ctx.restore();
+            // tractorsprite
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angleInRadians);
+            ctx.drawImage(tractorSprite, 0, 0);
+            ctx.restore();
+            // top left corner coordinates of the tractor
+            const xTopLeftCorner = x - (FRAME_WIDTH / 2);
+            const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
 
-    document.getElementById('debug').innerHTML =
-        `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
-        `Angle: ${angle}°<br>` +
-        `Direction: ${getDirectionName(angle)}<br>` +
-        `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
-}
+            // the four different sides of the the tractor
+            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
+            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
+            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
+            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale));
+
+            document.getElementById('debug').innerHTML =
+                `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+                `Angle: ${normalizedAngle}°<br>` +
+                `Direction: ${getDirectionName(angle)}<br>` +
+                `top: ${top}<br>` +
+                `left: ${left}<br>` +
+                `bottom: ${bottom}<br>` +
+                `right: ${right}<br>` +
+                `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
+        }
         //setting up the array that represents the field
         const fieldScale = 4;
-        const rows =  Math.floor(canvas.height / seedImage.height*fieldScale)+1;
-        const columns = Math.floor(canvas.width / seedImage.width*fieldScale)+1;
+        const rows = Math.floor(canvas.height / seedImage.height * fieldScale) + 1;
+        const columns = Math.floor(canvas.width / seedImage.width * fieldScale) + 1;
 
         const field = Array.from({ length: rows }, () => new Array(columns).fill(2));
 
@@ -428,35 +439,64 @@ function drawTractor() {
         function resetField() {
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    field[i][j] = 2;                    
+                    field[i][j] = 2;
                 }
             }
         }
 
-        function changeFieldTilesToDifferentTypeBasedOnTractorPosition(intToChangeTo, boolToCheck) { // fix
-            const normalizedAngle = ((angle % 360) + 360) % 360;
+        //draws the field onto the canvas
+        function drawField() {// add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score)\
 
-            // top left corner coordinates of the tractor 
+            const normalizedAngle = ((angle % 360) + 450) % 360;
+
+            // top left corner coordinates of the tractor
             const xTopLeftCorner = x - (FRAME_WIDTH / 2);
             const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
 
+            const tileWidth = wheatImage.width / fieldScale;
+            const tileHeight = wheatImage.height / fieldScale;
+
+            const topLeft = (-FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
+            const topRight = (FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
+            const bottomRight = (FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+            const bottomLeft = (-FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+
+            function rotatePoint(x, y, angle, centerX, centerY) {
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                const newX = x * cos - y * sin + centerX;
+                const newY = x * sin + y * cos + centerY;
+                return {x: newX, y: newY};
+            }
+
+            const corners = [
+                rotatePoint(-FRAME_WIDTH / 2, -FRAME_HEIGHT / 2, angle, x, y), //topLeft //fix angle to radians
+                rotatePoint(FRAME_WIDTH / 2, -FRAME_HEIGHT / 2, angle, x, y), //topRight
+                rotatePoint(FRAME_WIDTH / 2, FRAME_HEIGHT / 2, angle, x, y), // bottomRight
+                rotatePoint(-FRAME_WIDTH / 2, FRAME_HEIGHT / 2, angle, x, y)  // bottomLeft
+            ];
+
+            const frontSide = [corners[0], corners[3]];
+
+            
+
             // the four different sides of the the tractor
-            const top = Math.floor(yTopLeftCorner / (seedImage.height / fieldScale));
-            const left = Math.floor(xTopLeftCorner / (seedImage.width / fieldScale));
-            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (seedImage.height / fieldScale));
-            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (seedImage.width / fieldScale))
+            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
+            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
+            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
+            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale));
 
             // check to see if the tractor is harvesting any of the "tiles"
-            if (boolToCheck) {
-                if (normalizedAngle === 0) { //check left // why is origin of tractor the middle
-                    for (let i = top; i < bottom; i++) {
+            if (isHarvestingOn) {
+                if (normalizedAngle === 180) { //check left
+                    for (let i = top; i < bottom; i++) {//change to += tile width
                         if (i >= rows || i < 0) continue;
                         if (left >= columns || i < 0) continue;
                         field[i][left] = 0;
                         yieldScore++;
                     }
                 }
-                else if (normalizedAngle === 90) { //check top
+                else if (normalizedAngle === 270) { //check top
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (top >= rows || top < 0) continue;
@@ -464,7 +504,7 @@ function drawTractor() {
                         yieldScore++;
                     }
                 }
-                else if (normalizedAngle === 180) {// check right
+                else if (normalizedAngle === 0) {// check right
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
                         if (right >= columns || right < 0) continue;
@@ -472,7 +512,7 @@ function drawTractor() {
                         yieldScore++;
                     }
                 }
-                else if (normalizedAngle === 270) { // check bottom
+                else if (normalizedAngle === 90) { // check bottom
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (bottom >= rows || bottom < 0) continue;
@@ -482,18 +522,12 @@ function drawTractor() {
                 }
                 document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             }
-        }
-
-        //draws the field onto the canvas
-        function drawField() {
-            if(isHarvestingOn) changeFieldTilesToDifferentTypeBasedOnTractorPosition(0, isHarvestingOn); // add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score) 
-            else if (isSeedingOn) changeFieldTilesToDifferentTypeBasedOnTractorPosition(1, isSeedingOn);
 
             // draw the entire field
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
                     let dirtOrWheat = dirtImage;
-                    switch(field[i][j]){
+                    switch (field[i][j]) {
                         case 0:
                             dirtOrWheat = dirtImage;
                             break;
@@ -504,7 +538,7 @@ function drawTractor() {
                             dirtOrWheat = wheatImage;
                             break;
                     }
-                    ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width/fieldScale), (i * seedImage.height/fieldScale), seedImage.width/fieldScale, seedImage.height/fieldScale);
+                    ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width / fieldScale), (i * seedImage.height / fieldScale), seedImage.width / fieldScale, seedImage.height / fieldScale);
                 }
             }
         }
@@ -519,7 +553,7 @@ function drawTractor() {
 
 
         function getDirectionName(angle) {
-            const normalizedAngle = ((angle % 360) + 360) % 360;
+            const normalizedAngle = ((angle % 360) + 450) % 360;
             if (normalizedAngle === 0) return "Right →";
             if (normalizedAngle === 90) return "Down ↓";
             if (normalizedAngle === 180) return "Left ←";
@@ -532,17 +566,17 @@ function drawTractor() {
             return new Promise((resolve) => {
                 const startTime = Date.now();
                 const endTime = startTime + (duration * 1000);
-                
+
                 const moveX = SPEED * Math.cos(angle * Math.PI / 180);
                 const moveY = SPEED * Math.sin(angle * Math.PI / 180);
-                
+
                 function animate() {
                     const currentTime = Date.now();
                     const elapsed = (currentTime - startTime) / 1000;
-                    
+
                     if (currentTime < endTime && isMoving) {
                         // Calculate how much to move based on frame time
-                        const deltaTime = 1/60; // assuming 60fps
+                        const deltaTime = 1 / 60; // assuming 60fps
                         x += moveX * deltaTime;
                         y += moveY * deltaTime;
 
@@ -577,8 +611,8 @@ function drawTractor() {
         }
 
         function resetPosition() {
-            x = 350;
-            y = 50;
+            x = canvas.width / 2;
+            y = canvas.height / 2;
             angle = 180;
             isHarvestingOn = false;
             isSeedingOn = false;
@@ -600,17 +634,17 @@ function drawTractor() {
         if (imageLoadCount === imageCount) drawFieldAndTractor();
 
         // Run button - now uses async/await
-        document.getElementById('runButton').addEventListener('click', async function() {
-		const runButton = document.getElementById('runButton');
-		runButton.disabled = true;
-		
+        document.getElementById('runButton').addEventListener('click', async function () {
+            const runButton = document.getElementById('runButton');
+            runButton.disabled = true;
+
             isMoving = true;
-			
+
             const allBlocks = workspace.getAllBlocks(false);
-            
+
             if (allBlocks.length > 0) {
                 const code = Blockly.JavaScript.workspaceToCode(workspace);
-                
+
                 if (code.trim()) {
                     try {
                         // Wrap the code in an async function and execute
@@ -622,20 +656,20 @@ function drawTractor() {
                 }
             }
             isMoving = false;
-			runButton.disabled = false;
+            runButton.disabled = false;
         });
 
         // Stop button
-        document.getElementById('stopButton').addEventListener('click', function() {
+        document.getElementById('stopButton').addEventListener('click', function () {
             stopMovement();
-			runButton.disabled = false;
+            runButton.disabled = false;
         });
 
         // Reset button
-        document.getElementById('resetButton').addEventListener('click', function() {
+        document.getElementById('resetButton').addEventListener('click', function () {
             stopMovement();
             resetPosition();
-			runButton.disabled = false;
+            runButton.disabled = false;
         });
     </script>
 </body>
