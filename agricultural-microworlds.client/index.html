@@ -91,6 +91,7 @@
 
         <!-- Canvas + Run button -->
         <div id="canvasArea">
+            <p id="scoreText">Yield: 0</p>
             <canvas id="gameCanvas" width="600" height="600"></canvas>
             <button id="runButton">Run Code</button>
             <button id="stopButton">Stop</button>
@@ -123,7 +124,7 @@
                 "previousStatement": null,
                 "nextStatement": null,
                 "colour": 210,
-                "tooltip": "Turn the square left"
+                "tooltip": "Turn the tractor left"
             },
             {
                 "type": "turn_right",
@@ -131,7 +132,37 @@
                 "previousStatement": null,
                 "nextStatement": null, 
                 "colour": 210,
-                "tooltip": "Turn the square right"
+                "tooltip": "Turn the tractor right"
+            },
+            {
+                "type": "turn_left_x_degrees",
+                "message0": "Turn %1 degrees left",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Turn the tractor a certain amount of degrees left"
+            },
+            {
+                "type": "turn_right_x_degrees",
+                "message0": "Turn %1 degrees right",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Turn the tractor a certain amount of degrees right"
             },
             {
                 "type": "math_number",
@@ -193,18 +224,28 @@
         Blockly.JavaScript.forBlock['turn_right'] = function(block) {
             return 'turnRight();\n';
         };
+
+        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function(block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXLeft(${amount});\n`;
+        };
+
+        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function(block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXRight(${amount});\n`;
+        };
         Blockly.JavaScript.forBlock['turn_harvesting_on'] = function (block) {
             return 'turnHarvestingOn();\n';
-        }
+        };
         Blockly.JavaScript.forBlock['turn_harvesting_off'] = function (block) {
             return 'turnHarvestingOff();\n';
-        }
+        };
         Blockly.JavaScript.forBlock['turn_seeding_on'] = function (block) {
             return 'turnSeedingOn();\n';
-        }
+        };
         Blockly.JavaScript.forBlock['turn_seeding_off'] = function (block) {
             return 'turnSeedingOff();\n';
-        }
+        };
 
         Blockly.JavaScript.forBlock['math_number'] = function(block) {
             const number = block.getFieldValue('NUM');
@@ -223,10 +264,12 @@
                         {"kind": "block", "type": "move_forward"},
                         {"kind": "block", "type": "turn_left"},
                         { "kind": "block", "type": "turn_right" },
+                        {"kind": "block", "type": "turn_left_x_degrees"},
+                        {"kind": "block", "type": "turn_right_x_degrees"},
                         { "kind": "block", "type":"turn_harvesting_on"},
                         { "kind": "block", "type":"turn_harvesting_off"},
                         { "kind": "block", "type":"turn_seeding_on"},
-                        { "kind": "block", "type":"turn_seeding_off"}
+                        { "kind": "block", "type":"turn_seeding_off"},
                     ]
                 },
                 {
@@ -278,13 +321,15 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        let yieldScore = 0;
+
         let x = 350;
         let y = 50;
         let angle = 180; // 0 degrees = facing right
         let isMoving = false;
         let isHarvestingOn = false;
         let isSeedingOn = false;
-        let animationId = null;
+        let animationId = -1;
 
         const SPEED = 50; // pixels per second
 // --- Sprite setup ---
@@ -351,27 +396,20 @@
         }
 
 
-const FRAME_WIDTH = 128;  // change to sprite’s frame width
-const FRAME_HEIGHT = 128; // change to sprite’s frame height
+const FRAME_WIDTH = 64;  // change to sprite’s frame width
+const FRAME_HEIGHT = 64; // change to sprite’s frame height
 
 // --- Draw the tractor sprite based on current direction ---
 function drawTractor() {
-    const normalizedAngle = ((angle % 360) + 360) % 360;
-    let frameIndex = 0;
+    const normalizedAngle = ((angle % 360) + 450) % 360;
+    var angleInRadians = normalizedAngle * Math.PI / 180;
 
-    if (normalizedAngle === 0) frameIndex = 0;      // facing right
-    else if (normalizedAngle === 90) frameIndex = 1; // facing down
-    else if (normalizedAngle === 180) frameIndex = 2; // facing left
-    else if (normalizedAngle === 270) frameIndex = 3; // facing up
-
-    // Draw the correct frame
-    ctx.drawImage(
-        tractorSprite,
-        frameIndex * FRAME_WIDTH, 0,           // source x, y (horizontal sheet)
-        FRAME_WIDTH, FRAME_HEIGHT,             // source width, height
-        x - FRAME_WIDTH / 2, y - FRAME_HEIGHT / 2, // destination x, y
-        FRAME_WIDTH, FRAME_HEIGHT              // destination size
-    );
+    // tractorsprite
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angleInRadians);
+    ctx.drawImage(tractorSprite, 0, 0);
+    ctx.restore();
 
     document.getElementById('debug').innerHTML =
         `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
@@ -395,7 +433,7 @@ function drawTractor() {
             }
         }
 
-        function changeFieldTilesToDifferentTypeBasedOnTractorPosition(intToChangeTo, boolToCheck){
+        function changeFieldTilesToDifferentTypeBasedOnTractorPosition(intToChangeTo, boolToCheck) { // fix
             const normalizedAngle = ((angle % 360) + 360) % 360;
 
             // top left corner coordinates of the tractor 
@@ -414,30 +452,35 @@ function drawTractor() {
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
                         if (left >= columns || i < 0) continue;
-                        field[i][left] = intToChangeTo;
+                        field[i][left] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 90) { //check top
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (top >= rows || top < 0) continue;
-                        field[top][i] = intToChangeTo;
+                        field[top][i] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 180) {// check right
                     for (let i = top; i < bottom; i++) {
                         if (i >= rows || i < 0) continue;
                         if (right >= columns || right < 0) continue;
-                        field[i][right] = intToChangeTo;
+                        field[i][right] = 0;
+                        yieldScore++;
                     }
                 }
                 else if (normalizedAngle === 270) { // check bottom
                     for (let i = left; i < right; i++) {
                         if (i >= columns || i < 0) continue;
                         if (bottom >= rows || bottom < 0) continue;
-                        field[bottom][i] = intToChangeTo;
+                        field[bottom][i] = 0;
+                        yieldScore++;
                     }
                 }
+                document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             }
         }
 
@@ -449,7 +492,7 @@ function drawTractor() {
             // draw the entire field
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    let dirtOrWheat;
+                    let dirtOrWheat = dirtImage;
                     switch(field[i][j]){
                         case 0:
                             dirtOrWheat = dirtImage;
@@ -460,7 +503,6 @@ function drawTractor() {
                         case 2:
                             dirtOrWheat = wheatImage;
                             break;
-                        default: dirtOrWheat = dirtImage;
                     }
                     ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width/fieldScale), (i * seedImage.height/fieldScale), seedImage.width/fieldScale, seedImage.height/fieldScale);
                 }
@@ -470,6 +512,7 @@ function drawTractor() {
         // draws the field then the tractor
         function drawFieldAndTractor() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             drawField();
             drawTractor();
         }
@@ -523,12 +566,24 @@ function drawTractor() {
             drawFieldAndTractor();
         }
 
+        function TurnXLeft(amount) {
+            angle -= amount;
+            drawFieldAndTractor();
+        }
+
+        function TurnXRight(amount) {
+            angle += amount;
+            drawFieldAndTractor();
+        }
+
         function resetPosition() {
             x = 350;
             y = 50;
             angle = 180;
             isHarvestingOn = false;
             isSeedingOn = false;
+            isTractorOn = false;
+            yieldScore = 0;
             resetField();
             drawFieldAndTractor();
         }
@@ -537,7 +592,7 @@ function drawTractor() {
             isMoving = false;
             if (animationId) {
                 cancelAnimationFrame(animationId);
-                animationId = null;
+                animationId = -1;
             }
         }
 

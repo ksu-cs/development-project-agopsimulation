@@ -7,6 +7,9 @@ import path from 'path';
 import child_process from 'child_process';
 import { env } from 'process';
 
+const openPage = env.OPEN_SVG === 'true' ? '/indexsvg.html' : '/index.html';
+
+
 const baseFolder =
     env.APPDATA !== undefined && env.APPDATA !== ''
         ? `${env.APPDATA}/ASP.NET/https`
@@ -47,6 +50,7 @@ export default defineConfig({
     },
     server: {
         host: "0.0.0.0",
+        open: openPage,
         proxy: {
             '^/weatherforecast': {
                 target,

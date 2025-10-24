@@ -2,3 +2,4 @@ C:/Users/jseim/source/repos/CIS580/Agricultural-Microworlds/agricultural-microwo
 C:/Users/jseim/source/repos/Agricultural-Microworlds/agricultural-microworlds.client/obj/Debug/agricultural-microworlds.client.esproj.CoreCompileInputs.cache
 C:/Users/jseim/source/repos/development-project-agopsimulation/agricultural-microworlds.client/obj/Debug/agricultural-microworlds.client.esproj.CoreCompileInputs.cache
 /workspaces/development-project-agopsimulation/agricultural-microworlds.client/obj/Debug/agricultural-microworlds.client.esproj.CoreCompileInputs.cache
+C:\Users\jseim\source\repos\development-project-agopsimulation\agricultural-microworlds.client\obj\Debug\agricultural-microworlds.client.esproj.CoreCompileInputs.cache
