@@ -404,9 +404,9 @@
 
             // tractorsprite
             ctx.save();
-            ctx.translate(x, y);
+            ctx.translate(x + FRAME_WIDTH / 2, y + FRAME_HEIGHT / 2);
             ctx.rotate(angleInRadians);
-            ctx.drawImage(tractorSprite, 0, 0);
+            ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
             ctx.restore();
 
             document.getElementById('debug').innerHTML =
@@ -432,33 +432,33 @@
         }
 
         //draws the field onto the canvas
-        function drawField() {// add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score)\
+        function drawField() {// add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score)
+
             // top left corner coordinates of the tractor
-            const xTopLeftCorner = x - (FRAME_WIDTH / 2);
-            const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
 
             const tileWidth = wheatImage.width / fieldScale;
             const tileHeight = wheatImage.height / fieldScale;
 
-            const topLeft = (-FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
-            const topRight = (FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
-            const bottomRight = (FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
-            const bottomLeft = (-FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+            const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const center = { x: x + (FRAME_WIDTH / 2), y: y + (FRAME_HEIGHT / 2) };
 
-            function rotatePoint(x, y, angle, centerX, centerY) { // DETECTION ORIGIN IS STILL SLIGHTLY TO THE LEFT OF WHERE IT IS SUPPOSED TO BE
+            function rotatePoint(x0, y0, angle, centerX, centerY) { // corners not in right spot after rotation
                 const angleInRadians = angle * (Math.PI / 180);
                 const cos = Math.cos(angleInRadians);
                 const sin = Math.sin(angleInRadians);
-                let newX = x * cos - y * sin + centerX;
-                let newY = x * sin + y * cos + centerY;
+                let newX = centerX + ((x0 * cos) - (y0 * sin));
+                let newY = centerY + ((x0 * sin) + (y0 * cos));
                 return { x: newX, y: newY };
             }
 
             const corners = [
-                rotatePoint(-FRAME_WIDTH / 2, -FRAME_HEIGHT / 2, angle, x, y), //topLeft //fix angle to radians
-                rotatePoint(FRAME_WIDTH / 2, -FRAME_HEIGHT / 2, angle, x, y), //topRight
-                rotatePoint(FRAME_WIDTH / 2, FRAME_HEIGHT / 2, angle, x, y), // bottomRight
-                rotatePoint(-FRAME_WIDTH / 2, FRAME_HEIGHT / 2, angle, x, y)  // bottomLeft
+                rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+                rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+                rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+                rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
             ];
 
             const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
@@ -519,23 +519,25 @@
                 }
             }
 
-            function changeTile(x, y) { // index check
-                if (isHarvestingOn) {
-                    if (field[y][x] === 2) {
-                        field[y][x] = 0;
-                        console.log(`changed x: ${x} and y: ${y}`)
-                        yieldScore++;
+            function changeTile(x, y) {
+                if (x >= 0 && x <= columns && y >= 0 && y < rows) {
+                    if (isHarvestingOn) {
+                        if (field[y][x] === 2) {
+                            field[y][x] = 0;
+                            console.log(`changed x: ${x} and y: ${y}`)
+                            yieldScore++;
+                        }
+                        else if (field[y][x] === 1) {
+                            field[y][x] = 0;
+                            console.log(`changed x: ${x} and y: ${y}`)
+                        }
                     }
-                    else if (field[y][x] === 1) {
-                        field[y][x] = 0;
-                        console.log(`changed x: ${x} and y: ${y}`)
-                    }
-                }
-                else if (isSeedingOn) {
-                    if (field[y][x] === 0) {
-                        field[y][x] = 1;
-                        console.log(`changed x: ${x} and y: ${y}`)
-                        yieldScore++;
+                    else if (isSeedingOn) {
+                        if (field[y][x] === 0) {
+                            field[y][x] = 1;
+                            console.log(`changed x: ${x} and y: ${y}`)
+                            yieldScore++;
+                        }
                     }
                 }
             }
