@@ -421,7 +421,7 @@
             ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
             ctx.restore();
 
-            document.getElementById('debug').innerHTML =
+            document.getElementById('debug').innerHTML = //debugging window
                 `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
                 `Angle: ${normalizedAngle}°<br>` +
                 `Direction: ${getDirectionName(angle)}<br>` +

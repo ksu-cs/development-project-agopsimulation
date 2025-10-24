@@ -122,8 +122,9 @@
   const fieldRows = 10, fieldCols = 10;
   const tileSize = 40;
   let field = Array.from({length:fieldRows},()=>new Array(fieldCols).fill(1));
-  let tractor = {x:5, y:5, angle:180, isOn:false, yield:0};
+  let tractor = {x:9, y:0, angle:180, isOn:false, yield:0};
   let isMoving=false;
+  let stopRequested = false;
 
   const wheatImg = './src/assets/T2D_Planted_Placeholder.png';
   const dirtImg = './src/assets/T2D_Dirt_Placeholder.png';
@@ -172,6 +173,7 @@ function getFrameIndex(angle){
 
 
   function updateTractorVisual(){
+
     fo.setAttribute("x",tractor.x*tileSize);
     fo.setAttribute("y",tractor.y*tileSize);
     const idx = getFrameIndex(tractor.angle);
@@ -191,28 +193,31 @@ function getFrameIndex(angle){
 
   function turnOnTractor(){tractor.isOn=true;}
   function turnOffTractor(){tractor.isOn=false;}
-  function turnLeft(){tractor.angle-=90; drawField();}
-  function turnRight(){tractor.angle+=90; drawField();}
+  function turnLeft(){if(!stopRequested){tractor.angle-=90; drawField();}}
+  function turnRight(){if(!stopRequested){tractor.angle+=90; drawField();}}
   function turnLeftX(deg){tractor.angle-=deg; drawField();}
   function turnRightX(deg){tractor.angle+=deg; drawField();}
-  function resetPosition(){tractor={x:5,y:5,angle:180,isOn:false,yield:0}; field=Array.from({length:fieldRows},()=>new Array(fieldCols).fill(1)); drawField();}
-  function stopMovement(){isMoving=false;}
+  function resetPosition(){tractor={x:9,y:0,angle:180,isOn:false,yield:0}; field=Array.from({length:fieldRows},()=>new Array(fieldCols).fill(1)); drawField();}
+  function stopMovement(){isMoving=false; stopRequested = true;}
 
 function moveForward(seconds) {
     return new Promise(resolve => {
         const startTime = performance.now();
         const durationMs = seconds*1000;
+        const pixelsPerSecond = 40
         isMoving = true;
 
         function animate(now) {
-            if (!isMoving) return resolve();
+            if (stopRequested || !isMoving) return resolve();
             const elapsed = now - startTime;
             if (elapsed >= durationMs) return resolve();
+            const delta = (pixelsPerSecond / 1000) * (now - (animate.lastTime || now));
+            animate.lastTime = now;
 
             const rad = tractor.angle*Math.PI/180;
             const speed = tileSize / 0.5; // adjust for smooth speed
-            tractor.x += Math.cos(rad) * 0.1; // fractional movement
-            tractor.y -= Math.sin(rad) * 0.1;
+            tractor.x += Math.cos(rad) * (delta / tileSize);
+            tractor.y -= Math.sin(rad) * (delta / tileSize);
 
             updateTractorVisual();
             requestAnimationFrame(animate);
@@ -223,15 +228,46 @@ function moveForward(seconds) {
 
 
   drawField();
+document.getElementById('runButton').addEventListener('click', async function() {
+		const runButton = document.getElementById('runButton');
+    		        stopRequested = false;
+		runButton.disabled = true;
 
-  document.getElementById('runButton').addEventListener('click',async()=>{
-    document.getElementById('runButton').disabled=true;
-    const code=Blockly.JavaScript.workspaceToCode(workspace);
-    if(code.trim()) try{ await eval(`(async()=>{${code}})()`); } catch(e){console.error(e);}
-    document.getElementById('runButton').disabled=false;
-  });
-  document.getElementById('stopButton').addEventListener('click',()=>{stopMovement();document.getElementById('runButton').disabled=false;});
-  document.getElementById('resetButton').addEventListener('click',()=>{stopMovement();resetPosition();document.getElementById('runButton').disabled=false;});
+            isMoving = true;
+
+            const allBlocks = workspace.getAllBlocks(false);
+            
+            if (allBlocks.length > 0) {
+                const code = Blockly.JavaScript.workspaceToCode(workspace);
+                
+                if (code.trim()) {
+                    try {
+                        // Wrap the code in an async function and execute
+                        const asyncCode = `(async function() { ${code} })()`;
+                        await eval(asyncCode);
+                    } catch (e) {
+                        console.error('ERROR:', e);
+                    }
+                }
+            }
+            isMoving = false;
+			runButton.disabled = false;
+        });
+
+        // Stop button
+        document.getElementById('stopButton').addEventListener('click', function() {
+            stopMovement();
+			runButton.disabled = false;
+        });
+
+        // Reset button
+        document.getElementById('resetButton').addEventListener('click', function() {
+            stopMovement();
+            resetPosition();
+            stopRequested = false;
+            isMoving = false;
+			      runButton.disabled = false;
+        });
 </script>
 </body>
 </html>
