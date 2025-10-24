@@ -369,7 +369,7 @@ function drawTractor() {
     ctx.drawImage(tractorSprite, 0, 0);
     ctx.restore();
 
-    document.getElementById('debug').innerHTML =
+    document.getElementById('debug').innerHTML = //debugging window
         `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
         `Angle: ${angle}°<br>` +
         `Direction: ${getDirectionName(angle)}<br>` +
@@ -445,7 +445,7 @@ function drawTractor() {
             // draw the entire field
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    let dirtOrWheat = ((field[i][j] === 1) ? wheatImage : dirtImage);
+                    let dirtOrWheat = ((field[i][j] === 1) ? wheatImage : dirtImage); //will need to change when seeding functionality is implemented
                     ctx.drawImage(dirtOrWheat, 0, 0, wheatImage.width, wheatImage.height, (j * wheatImage.width/fieldScale), (i * wheatImage.height/fieldScale), wheatImage.width/fieldScale, wheatImage.height/fieldScale);
                 }
             }
