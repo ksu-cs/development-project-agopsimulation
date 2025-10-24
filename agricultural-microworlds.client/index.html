@@ -323,7 +323,7 @@
 
         let x = canvas.width / 2;
         let y = canvas.height / 2;
-        let angle = 180; // 0 degrees = facing right
+        let angle = 0; // 0 degrees = facing right
         let isMoving = false;
         let isHarvestingOn = false;
         let isSeedingOn = false;
@@ -399,7 +399,7 @@
 
         // --- Draw the tractor sprite based on current direction ---
         function drawTractor() {
-            const normalizedAngle = ((angle % 360) + 450) % 360;
+            const normalizedAngle = ((angle % 360) + 360) % 360;
             var angleInRadians = normalizedAngle * Math.PI / 180;
 
             // tractorsprite
@@ -408,24 +408,11 @@
             ctx.rotate(angleInRadians);
             ctx.drawImage(tractorSprite, 0, 0);
             ctx.restore();
-            // top left corner coordinates of the tractor
-            const xTopLeftCorner = x - (FRAME_WIDTH / 2);
-            const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
-
-            // the four different sides of the the tractor
-            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
-            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
-            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
-            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale));
 
             document.getElementById('debug').innerHTML =
                 `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
                 `Angle: ${normalizedAngle}°<br>` +
                 `Direction: ${getDirectionName(angle)}<br>` +
-                `top: ${top}<br>` +
-                `left: ${left}<br>` +
-                `bottom: ${bottom}<br>` +
-                `right: ${right}<br>` +
                 `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
         }
         //setting up the array that represents the field
@@ -446,9 +433,6 @@
 
         //draws the field onto the canvas
         function drawField() {// add more restrictions, such as if seed over crop destroy the crop, if harvest seed no benefit(score)\
-
-            const normalizedAngle = ((angle % 360) + 450) % 360;
-
             // top left corner coordinates of the tractor
             const xTopLeftCorner = x - (FRAME_WIDTH / 2);
             const yTopLeftCorner = y - (FRAME_HEIGHT / 2);
@@ -461,12 +445,13 @@
             const bottomRight = (FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
             const bottomLeft = (-FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
 
-            function rotatePoint(x, y, angle, centerX, centerY) {
-                const cos = Math.cos(angle);
-                const sin = Math.sin(angle);
-                const newX = x * cos - y * sin + centerX;
-                const newY = x * sin + y * cos + centerY;
-                return {x: newX, y: newY};
+            function rotatePoint(x, y, angle, centerX, centerY) { // DETECTION ORIGIN IS STILL SLIGHTLY TO THE LEFT OF WHERE IT IS SUPPOSED TO BE
+                const angleInRadians = angle * (Math.PI / 180);
+                const cos = Math.cos(angleInRadians);
+                const sin = Math.sin(angleInRadians);
+                let newX = x * cos - y * sin + centerX;
+                let newY = x * sin + y * cos + centerY;
+                return { x: newX, y: newY };
             }
 
             const corners = [
@@ -476,52 +461,86 @@
                 rotatePoint(-FRAME_WIDTH / 2, FRAME_HEIGHT / 2, angle, x, y)  // bottomLeft
             ];
 
-            const frontSide = [corners[0], corners[3]];
+            const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
 
-            
-
-            // the four different sides of the the tractor
-            const top = Math.floor(yTopLeftCorner / (wheatImage.height / fieldScale));
-            const left = Math.floor(xTopLeftCorner / (wheatImage.width / fieldScale));
-            const bottom = Math.floor((yTopLeftCorner + FRAME_HEIGHT) / (wheatImage.height / fieldScale));
-            const right = Math.floor((xTopLeftCorner + FRAME_WIDTH) / (wheatImage.width / fieldScale));
-
-            // check to see if the tractor is harvesting any of the "tiles"
-            if (isHarvestingOn) {
-                if (normalizedAngle === 180) { //check left
-                    for (let i = top; i < bottom; i++) {//change to += tile width
-                        if (i >= rows || i < 0) continue;
-                        if (left >= columns || i < 0) continue;
-                        field[i][left] = 0;
-                        yieldScore++;
-                    }
+            function detectWhatTilesAreHit(x0, y0, x1, y1) {
+                if (Math.abs(y1 - y0) < Math.abs(x1 - x0)) {
+                    if (x0 > x1) detectGentleSlope(x1, y1, x0, y0);
+                    else detectGentleSlope(x0, y0, x1, y1);
                 }
-                else if (normalizedAngle === 270) { //check top
-                    for (let i = left; i < right; i++) {
-                        if (i >= columns || i < 0) continue;
-                        if (top >= rows || top < 0) continue;
-                        field[top][i] = 0;
-                        yieldScore++;
-                    }
+                else {
+                    if (y0 > y1) detectSteepSlope(x1, y1, x0, y0);
+                    else detectSteepSlope(x0, y0, x1, y1);
                 }
-                else if (normalizedAngle === 0) {// check right
-                    for (let i = top; i < bottom; i++) {
-                        if (i >= rows || i < 0) continue;
-                        if (right >= columns || right < 0) continue;
-                        field[i][right] = 0;
-                        yieldScore++;
-                    }
-                }
-                else if (normalizedAngle === 90) { // check bottom
-                    for (let i = left; i < right; i++) {
-                        if (i >= columns || i < 0) continue;
-                        if (bottom >= rows || bottom < 0) continue;
-                        field[bottom][i] = 0;
-                        yieldScore++;
-                    }
-                }
-                document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
             }
+
+            function detectGentleSlope(x0, y0, x1, y1) {
+                let deltaX = x1 - x0;
+                let deltaY = y1 - y0;
+
+                let yi = 1;
+
+                if (deltaY < 0) {
+                    yi = -1;
+                    deltaY = -deltaY;
+                }
+                let D = (2 * deltaY) - deltaX;
+                let y = y0;
+
+                for (let x = x0; x < x1; x++) {
+                    changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+                    if (D > 0) {
+                        y = y + yi;
+                        D = D + (2 * (deltaY - deltaX));
+                    }
+                    else D = D + 2 * deltaY;
+                }
+            }
+            function detectSteepSlope(x0, y0, x1, y1) {
+                let deltaX = x1 - x0;
+                let deltaY = y1 - y0;
+
+                let xi = 1;
+
+                if (deltaX < 0) {
+                    xi = -1;
+                    deltaX = -deltaX;
+                }
+                let D = (2 * deltaX) - deltaY;
+                let x = x0;
+
+                for (let y = y0; y < y1; y++) {
+                    changeTile(Math.floor(x/tileWidth), Math.floor(y/tileHeight));
+                    if (D > 0) {
+                        x = x + xi;
+                        D = D + (2 * (deltaX - deltaY));
+                    }
+                    else D = D + 2 * deltaX;
+                }
+            }
+
+            function changeTile(x, y) { // index check
+                if (isHarvestingOn) {
+                    if (field[y][x] === 2) {
+                        field[y][x] = 0;
+                        console.log(`changed x: ${x} and y: ${y}`)
+                        yieldScore++;
+                    }
+                    else if (field[y][x] === 1) {
+                        field[y][x] = 0;
+                        console.log(`changed x: ${x} and y: ${y}`)
+                    }
+                }
+                else if (isSeedingOn) {
+                    if (field[y][x] === 0) {
+                        field[y][x] = 1;
+                        console.log(`changed x: ${x} and y: ${y}`)
+                        yieldScore++;
+                    }
+                }
+            }
+
+            detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y);
 
             // draw the entire field
             for (let i = 0; i < rows; i++) {
@@ -613,7 +632,7 @@
         function resetPosition() {
             x = canvas.width / 2;
             y = canvas.height / 2;
-            angle = 180;
+            angle = 0;
             isHarvestingOn = false;
             isSeedingOn = false;
             isTractorOn = false;
