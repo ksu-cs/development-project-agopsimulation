@@ -1,22 +1,21 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet-postgres
+// README at: https://github.com/devcontainers/templates/tree/main/src/universal
 {
-    "name": "C# (.NET) and PostgreSQL",
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "app",
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"name": "Default Linux Universal",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	// "image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"features": {
+		"ghcr.io/devcontainers-community/npm-features/prettier:1": {
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/docker-outside-of-docker": {}
+	},
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
-
-	// Configure tool-specific properties.
-	"customizations": {
-		"extensions": [
-			"ms-dotnettools.csharp",
-        	"dbaeumer.vscode-eslint",
-        	"esbenp.prettier-vscode"
-		]
-	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5000, 5001, 5432],
@@ -32,11 +31,20 @@
 			}
 	},
 	"otherPortsAttributes": {
-    	"onAutoForward": "ignore"
-  	},
+		"onAutoForward": "ignore"
+	},
 
-    // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": "npm install"
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "cd agricultural-microworlds.client && npm install",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"extensions": [
+			"ms-dotnettools.csharp",
+        	"dbaeumer.vscode-eslint",
+        	"esbenp.prettier-vscode"
+		]
+	},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
