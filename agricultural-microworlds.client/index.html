@@ -4,100 +4,22 @@
     <meta charset="UTF-8">
     <title>AGsim</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        #blocklyDiv {
-            flex: 1;
-            min-width: 0;
-        }
-
-        #canvasArea {
-            width: 800px;
-            background: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-left: 3px solid #ccc;
-            padding: 20px;
-        }
-
-        canvas {
-            border: 2px solid #333;
-            background-color: #fff;
-            margin-bottom: 20px;
-        }
-
-        #runButton {
-            padding: 10px 20px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        #resetButton {
-            padding: 10px 20px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        #stopButton {
-            padding: 10px 20px;
-            background: #ff9800;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        #debug {
-            background: white;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 100%;
-            min-height: 60px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="src/index.css">
 </head>
 <body>
+    <div id = 'root'></div>
+    <script type="module" src="/src/main.jsx"></script>
     <div class="container">
-        <!-- Blockly workspace -->
-        <div id="blocklyDiv"></div>
-        <!-- Canvas + Run button -->
-        <div id="canvasArea">
-            <p id="scoreText">Yield: 0</p>
-            <canvas id="gameCanvas" width="600" height="600"></canvas>
-            <button id="runButton">Run Code</button>
-            <button id="stopButton">Stop</button>
-            <button id="resetButton">Reset Position</button>
-            <div id="debug">Drag blocks to workspace, then click Run</div>
+            <div id="blocklyDiv"></div>
+            <div id="canvasArea">
+                <p id="scoreText">Yield: 0</p>
+                <canvas id="gameCanvas" width="600" height="600"></canvas>
+                <button id="runButton">Run Code</button>
+                <button id="stopButton">Stop</button>
+                <button id="resetButton">Reset Position</button>
+                <div id="debug">Drag blocks to workspace, then click Run</div>
+            </div>
         </div>
-    </div>
     <script>
         // Define custom blocks
         Blockly.defineBlocksWithJsonArray([

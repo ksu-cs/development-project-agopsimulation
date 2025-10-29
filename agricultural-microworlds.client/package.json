@@ -3,16 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
-  "dev": "vite",
-  "dev:svg": "OPEN_SVG=true vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview"
-}
-,
+  "scripts": {
+    "dev": "vite",
+    "dev:svg": "OPEN_SVG=true vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "react": "^19.1.1",
+    "react-blockly": "^9.0.0",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
