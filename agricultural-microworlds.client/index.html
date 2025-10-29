@@ -216,11 +216,11 @@
         };
 
         Blockly.JavaScript.forBlock['turn_left'] = function (block) {
-            return 'turnLeft();\n';
+            return `await turnLeft();\n`;
         };
 
         Blockly.JavaScript.forBlock['turn_right'] = function (block) {
-            return 'turnRight();\n';
+            return `await turnRight();\n`;
         };
 
         Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function (block) {
@@ -327,6 +327,8 @@
         const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
         const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
         let angle = 0; // 0 degrees = facing right
+    	let goalAngle = 0; // Our angle will be set to move towards this.
+    	let turnSpeed = 90; //How fast the tractor can turn.
         let isMoving = false;
         let isHarvestingOn = false;
         let isSeedingOn = false;
@@ -668,25 +670,54 @@
             });
         }
 
-        function turnLeft() {
-            angle -= 90;
-            drawFieldAndTractor();
-        }
+    	function turnLeft() {
+        	goalAngle -= 90;
+        	return OnNewGoalRotation();
+    	}
 
-        function turnRight() {
-            angle += 90;
-            drawFieldAndTractor();
-        }
+    	function turnRight() {
+        	goalAngle += 90;
+        	return OnNewGoalRotation();
+    	}
 
-        function TurnXLeft(amount) {
-            angle -= amount;
-            drawFieldAndTractor();
-        }
+    	function TurnXLeft(amount) {
+        	goalAngle -= amount;
+        	return OnNewGoalRotation();
+    	}
 
-        function TurnXRight(amount) {
-            angle += amount;
-            drawFieldAndTractor();
-        }
+    	function TurnXRight(amount) {
+        	goalAngle += amount;
+        	return OnNewGoalRotation();
+    	}
+
+    	function OnNewGoalRotation() {
+        	return new Promise((resolve) => {
+           	 
+            	function turn() {
+                    const delta = 1 / 60; // assuming 60fps
+               	 
+                	if (angle != goalAngle) {
+                        // For the actual turning.
+                    	var difference = (goalAngle - angle);
+                        var absDiff = Math.abs(difference);
+                        var alpha = Math.min(turnSpeed*delta, absDiff) / absDiff;
+                    	angle = angle*(1 - alpha) + goalAngle*alpha;
+
+                        // Move the tractor while turning, to look more natural.
+                        const moveX = SPEED * Math.cos(angle * Math.PI / 180);
+                        const moveY = SPEED * Math.sin(angle * Math.PI / 180);
+                        x += moveX * delta;
+                        y += moveY * delta;
+
+                    	drawFieldAndTractor();
+                    	animationId = requestAnimationFrame(turn);
+                	} else {
+                    	resolve();
+                	}
+            	}
+            	turn();
+        	});
+    	}
 
         function resetPosition() {
             if (!isInitialized) return;
@@ -698,6 +729,7 @@
             cameraX = tractorWorldX - tractorScreenX;
             cameraY = tractorWorldY - tractorScreenY;
 
+            goalAngle = 0;
             isHarvestingOn = false;
             isSeedingOn = false;
             isTractorOn = false;
