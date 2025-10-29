@@ -32,6 +32,30 @@
   <div id="svgArea">
     <p id="scoreText">Yield: 0</p>
     <svg id="gameSVG" viewBox="0 0 400 400"></svg>
+
+
+<p>GDD today? <span id="gdd">Loading...</span></p>
+
+<script type="module">
+import weatherData, { calculateGDD, isGDD } from '/src/assets/weather.js';
+
+const gddEl = document.getElementById('gdd');
+
+try {
+  const gddValue = calculateGDD(weatherData, 10);
+  const gddFlag = isGDD(weatherData, 10);
+
+  gddEl.textContent = `GDD: ${gddValue.toFixed(3)} (${gddFlag})`;
+} catch (err) {
+  console.error("Error computing GDD:", err);
+  gddEl.textContent = "Error";
+}
+
+</script>
+
+
+
+	  
     <button id="runButton">Run Code</button>
     <button id="stopButton">Stop</button>
     <button id="resetButton">Reset</button>
