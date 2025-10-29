@@ -320,8 +320,12 @@
         const ctx = canvas.getContext('2d');
 
         // Global variables
-        let x = canvas.width / 2;
-        let y = canvas.height / 2;
+
+        // Tractor variables
+        let tractorWorldX = canvas.width / 2; // Tractor's vertical position in the entire world
+        let tractorWorldY = canvas.height / 2; // Tractor's horizontal position in the entire world
+        const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
+        const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
         let angle = 0; // 0 degrees = facing right
         let isMoving = false;
         let isHarvestingOn = false;
@@ -329,10 +333,31 @@
         let animationId = -1;
         let yieldScore = 0;
 
+        // Camera Variables
+        let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
+        let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
+
+        // Game asset constants
         const FRAME_WIDTH = 64;  // change to sprite’s frame width
         const FRAME_HEIGHT = 64; // change to sprite’s frame height
-        const fieldScale = 4; // The amount the field tiles will be scaled down by
-        const SPEED = 50; // pixels per second
+        const TILE_BASE_SIZE = 64; // The original size of the field tiles
+        const fieldScale = 8; // The amount the field tiles will be scaled down by
+        const SPEED = 100; // pixels per second
+
+        // Field variables
+        const tileWidth = TILE_BASE_SIZE / fieldScale;
+        const tileHeight = TILE_BASE_SIZE / fieldScale;
+
+        // Setting up the array that represents the field
+        const WORLD_WIDTH_IN_SCREENS = 5;
+        const WORLD_HEIGHT_IN_SCREENS = 5;
+        const screenRows = Math.floor(canvas.height / tileHeight) + 2;
+        const screenCols = Math.floor(canvas.width / tileWidth) + 2;
+
+        const rows = screenRows * WORLD_HEIGHT_IN_SCREENS;
+        const columns = screenCols * WORLD_WIDTH_IN_SCREENS;
+
+        let field = [];
 
         // --- Sprite setup ---
         const tractorSprite = new Image();
@@ -349,36 +374,49 @@
         // Variables to aid in image loading
         let imageLoadCount = 0;
         const imageCount = 4;
+        let isInitialized = false;
+
+        // Image loading
+        function onImageLoad() {
+            imageLoadCount++;
+            if (imageLoadCount === imageCount && !isInitialized) {
+                console.log("All images loaded!");
+                isInitialized = true;
+
+                // Initialize the field array
+                console.log(`Initalizing world: ${columns}x${rows} tiles`);
+                field = Array.from({ length: rows }, () => new Array(columns).fill(2));
+
+                // Set initial position and draw
+                resetPosition();
+            }
+        }
 
         // Loading methods for images
         tractorSprite.onload = () => {
             console.log("✅ Tractor sprite loaded!");
-            imageLoadCount++;
-            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+            onImageLoad();
         };
         tractorSprite.onerror = () => {
             console.error("❌ Failed to load tractor sprite!");
         };
         dirtImage.onload = () => {
             console.log("DirtImage loaded!");
-            imageLoadCount++;
-            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+            onImageLoad();
         }
         dirtImage.onerror = () => {
             console.error("failed to load DirtImage");
         }
         seedImage.onload = () => {
             console.log("SeedImage loaded!");
-            imageLoadCount++;
-            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+            onImageLoad();
         }
         seedImage.onerror = () => {
             console.error("failed to load SeedImage");
         }
         wheatImage.onload = () => {
             console.log("WheatImage loaded!");
-            imageLoadCount++;
-            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+            onImageLoad();
         }
         wheatImage.onerror = () => {
             console.error("failed to load WheatImage");
@@ -400,14 +438,6 @@
             isSeedingOn = false;
         }
 
-        // Setting up the array that represents the field
-        const rows = Math.floor(canvas.height / seedImage.height * fieldScale) + 1;
-        const columns = Math.floor(canvas.width / seedImage.width * fieldScale) + 1;
-        let field = Array.from({ length: rows }, () => new Array(columns).fill(2));
-
-        const tileWidth = wheatImage.width / fieldScale; // one tiles width (all tiles same width and height)
-        const tileHeight = wheatImage.height / fieldScale; // one tiles height (all tiles same width and height)
-
 
         // --- Draw the tractor sprite based on current direction ---
         function drawTractor() {
@@ -416,13 +446,13 @@
 
             // tractorsprite
             ctx.save();
-            ctx.translate(x + FRAME_WIDTH / 2, y + FRAME_HEIGHT / 2);
+            ctx.translate(tractorScreenX + FRAME_WIDTH / 2, tractorScreenY + FRAME_HEIGHT / 2);
             ctx.rotate(angleInRadians);
             ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
             ctx.restore();
 
             document.getElementById('debug').innerHTML = //debugging window
-                `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+                `World Position: (${Math.round(tractorWorldX)}, ${Math.round(tractorWorldY)})<br>` +
                 `Angle: ${normalizedAngle}°<br>` +
                 `Direction: ${getDirectionName(angle)}<br>` +
                 `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
@@ -435,7 +465,7 @@
             const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
             const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
             const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
-            const center = { x: x + (FRAME_WIDTH / 2), y: y + (FRAME_HEIGHT / 2) };
+            const center = { x: tractorWorldX + (FRAME_WIDTH / 2), y: tractorWorldY + (FRAME_HEIGHT / 2) };
 
             const corners = [
                 rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
@@ -448,9 +478,17 @@
 
             detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y);
 
-            // draw the entire field
-            for (let i = 0; i < rows; i++) {
-                for (let j = 0; j < columns; j++) {
+            // draw the entire field using camera coordinates
+
+            const startCol = Math.floor(cameraX / tileWidth);
+            const endCol = Math.min(columns, startCol + screenCols);
+            const startRow = Math.floor(cameraY / tileHeight);
+            const endRow = Math.min(rows, startRow + screenRows);
+            
+            for (let i = startRow; i < endRow; i++) {
+                for (let j = startCol; j < endCol; j++) {
+                    if (i < 0 || j < 0) continue; // skip negative indices
+
                     let dirtOrWheat = dirtImage;
                     switch (field[i][j]) {
                         case 0:
@@ -463,7 +501,17 @@
                             dirtOrWheat = wheatImage;
                             break;
                     }
-                    ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width / fieldScale), (i * seedImage.height / fieldScale), seedImage.width / fieldScale, seedImage.height / fieldScale);
+                    const tileWorldX = j * tileWidth;
+                    const tileWorldY = i * tileHeight;
+
+                    const tileScreenX = tileWorldX - cameraX;
+                    const tileScreenY = tileWorldY - cameraY;
+
+                    ctx.drawImage(dirtOrWheat, 0, 0, TILE_BASE_SIZE, TILE_BASE_SIZE,
+                        Math.floor(tileScreenX),
+                        Math.floor(tileScreenY),
+                        tileWidth,
+                        tileHeight);
                 }
             }
         }
@@ -602,8 +650,12 @@
                     if (currentTime < endTime && isMoving) {
                         // Calculate how much to move based on frame time
                         const deltaTime = 1 / 60; // assuming 60fps
-                        x += moveX * deltaTime;
-                        y += moveY * deltaTime;
+
+                        tractorWorldX += moveX * deltaTime;
+                        tractorWorldY += moveY * deltaTime;
+
+                        cameraX = tractorWorldX - tractorScreenX;
+                        cameraY = tractorWorldY - tractorScreenY;
 
                         drawFieldAndTractor();
                         animationId = requestAnimationFrame(animate);
@@ -611,6 +663,7 @@
                         resolve();
                     }
                 }
+
                 animate();
             });
         }
@@ -636,9 +689,15 @@
         }
 
         function resetPosition() {
-            x = canvas.width / 2;
-            y = canvas.height / 2;
+            if (!isInitialized) return;
+
+            tractorWorldX = (columns * tileWidth) / 2;
+            tractorWorldY = (rows * tileHeight) / 2;
             angle = 0;
+
+            cameraX = tractorWorldX - tractorScreenX;
+            cameraY = tractorWorldY - tractorScreenY;
+
             isHarvestingOn = false;
             isSeedingOn = false;
             isTractorOn = false;
@@ -656,7 +715,7 @@
         }
 
         // Initial draw
-        if (imageLoadCount === imageCount) drawFieldAndTractor();
+        // if (imageLoadCount === imageCount) drawFieldAndTractor();
 
         // Run button - now uses async/await
         document.getElementById('runButton').addEventListener('click', async function () {
