@@ -1,4 +1,5 @@
 // src/assets/weather.js
+//import to index
 const weatherData = [
   { LOCATION: "Manhattan", TEMP2MMIN: 10.4, TEMP2MMAX: 11.57 },
   { LOCATION: "Manhattan", TEMP2MMIN: 10.71, TEMP2MMAX: 12.42 },
