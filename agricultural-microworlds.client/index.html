@@ -639,20 +639,18 @@
 
     	function OnNewGoalRotation() {
         	return new Promise((resolve) => {
-            	var currentTime = Date.now();
-            	var prevTime = currentTime;
            	 
             	function turn() {
-                	currentTime = Date.now();
                     const delta = 1 / 60; // assuming 60fps
-                	prevTime = currentTime;
                	 
                 	if (angle != goalAngle) {
+                        // For the actual turning.
                     	var difference = (goalAngle - angle);
                         var absDiff = Math.abs(difference);
-                        var t = Math.min(turnSpeed*delta, absDiff) / absDiff;
-                    	angle = angle*(1 - t) + goalAngle*t;
+                        var alpha = Math.min(turnSpeed*delta, absDiff) / absDiff;
+                    	angle = angle*(1 - alpha) + goalAngle*alpha;
 
+                        // Move the tractor while turning, to look more natural.
                         const moveX = SPEED * Math.cos(angle * Math.PI / 180);
                         const moveY = SPEED * Math.sin(angle * Math.PI / 180);
                         x += moveX * delta;
