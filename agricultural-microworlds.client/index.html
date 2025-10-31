@@ -484,9 +484,11 @@
 
                     if (nightFadeProgress > 0.5 && waitingTime > 0)
                     {
+                        // Wait for a period determined by the weeks set.
                         waitingTime -= delta;
                         if (waitingTime <= 0)
                         {
+                            // Notify that a week has passed, and handle accordingly.
                             currentWeek++;
                             weeksPassedSincePlanting++;
                             if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
@@ -495,7 +497,7 @@
                             }
 
                             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
-                            console.log("Current Week:" + currentWeek);
+                            // console.log("Current Week:" + currentWeek);
 
                             weeks--;
                             if (weeks > 0)
