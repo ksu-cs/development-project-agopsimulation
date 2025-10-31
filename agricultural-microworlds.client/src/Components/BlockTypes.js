@@ -1,7 +1,7 @@
 import React from "react";
-import BlocklyComponent from "./BlocklyWorkspace";
+import BlocklyWorkspace from "./BlocklyWorkspace";
 
-export default BlocklyComponent;
+export default BlocklyWorkspace;
 
 const Block = (p) => {
   const { children, ...props } = p;

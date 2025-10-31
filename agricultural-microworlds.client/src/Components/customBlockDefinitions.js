@@ -1,7 +1,7 @@
 import * as Blockly from "blockly/core";
 
 var example = {
-  type: "turn_harvesting_off", //type name that is used in blockly system
+  type: "example", //type name that is used in blockly system
   message0: "turn harvesting off", // message on the block
   previousStatement: null,
   nextStatement: null,
@@ -16,7 +16,7 @@ Blockly.Blocks["example"] = {
 };
 
 var argsExapmle = {
-  type: "math_number",
+  type: "argsExample",
   message0: "%1",
   args0: [
     {
