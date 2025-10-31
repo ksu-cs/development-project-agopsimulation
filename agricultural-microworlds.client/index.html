@@ -481,16 +481,21 @@
         // Method for Wait X Weeks Block
         function waitXWeeks(weeks) {
         	return new Promise((resolve) => {
-                if (weeks > 0)
+                let weeksToProcess = weeks;
+
+                if (weeksToProcess > 0) {
            	        nightFadeProgress = 0.0;
+                }
+                else{
+                    resolve();
+                    return;
+                }
 
                 let waitingTime = 0.2;
 
             	function UpdateNight() {
                     const delta = 1 / 60; // assuming 60fps
                     
-                    let prev = nightFadeProgress;
-
                     if (nightFadeProgress > 0.5 && waitingTime > 0)
                     {
                         // Wait for a period determined by the weeks set.
@@ -499,28 +504,28 @@
                         {
                             // Notify that a week has passed, and handle accordingly.
                             currentWeek++;
-                            weeksPassedSincePlanting++;
-                            if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
-                                growCrops();
-                                weeksPassedSincePlanting = 0; // reset after growth
-                            }
+                            growCrops(1);
 
                             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+
                             // console.log("Current Week:" + currentWeek);
 
-                            weeks--;
-                            if (weeks > 0)
+                            weeksToProcess--;
+                            if (weeksToProcess > 0)
                                 waitingTime = 0.2;
                         }
                     }
                     else
-                        nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
-               	 
-                	if (weeks > 0 || nightFadeProgress < 1.0) {
+                    {
+                        let fadeSpeed = (waitingTime > 0) ? 1.0 : 2.0;
+                        nightFadeProgress = Math.min(nightFadeProgress + (delta * fadeSpeed), 1.0);
+                    }
+                	if (weeksToProcess > 0 || nightFadeProgress < 1.0) {
                     	drawFieldAndTractor();
                     	animationId = requestAnimationFrame(UpdateNight);
                 	} else {
                         nightFadeProgress = -1;
+                        drawFieldAndTractor();
                         resolve();
                 	}
             	}
