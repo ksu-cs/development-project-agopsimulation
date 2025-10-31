@@ -262,7 +262,7 @@
         };
         Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            return `waitXWeeks(${weeks});\n`;
+            return `await waitXWeeks(${weeks});\n`;
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -355,6 +355,7 @@
         let isSeedingOn = false;
         let animationId = -1;
         let yieldScore = 0;
+        let weeksToWait = 0;
         let nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
 
         // Camera Variables
@@ -470,13 +471,47 @@
 
         // Method for Wait X Weeks Block
         function waitXWeeks(weeks) {
-            currentWeek += weeks;
-            weeksPassedSincePlanting += weeks;
-            if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
-                growCrops();
-                weeksPassedSincePlanting = 0; // reset after growth
-            }
-            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+        	return new Promise((resolve) => {
+           	    nightFadeProgress = 0.0;
+
+            	function UpdateNight() {
+                    const delta = 1 / 60; // assuming 60fps
+                    let prev = nightFadeProgress;
+                    nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
+               	 
+                	if (weeks > 0 && nightFadeProgress < 1.0) {
+                        if (prev < 0.5 && nightFadeProgress >= 0.5) {
+                            currentWeek++;
+                            weeksPassedSincePlanting++;
+                            if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
+                                growCrops();
+                                weeksPassedSincePlanting = 0; // reset after growth
+                            }
+
+                            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+                        }
+
+                    	drawFieldAndTractor();
+                    	animationId = requestAnimationFrame(UpdateNight);
+                	} else {
+                        weeks--;
+                        nightFadeProgress = 0.0;
+                        console.log("Weeks remaining:" + weeks);
+
+                        if (weeks <= 0) {
+                            nightFadeProgress = -1;
+                            resolve();
+                        }
+                        else {
+                            nightFadeProgress = 0.0;
+                            drawFieldAndTractor();
+                            animationId = requestAnimationFrame(UpdateNight);
+                        }
+                	}
+            	}
+
+            	UpdateNight();
+        	});
         }
 
         function growCrops() {
@@ -568,7 +603,7 @@
         }
 
         function DrawNight() {
-            let alpha = 0.75*Math.sin(nightFadeProgress * Math.PI);
+            let alpha = 0.75*Math.min(1.2*Math.sin(nightFadeProgress * Math.PI), 1.0);
             ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
             ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw the overlay
         }
@@ -780,32 +815,6 @@
         	});
     	}
 
-        function DoNightTransition() {
-        	return new Promise((resolve) => {
-           	    nightFadeProgress = 0.0;
-
-            	function UpdateNight() {
-                    const delta = 1 / 60; // assuming 60fps
-                    let prev = nightFadeProgress;
-                    nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
-                    console.log("Progress:" + nightFadeProgress);
-               	 
-                	if (nightFadeProgress < 1.0) {
-                        if (prev < 0.5 && nightFadeProgress >= 0.5) {
-                            // ADD: function call to grow crops here, as the night reaches its peak.
-                        }
-
-                    	drawFieldAndTractor();
-                    	animationId = requestAnimationFrame(UpdateNight);
-                	} else {
-                        nightFadeProgress = -1;
-                    	resolve();
-                	}
-            	}
-            	UpdateNight();
-        	});
-        }
-
         function resetPosition() {
             if (!isInitialized) return;
 
@@ -821,6 +830,7 @@
             isSeedingOn = false;
             isTractorOn = false;
             yieldScore = 0;
+            nightFadeProgress = -1.0;
             resetField();
             drawFieldAndTractor();
         }
