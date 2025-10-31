@@ -90,6 +90,7 @@
         <div id="blocklyDiv"></div>
         <!-- Canvas + Run button -->
         <div id="canvasArea">
+            <p id="weekText">Week 1</p>
             <p id="scoreText">Yield: 0</p>
             <canvas id="gameCanvas" width="600" height="600"></canvas>
             <button id="runButton">Run Code</button>
@@ -206,6 +207,21 @@
                 "nextStatement": null,
                 colour: 210,
                 tooltip: "Turns seeding on tractor off"
+            },
+            {
+                "type": "wait_x_weeks",
+                "message0": "wait %1 weeks",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "WEEKS",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Wait for a certain number of weeks"
             }
         ]);
 
@@ -243,6 +259,10 @@
         };
         Blockly.JavaScript.forBlock['turn_seeding_off'] = function (block) {
             return 'turnSeedingOff();\n';
+        };
+        Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
+            const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `waitXWeeks(${weeks});\n`;
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -286,6 +306,7 @@
                         { "kind": "block", "type": "turn_harvesting_off" },
                         { "kind": "block", "type": "turn_seeding_on" },
                         { "kind": "block", "type": "turn_seeding_off" },
+                        { "kind": "block", "type": "wait_x_weeks" }
                     ]
                 },
                 {
@@ -344,7 +365,13 @@
         const FRAME_HEIGHT = 64; // change to sprite’s frame height
         const TILE_BASE_SIZE = 64; // The original size of the field tiles
         const fieldScale = 8; // The amount the field tiles will be scaled down by
-        const SPEED = 100; // pixels per second
+        const SPEED = 20; // pixels per second
+
+        // Time variables
+        const START_WEEK = 1; // starting week
+        const GROWTH_WEEKS = 18; // weeks for crops to fully grow
+        let currentWeek = START_WEEK; // current week in simulation
+        let weeksPassedSincePlanting = 0; // weeks passed since last planting
 
         // Field variables
         const tileWidth = TILE_BASE_SIZE / fieldScale;
@@ -440,6 +467,27 @@
             isSeedingOn = false;
         }
 
+        // Method for Wait X Weeks Block
+        function waitXWeeks(weeks) {
+            currentWeek += weeks;
+            weeksPassedSincePlanting += weeks;
+            if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
+                growCrops();
+                weeksPassedSincePlanting = 0; // reset after growth
+            }
+            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+        }
+
+        function growCrops() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    if (field[i][j] === 1) {
+                        field[i][j] = 2; // Seeded tile becomes wheat
+                    }
+                }
+            }
+            drawFieldAndTractor();
+        }
 
         // --- Draw the tractor sprite based on current direction ---
         function drawTractor() {
