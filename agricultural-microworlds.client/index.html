@@ -334,7 +334,7 @@
         let isSeedingOn = false;
         let animationId = -1;
         let yieldScore = 0;
-        let nightFadeProgress = -1; // The progress for the night transition animation. Ranges from 0-1 when active.
+        let nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
 
         // Camera Variables
         let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
@@ -520,9 +520,9 @@
         }
 
         function DrawNight() {
-            let alpha = 100*Math.sin(nightFadeProgress * Math.PI);
-            ctx.fillStyle = `rgba(5, 5, 155, ${alpha})`;
-            ctx.fillRect(0, 0, width, height); // Draw the screen.
+            let alpha = 0.75*Math.sin(nightFadeProgress * Math.PI);
+            ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
+            ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw the overlay
         }
 
         // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
@@ -632,7 +632,7 @@
             drawField();
             drawTractor();
 
-            if (nightFadeProgress >= 0)
+            if (nightFadeProgress >= 0.0)
                 DrawNight();
         }
 
@@ -648,8 +648,6 @@
 
         // moveForward function that moves over time
         function moveForward(duration) {
-            return DoNightTransition();
-            
             return new Promise((resolve) => {
                 const startTime = Date.now();
                 const endTime = startTime + (duration * 1000);
@@ -736,26 +734,27 @@
 
         function DoNightTransition() {
         	return new Promise((resolve) => {
-           	    nightFadeProgress = 0;
+           	    nightFadeProgress = 0.0;
 
-            	function update() {
+            	function UpdateNight() {
                     const delta = 1 / 60; // assuming 60fps
                     let prev = nightFadeProgress;
-                    nightFadeProgress = Math.min(nightFadeProgress + delta, 1);
+                    nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
+                    console.log("Progress:" + nightFadeProgress);
                	 
-                	if (nightFadeProgress < 1) {
+                	if (nightFadeProgress < 1.0) {
                         if (prev < 0.5 && nightFadeProgress >= 0.5) {
                             // ADD: function call to grow crops here, as the night reaches its peak.
                         }
 
                     	drawFieldAndTractor();
-                    	animationId = requestAnimationFrame(update);
+                    	animationId = requestAnimationFrame(UpdateNight);
                 	} else {
                         nightFadeProgress = -1;
                     	resolve();
                 	}
             	}
-            	update();
+            	UpdateNight();
         	});
         }
 
