@@ -472,15 +472,21 @@
         // Method for Wait X Weeks Block
         function waitXWeeks(weeks) {
         	return new Promise((resolve) => {
-           	    nightFadeProgress = 0.0;
+                if (weeks > 0)
+           	        nightFadeProgress = 0.0;
+
+                let waitingTime = 0.2;
 
             	function UpdateNight() {
                     const delta = 1 / 60; // assuming 60fps
+                    
                     let prev = nightFadeProgress;
-                    nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
-               	 
-                	if (weeks > 0 && nightFadeProgress < 1.0) {
-                        if (prev < 0.5 && nightFadeProgress >= 0.5) {
+
+                    if (nightFadeProgress > 0.5 && waitingTime > 0)
+                    {
+                        waitingTime -= delta;
+                        if (waitingTime <= 0)
+                        {
                             currentWeek++;
                             weeksPassedSincePlanting++;
                             if (weeksPassedSincePlanting >= GROWTH_WEEKS) {
@@ -489,24 +495,22 @@
                             }
 
                             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
-                        }
+                            console.log("Current Week:" + currentWeek);
 
+                            weeks--;
+                            if (weeks > 0)
+                                waitingTime = 0.2;
+                        }
+                    }
+                    else
+                        nightFadeProgress = Math.min(nightFadeProgress + delta, 1.0);
+               	 
+                	if (weeks > 0 || nightFadeProgress < 1.0) {
                     	drawFieldAndTractor();
                     	animationId = requestAnimationFrame(UpdateNight);
                 	} else {
-                        weeks--;
-                        nightFadeProgress = 0.0;
-                        console.log("Weeks remaining:" + weeks);
-
-                        if (weeks <= 0) {
-                            nightFadeProgress = -1;
-                            resolve();
-                        }
-                        else {
-                            nightFadeProgress = 0.0;
-                            drawFieldAndTractor();
-                            animationId = requestAnimationFrame(UpdateNight);
-                        }
+                        nightFadeProgress = -1;
+                        resolve();
                 	}
             	}
 
