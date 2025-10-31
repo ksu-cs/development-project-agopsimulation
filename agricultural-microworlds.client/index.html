@@ -345,50 +345,57 @@
         // Tractor variables
         let tractorWorldX = canvas.width / 2; // Tractor's vertical position in the entire world
         let tractorWorldY = canvas.height / 2; // Tractor's horizontal position in the entire world
-        const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
-        const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
+
         let angle = 0; // 0 degrees = facing right
     	let goalAngle = 0; // Our angle will be set to move towards this.
     	let turnSpeed = 90; //How fast the tractor can turn.
-        let isMoving = false;
-        let isHarvestingOn = false;
-        let isSeedingOn = false;
-        let animationId = -1;
-        let yieldScore = 0;
         let weeksToWait = 0;
         let nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
+        let isMoving = false; // flag to indicate if the tractor is currently moving
+        let isHarvestingOn = false; // flag to indicate if harvesting mode is on
+        let isSeedingOn = false; // flag to indicate if seeding mode is on
+        let animationId = -1; // ID for the animation frame
+        let yieldScore = 0; // score for harvested crops
 
         // Camera Variables
-        let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
-        let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
+        // const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
+        // const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
+        // let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
+        // let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
+        let cameraX = 0; // 
+        let cameraY = 0;
 
         // Game asset constants
         const FRAME_WIDTH = 64;  // change to sprite’s frame width
         const FRAME_HEIGHT = 64; // change to sprite’s frame height
         const TILE_BASE_SIZE = 64; // The original size of the field tiles
-        const fieldScale = 8; // The amount the field tiles will be scaled down by
+        const FIELD_SCALE = 8; // The amount the field tiles will be scaled down by
         const SPEED = 20; // pixels per second
 
         // Time variables
         const START_WEEK = 1; // starting week
-        const GROWTH_WEEKS = 18; // weeks for crops to fully grow
+        const GROWTH_DAYS = 100.0; // weeks for crops to fully grow
         let currentWeek = START_WEEK; // current week in simulation
-        let weeksPassedSincePlanting = 0; // weeks passed since last planting
+        // let weeksPassedSincePlanting = 0; // weeks passed since last planting
 
         // Field variables
-        const tileWidth = TILE_BASE_SIZE / fieldScale;
-        const tileHeight = TILE_BASE_SIZE / fieldScale;
+        const TILE_WIDTH = TILE_BASE_SIZE / FIELD_SCALE; // Scaled width of each tile
+        const TILE_HEIGHT = TILE_BASE_SIZE / FIELD_SCALE; // Scaled height of each tile
 
         // Setting up the array that represents the field
-        const WORLD_WIDTH_IN_SCREENS = 5;
-        const WORLD_HEIGHT_IN_SCREENS = 5;
-        const screenRows = Math.floor(canvas.height / tileHeight) + 2;
-        const screenCols = Math.floor(canvas.width / tileWidth) + 2;
+        const WORLD_WIDTH_IN_SCREENS = 5; // Number of screens wide the world is
+        const WORLD_HEIGHT_IN_SCREENS = 5; // Number of screens high the world is
+        const SCREEN_ROWS = Math.floor(canvas.height / TILE_HEIGHT) + 2; // +2 to cover edges
+        const SCREEN_COLUMNS = Math.floor(canvas.width / TILE_WIDTH) + 2; // +2 to cover edges
 
-        const rows = screenRows * WORLD_HEIGHT_IN_SCREENS;
-        const columns = screenCols * WORLD_WIDTH_IN_SCREENS;
+        const rows = SCREEN_ROWS * WORLD_HEIGHT_IN_SCREENS; // Total number of rows in the world
+        const columns = SCREEN_COLUMNS * WORLD_WIDTH_IN_SCREENS; // Total number of columns in the world
 
-        let field = [];
+        // World field dimensions
+        const worldPixelWidth = columns * TILE_WIDTH; // Total width of the world in pixels
+        const worldPixelHeight = rows * TILE_HEIGHT; // Total height of the world in pixels
+
+        let field = []; // 2D array representing the field tiles
 
         // --- Sprite setup ---
         const tractorSprite = new Image();
@@ -416,7 +423,9 @@
 
                 // Initialize the field array
                 console.log(`Initalizing world: ${columns}x${rows} tiles`);
-                field = Array.from({ length: rows }, () => new Array(columns).fill(2));
+                field = Array.from({ length: rows }, () => 
+                    Array.from({ length: columns }, () => {state: 2; growth: 0.0})
+                );
 
                 // Set initial position and draw
                 resetPosition();
@@ -518,13 +527,23 @@
 
             	UpdateNight();
         	});
+            currentWeek += weeks;
+            growCrops(weeks);   
+            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
         }
 
-        function growCrops() {
+        function growCrops(weeks) {
+            const daysToAdd = weeks * 7.0;
+
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    if (field[i][j] === 1) {
-                        field[i][j] = 2; // Seeded tile becomes wheat
+                    let tile = field[i][j];
+                    if (tile.state === 1) { // Seeded
+                        tile.growth += daysToAdd;
+                        if (tile.growth >= GROWTH_DAYS) {
+                            tile.state = 2; // Fully grown
+                            tile.growth = GROWTH_DAYS;
+                        }
                     }
                 }
             }
@@ -533,18 +552,23 @@
 
         // --- Draw the tractor sprite based on current direction ---
         function drawTractor() {
+            const screenX = tractorWorldX - cameraX;
+            const screenY = tractorWorldY - cameraY;
+
             const normalizedAngle = ((angle % 360) + 360) % 360;
             var angleInRadians = normalizedAngle * Math.PI / 180;
 
             // tractorsprite
             ctx.save();
-            ctx.translate(tractorScreenX + FRAME_WIDTH / 2, tractorScreenY + FRAME_HEIGHT / 2);
+            ctx.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);
             ctx.rotate(angleInRadians);
             ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
             ctx.restore();
 
             document.getElementById('debug').innerHTML = //debugging window
                 `World Position: (${Math.round(tractorWorldX)}, ${Math.round(tractorWorldY)})<br>` +
+                `Camera Position: (${Math.round(cameraX)}, ${Math.round(cameraY)})<br>` +
+                `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
                 `Angle: ${normalizedAngle}°<br>` +
                 `Direction: ${getDirectionName(angle)}<br>` +
                 `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
@@ -572,17 +596,17 @@
 
             // draw the entire field using camera coordinates
 
-            const startCol = Math.floor(cameraX / tileWidth);
-            const endCol = Math.min(columns, startCol + screenCols);
-            const startRow = Math.floor(cameraY / tileHeight);
-            const endRow = Math.min(rows, startRow + screenRows);
+            const startCol = Math.floor(cameraX / TILE_WIDTH);
+            const endCol = Math.min(columns, startCol + SCREEN_COLUMNS);
+            const startRow = Math.floor(cameraY / TILE_HEIGHT);
+            const endRow = Math.min(rows, startRow + SCREEN_ROWS);
             
             for (let i = startRow; i < endRow; i++) {
                 for (let j = startCol; j < endCol; j++) {
                     if (i < 0 || j < 0) continue; // skip negative indices
 
                     let dirtOrWheat = dirtImage;
-                    switch (field[i][j]) {
+                    switch (field[i][j].state) {
                         case 0:
                             dirtOrWheat = dirtImage;
                             break;
@@ -593,8 +617,8 @@
                             dirtOrWheat = wheatImage;
                             break;
                     }
-                    const tileWorldX = j * tileWidth;
-                    const tileWorldY = i * tileHeight;
+                    const tileWorldX = j * TILE_WIDTH;
+                    const tileWorldY = i * TILE_HEIGHT;
 
                     const tileScreenX = tileWorldX - cameraX;
                     const tileScreenY = tileWorldY - cameraY;
@@ -602,8 +626,8 @@
                     ctx.drawImage(dirtOrWheat, 0, 0, TILE_BASE_SIZE, TILE_BASE_SIZE,
                         Math.floor(tileScreenX),
                         Math.floor(tileScreenY),
-                        tileWidth,
-                        tileHeight);
+                        TILE_WIDTH,
+                        TILE_HEIGHT);
                 }
             }
         }
@@ -629,7 +653,7 @@
             let y = y0;
 
             for (let x = x0; x < x1; x++) {
-                changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+                changeTile(Math.floor(x / TILE_WIDTH), Math.floor(y / TILE_HEIGHT));
                 if (D > 0) {
                     y = y + yi;
                     D = D + (2 * (deltaY - deltaX));
@@ -653,7 +677,7 @@
             let x = x0;
 
             for (let y = y0; y < y1; y++) {
-                changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+                changeTile(Math.floor(x / TILE_WIDTH), Math.floor(y / TILE_HEIGHT));
                 if (D > 0) {
                     x = x + xi;
                     D = D + (2 * (deltaX - deltaY));
@@ -665,18 +689,23 @@
         // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
         function changeTile(x, y) {
             if (x >= 0 && x < columns && y >= 0 && y < rows) {
+                let tile = field[y][x];
+
                 if (isHarvestingOn) {
-                    if (field[y][x] === 2) {
-                        field[y][x] = 0;
+                    if (tile.state === 2) {
+                        tile.state = 0;
+                        tile.growth = 0.0;
                         yieldScore++;
                     }
-                    else if (field[y][x] === 1) {
-                        field[y][x] = 0;
+                    else if (tile.state === 1) {
+                        tile.state = 0;
+                        tile.growth = 0.0;
                     }
                 }
                 else if (isSeedingOn) {
-                    if (field[y][x] === 0) {
-                        field[y][x] = 1;
+                    if (tile.state === 0) {
+                        tile.state = 1;
+                        tile.growth = 0.0;
                         yieldScore++;
                     }
                 }
@@ -699,7 +728,7 @@
         function resetField() {
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
-                    field[i][j] = 2;
+                    field[i][j] = { state: 2, growth: 0.0};
                 }
             }
         }
@@ -725,9 +754,21 @@
                 DrawNight();
         }
 
+        // Updates camera position based on tractor position
+        function updateCamera () {
+            let targetCameraX = tractorWorldX - (canvas.width / 2);
+            let targetCameraY = tractorWorldY - (canvas.height / 2);
+
+            const maxCameraX = worldPixelWidth - canvas.width;
+            const maxCameraY = worldPixelHeight - canvas.height;
+
+            cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
+            cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
+
+        }
 
         function getDirectionName(angle) {
-            const normalizedAngle = ((angle % 360) + 450) % 360;
+            const normalizedAngle = ((angle % 360) + 450) % 360 - 90;
             if (normalizedAngle === 0) return "Right →";
             if (normalizedAngle === 90) return "Down ↓";
             if (normalizedAngle === 180) return "Left ←";
@@ -755,8 +796,9 @@
                         tractorWorldX += moveX * deltaTime;
                         tractorWorldY += moveY * deltaTime;
 
-                        cameraX = tractorWorldX - tractorScreenX;
-                        cameraY = tractorWorldY - tractorScreenY;
+                        // cameraX = tractorWorldX - tractorScreenX;
+                        // cameraY = tractorWorldY - tractorScreenY;
+                        updateCamera();
 
                         drawFieldAndTractor();
                         animationId = requestAnimationFrame(animate);
@@ -808,8 +850,9 @@
                         tractorWorldX += moveX * delta;
                         tractorWorldY += moveY * delta;
 
-                        cameraX = tractorWorldX - tractorScreenX;
-                        cameraY = tractorWorldY - tractorScreenY;
+                        // cameraX = tractorWorldX - tractorScreenX;
+                        // cameraY = tractorWorldY - tractorScreenY;
+                        updateCamera();
 
                     	drawFieldAndTractor();
                     	animationId = requestAnimationFrame(turn);
@@ -824,12 +867,13 @@
         function resetPosition() {
             if (!isInitialized) return;
 
-            tractorWorldX = (columns * tileWidth) / 2;
-            tractorWorldY = (rows * tileHeight) / 2;
+            tractorWorldX = (columns * TILE_WIDTH) / 2;
+            tractorWorldY = (rows * TILE_HEIGHT) / 2;
             angle = 0;
 
-            cameraX = tractorWorldX - tractorScreenX;
-            cameraY = tractorWorldY - tractorScreenY;
+            // cameraX = tractorWorldX - tractorScreenX;
+            // cameraY = tractorWorldY - tractorScreenY;
+            updateCamera();
 
             goalAngle = 0;
             isHarvestingOn = false;
