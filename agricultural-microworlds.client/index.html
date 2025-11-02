@@ -32,6 +32,8 @@
             border-left: 3px solid #ccc;
             padding: 20px;
             position: relative;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
 
         canvas {
@@ -81,7 +83,6 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 100%;
-            min-height: 60px;
             font-family: monospace;
             font-size: 12px;
         }
@@ -116,7 +117,7 @@
         <div id="canvasArea">
                         <p id="weekText">Week 1</p>
             <p id="scoreText">Yield: 0</p>
-            <canvas id="gameCanvas" width="600" height="600"></canvas>
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
 
 
 
@@ -839,15 +840,19 @@ loadStations();
 
         // Updates camera position based on tractor position
         function updateCamera () {
-            let targetCameraX = tractorWorldX - (canvas.width / 2);
-            let targetCameraY = tractorWorldY - (canvas.height / 2);
+            // Calculate the tractor's center point
+            let tractorCenterX = tractorWorldX + (FRAME_WIDTH / 2);
+            let tractorCenterY = tractorWorldY + (FRAME_HEIGHT / 2);
+
+            // Aim the camera so the tractor's center is at the screen's center
+            let targetCameraX = tractorCenterX - (canvas.width / 2);
+            let targetCameraY = tractorCenterY - (canvas.height / 2);
 
             const maxCameraX = worldPixelWidth - canvas.width;
             const maxCameraY = worldPixelHeight - canvas.height;
 
             cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
             cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
-
         }
 
         function getDirectionName(angle) {
