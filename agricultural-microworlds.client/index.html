@@ -301,6 +301,14 @@ loadStations();
                 "nextStatement": null,
                 "colour": 210,
                 "tooltip": "Wait for a certain number of weeks"
+            },
+            {
+                "type": "has_seed_in_front",
+                "message0": "has sprout in front",
+                "previousStatement": null,
+                "nextStatement": null,
+                "colour": 210,
+                "tooltip": "Checks if a planted tile is in front of the tractor."
             }
         ]);
 
@@ -393,7 +401,8 @@ loadStations();
                     "name": "Logic",
                     "colour": "#5b9dd5",
                     "contents": [
-                        { "kind": "block", "type": "logic_boolean" }
+                        { "kind": "block", "type": "logic_boolean" },
+                        { "kind": "block", "type": "has_seed_in_front" }
                     ]
                 },
                 {
