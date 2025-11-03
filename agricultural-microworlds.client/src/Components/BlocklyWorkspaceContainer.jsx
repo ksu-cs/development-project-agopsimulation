@@ -33,6 +33,7 @@ class BlocklyWorkspaceContainer extends React.Component {
       `}
         >
           <Block type="example" />
+          <Block type="move_forward"/>
         </BlocklyWorkspace>
       </>
     );

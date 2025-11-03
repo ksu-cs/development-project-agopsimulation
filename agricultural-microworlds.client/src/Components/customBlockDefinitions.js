@@ -1,5 +1,6 @@
 import * as Blockly from "blockly/core";
 
+//#region examples
 var example = {
   type: "example", //type name that is used in blockly system
   message0: "turn harvesting off", // message on the block
@@ -39,3 +40,27 @@ Blockly.Blocks["args_example"] = {
     this.setStyle("loop_blocks");
   },
 };
+//#endregion
+
+//#region movement
+var moveForward = {
+  type: "move_forward",
+  message0: "move forward for %1 seconds",
+  args0: [
+    {
+      type: "input_value",
+      name: "DURATION",
+      check: "Number",
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  colour: 160,
+  tooltip: "Move forward for specified seconds",
+};
+Blockly.Blocks["move_forward"] = {
+  init: function () {
+    this.jsonInit(moveForward);
+    },
+};
+//#endregion
