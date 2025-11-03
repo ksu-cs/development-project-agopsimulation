@@ -1,5 +1,5 @@
 tmin and t max
-(Tmax + Tmin)/2 - Tbase = (30+0)/2 - 10 = 5
+(Tmax + Tmin)/2 - Tbase = (30+0)/2 - 10 = 5 -- this is average
 GLobalcurentday(startnull),reset make null again
 
 
