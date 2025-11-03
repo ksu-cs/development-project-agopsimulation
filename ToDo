@@ -7,7 +7,7 @@ delete static end
 have start
 get weeks/default=1
 calc end
-calc gdds*7/week
+calc gdds*7/week growth ammount each week = sum of each day for 7 days
 start->end
 
 Handle multiple waitxweeks
