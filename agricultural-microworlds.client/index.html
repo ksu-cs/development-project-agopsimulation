@@ -777,7 +777,9 @@ loadStations();
                 }
                 else D = D + 2 * deltaY;
 
-                hasChecked = hasChecked || checkTiles < 0 || (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows && field[tileX, tileY].state == checkTiles);
+                let tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY, tileX] : null;
+                console.log("tile state:" + tile.state);
+                hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
 
             return hasChecked;
@@ -809,7 +811,9 @@ loadStations();
                 }
                 else D = D + 2 * deltaX;
 
-                hasChecked = hasChecked || checkTiles < 0 || (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows && field[tileX, tileY].state == checkTiles);
+                let tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY, tileX] : null;
+                console.log("tile state:" + tile.state);
+                hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
 
             return hasChecked;
