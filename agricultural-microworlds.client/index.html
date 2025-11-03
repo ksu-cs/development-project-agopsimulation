@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>AGsim</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+
     <style>
         html, body {
             height: 100%;
@@ -193,7 +194,7 @@ loadStations();
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 160,
+                "style": "movement_blocks",
                 "tooltip": "Move forward for specified seconds"
             },
             {
@@ -201,7 +202,7 @@ loadStations();
                 "message0": "turn left",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 210,
+                "style": "movement_blocks",
                 "tooltip": "Turn the tractor left"
             },
             {
@@ -209,7 +210,7 @@ loadStations();
                 "message0": "turn right",
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 210,
+                "style": "movement_blocks",
                 "tooltip": "Turn the tractor right"
             },
             {
@@ -224,7 +225,7 @@ loadStations();
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 210,
+                "style": "movement_blocks",
                 "tooltip": "Turn the tractor a certain amount of degrees left"
             },
             {
@@ -239,28 +240,28 @@ loadStations();
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 210,
+                "style": "movement_blocks",
                 "tooltip": "Turn the tractor a certain amount of degrees right"
             },
-            {
-                "type": "math_number",
-                "message0": "%1",
-                "args0": [
-                    {
-                        "type": "field_number",
-                        "name": "NUM",
-                        "value": 1
-                    }
-                ],
-                "output": "Number",
-                "colour": 230
-            },
+            // {
+            //     "type": "math_number",
+            //     "message0": "%1",
+            //     "args0": [
+            //         {
+            //             "type": "field_number",
+            //             "name": "NUM",
+            //             "value": 1
+            //         }
+            //     ],
+            //     "output": "Number",
+            //     "style": "numbers_blocks",
+            // },
             {
                 "type": "turn_harvesting_on",
                 "message0": "turn harvesting on",
                 "previousStatement": null,
                 "nextStatement": null,
-                colour: 210,
+                "style": "control_blocks",
                 tooltip: "Turns harvesting on tractor on"
             },
             {
@@ -268,7 +269,7 @@ loadStations();
                 "message0": "turn harvesting off",
                 "previousStatement": null,
                 "nextStatement": null,
-                colour: 210,
+                "style": "control_blocks",
                 tooltip: "Turns harvesting on tractor off"
             },
             {
@@ -276,7 +277,7 @@ loadStations();
                 "message0": "turn seeding on",
                 "previousStatement": null,
                 "nextStatement": null,
-                colour: 210,
+                "style": "control_blocks",
                 tooltip: "Turns seeding on tractor on"
             },
             {
@@ -284,7 +285,7 @@ loadStations();
                 "message0": "turn seeding off",
                 "previousStatement": null,
                 "nextStatement": null,
-                colour: 210,
+                "style": "control_blocks",
                 tooltip: "Turns seeding on tractor off"
             },
             {
@@ -299,7 +300,7 @@ loadStations();
                 ],
                 "previousStatement": null,
                 "nextStatement": null,
-                "colour": 210,
+                "style": "control_blocks",
                 "tooltip": "Wait for a certain number of weeks"
             }
         ]);
@@ -344,11 +345,43 @@ loadStations();
             return `await waitXWeeks(${weeks});\n`;
         };
 
-        Blockly.JavaScript.forBlock['math_number'] = function (block) {
-            const number = block.getFieldValue('NUM');
-            return [number, Blockly.JavaScript.ORDER_ATOMIC];
-        };
+        // Blockly.JavaScript.forBlock['math_number'] = function (block) {
+        //     const number = block.getFieldValue('NUM');
+        //     return [number, Blockly.JavaScript.ORDER_ATOMIC];
+        // };
 
+        // Custom theme for blocks
+        const myTheme = Blockly.Theme.defineTheme('myTheme', {
+            // 'base': Blockly.Themes.Classic,
+            'categoryStyles': {
+                'movement_category': {'colour': "230"},
+                'numbers_category': {'colour': "300"},
+                'control_category': {'colour': "190" },
+                'logic_category': {'colour': "135" },
+                'loops_category': {'colour': "60"  }
+            },
+            'blockStyles': {
+                // Movement Blocks
+                'movement_blocks': { 'colourPrimary' : "230"},
+
+                // Style for all blocks in the "Numbers" category
+                // 'numbers_blocks': { 'colourPrimary': "300" },
+
+                // Style for all blocks in the "Control" category
+                'control_blocks': { 'colourPrimary': "190" },
+                
+                // Style for all blocks in the "Logic" category
+                'logic_blocks': { 'colourPrimary': "135" },
+                
+                // Style for all blocks in the "Loops" category
+                'loop_blocks': { 'colourPrimary': "60" },
+
+                'math_blocks': { 'colorPrimary': "300"}
+
+            },
+            'componentStyles': {}
+        })
+        
         // Toolbox definition
         const toolbox = {
             "kind": "categoryToolbox",
@@ -356,7 +389,7 @@ loadStations();
                 {
                     "kind": "category",
                     "name": "Movement",
-                    "colour": "#5b67a5",
+                    "categorystyle": "movement_category",
                     "contents": [
                         { "kind": "block", "type": "move_forward" },
                         { "kind": "block", "type": "turn_left" },
@@ -368,7 +401,7 @@ loadStations();
                 {
                     "kind": "category",
                     "name": "Numbers",
-                    "colour": "#5b9aa5",
+                    "categorystyle": "numbers_category",
                     "contents": [
                         { "kind": "block", "type": "math_number" },
                         { "kind": "block", "type": "math_random_int" }
@@ -376,11 +409,8 @@ loadStations();
                 }, {
                     "kind": "category",
                     "name": "Control",
-                    "colour": "#5b12a5",
+                    "categorystyle": "control_category",
                     "contents": [
-                        {
-                            "kind": "block", "type": "controls_if"
-                        },
                         { "kind": "block", "type": "turn_harvesting_on" },
                         { "kind": "block", "type": "turn_harvesting_off" },
                         { "kind": "block", "type": "turn_seeding_on" },
@@ -391,15 +421,16 @@ loadStations();
                 {
                     "kind": "category",
                     "name": "Logic",
-                    "colour": "#5b9dd5",
+                    "categorystyle": "logic_category",
                     "contents": [
+                        { "kind": "block", "type": "controls_if" },
                         { "kind": "block", "type": "logic_boolean" }
                     ]
                 },
                 {
                     "kind": "category",
                     "name": "Loops",
-                    "colour": "#5a1dd5",
+                    "categorystyle": "loops_category",
                     "contents": [
                         { "kind": "block", "type": "controls_repeat_ext" },
                         { "kind": "block", "type": "controls_whileUntil" }
@@ -412,7 +443,8 @@ loadStations();
         // Inject Blockly
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: toolbox,
-            trashcan: true
+            trashcan: true,
+            theme: myTheme
         });
 
         // Canvas and movement code
