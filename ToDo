@@ -11,3 +11,4 @@ calc gdds*7/week growth ammount each week = sum of each day for 7 days
 start->end
 
 Handle multiple waitxweeks
+reset button resets weeks
