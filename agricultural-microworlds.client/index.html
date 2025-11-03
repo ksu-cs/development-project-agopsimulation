@@ -351,7 +351,9 @@ loadStations();
             return `await waitXWeeks(${weeks});\n`;
         };
         Blockly.JavaScript.forBlock['has_seed_in_front'] = function (block) {
-            return [CheckIfPlantInFront(), Blockly.JavaScript.ORDER_ATOMIC];
+            var result = CheckIfPlantInFront();
+            console.log("Has crops:" + result);
+            return [result, Blockly.JavaScript.ORDER_ATOMIC];
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -636,13 +638,13 @@ loadStations();
 
             const corners = [
                 rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
-                rotatePoint(topRight.x * 2, topRight.y, angle, center.x, center.y), //topRight
-                rotatePoint(bottomRight.x * 2, bottomRight.y, angle, center.x, center.y), // bottomRight
+                rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+                rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
                 rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
             ];
 
             const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
-            return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, 1);
+            return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, 2);
         }
 
         function growCrops(weeks) {
