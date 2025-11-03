@@ -1,0 +1,13 @@
+tmin and t max
+(Tmax + Tmin)/2 - Tbase = (30+0)/2 - 10 = 5
+GLobalcurentday(startnull),reset make null again
+
+
+delete static end
+have start
+get weeks/default=1
+calc end
+calc gdds*7/week
+start->end
+
+Handle multiple waitxweeks
