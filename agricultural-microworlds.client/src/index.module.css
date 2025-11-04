@@ -69,7 +69,7 @@ canvas {
   padding: 20px;
 }
 
-.blocklyDivContainer{
+.blocklyContainer{
   flex: 1;
   flex-grow: 1;
 }

@@ -37,7 +37,7 @@ class BlocklyWorkspace extends React.Component {
 
     return (
       <React.Fragment>
-        <div ref={this.blocklyDiv} className={styles.blocklyDivContainer}>
+        <div ref={this.blocklyDiv} className={styles.blocklyContainer}>
           <xml
             xmlns="https://developers.google.com/blockly/xml"
             is="blockly"
