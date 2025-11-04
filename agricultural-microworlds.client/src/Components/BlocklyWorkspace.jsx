@@ -10,18 +10,44 @@ class BlocklyWorkspace extends React.Component {
     this.toolbox = React.createRef();
   }
 
-  componentDidMount() {
-    // eslint-disable-next-line no-unused-vars
-    const { initialXml, children, ...rest } = this.props;
-    this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
-      toolbox: this.toolbox.current,
-      ...rest,
-    });
-
-    if (initialXml) {
-      this.setXml(initialXml);
+    componentDidMount() {
+        this.initBlockly();
     }
-  }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.toolbox !== prevProps.toolbox) {
+            this.disposeWorkspace();
+            this.initBlockly();
+        }
+    }
+
+    componentWillUnmount() {
+        this.disposeWorkspace();
+    }
+
+
+    initBlockly() {
+        if (this.primaryWorkspace) return;
+
+        // eslint-disable-next-line no-unused-vars
+        const { initialXml, toolbox, ...rest } = this.props;
+        this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
+            toolbox: toolbox,
+            trashcan: true,
+            ...rest,
+        });
+
+        if (initialXml) {
+            this.setXml(initialXml);
+        }
+    }
+
+    disposeWorkspace() {
+        if (this.primaryWorkspace) {
+            this.primaryWorkspace.dispose();
+            this.primaryWorkspace = null;
+        }
+    }
 
   get workspace() {
     return this.primaryWorkspace;
@@ -33,20 +59,9 @@ class BlocklyWorkspace extends React.Component {
   }
 
   render() {
-    const { children } = this.props;
-
     return (
       <React.Fragment>
-        <div ref={this.blocklyDiv} className={styles.blocklyContainer}>
-          <xml
-            xmlns="https://developers.google.com/blockly/xml"
-            is="blockly"
-            style={{ display: "none" }}
-            ref={this.toolbox}
-          >
-            {children}
-          </xml>
-        </div>
+        <div ref={this.blocklyDiv} className={styles.blocklyContainer}/>
       </React.Fragment>
     );
   }

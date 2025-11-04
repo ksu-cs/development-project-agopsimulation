@@ -9,7 +9,7 @@ class App extends React.Component {
     return (
       <React.Fragment>
         <div className={styles.container}>
-          <BlocklyWorkspaceContainer />
+                <BlocklyWorkspaceContainer />
           <SimulationCanvasContainer />
         </div>
       </React.Fragment>

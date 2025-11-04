@@ -1,294 +1,289 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <title>AGsim</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <style>
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div id="root" styles="margin: 0px, padding: 0px"></div>
     <script type="module" src="/src/main.jsx"></script>
-  </body>
-  <script>
-      // Define custom blocks
-      Blockly.defineBlocksWithJsonArray([
-        {
-          type: "move_forward",
-          message0: "move forward for %1 seconds",
-          args0: [
-            {
-              type: "input_value",
-              name: "DURATION",
-              check: "Number",
-            },
-          ],
-          previousStatement: null,
-          nextStatement: null,
-          colour: 160,
-          tooltip: "Move forward for specified seconds",
-        },
-        {
-          type: "turn_left",
-          message0: "turn left",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turn the tractor left",
-        },
-        {
-          type: "turn_right",
-          message0: "turn right",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turn the tractor right",
-        },
-        {
-          type: "turn_left_x_degrees",
-          message0: "Turn %1 degrees left",
-          args0: [
-            {
-              type: "input_value",
-              name: "DEGREES",
-              check: "Number",
-            },
-          ],
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turn the tractor a certain amount of degrees left",
-        },
-        {
-          type: "turn_right_x_degrees",
-          message0: "Turn %1 degrees right",
-          args0: [
-            {
-              type: "input_value",
-              name: "DEGREES",
-              check: "Number",
-            },
-          ],
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turn the tractor a certain amount of degrees right",
-        },
-        {
-          type: "math_number",
-          message0: "%1",
-          args0: [
-            {
-              type: "field_number",
-              name: "NUM",
-              value: 1,
-            },
-          ],
-          output: "Number",
-          colour: 230,
-        },
-        {
-          type: "turn_harvesting_on",
-          message0: "turn harvesting on",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turns harvesting on tractor on",
-        },
-        {
-          type: "turn_harvesting_off",
-          message0: "turn harvesting off",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turns harvesting on tractor off",
-        },
-        {
-          type: "turn_seeding_on",
-          message0: "turn seeding on",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turns seeding on tractor on",
-        },
-        {
-          type: "turn_seeding_off",
-          message0: "turn seeding off",
-          previousStatement: null,
-          nextStatement: null,
-          colour: 210,
-          tooltip: "Turns seeding on tractor off",
-        },
-      ]);
-
-      // Define JavaScript generators
-      Blockly.JavaScript.forBlock["move_forward"] = function (block) {
-        const duration =
-          Blockly.JavaScript.valueToCode(
-            block,
-            "DURATION",
-            Blockly.JavaScript.ORDER_ATOMIC,
-          ) || "1";
-        return `await moveForward(${duration});\n`;
-      };
-
-      Blockly.JavaScript.forBlock["turn_left"] = function (block) {
-        return "turnLeft();\n";
-      };
-
-      Blockly.JavaScript.forBlock["turn_right"] = function (block) {
-        return "turnRight();\n";
-      };
-
-      Blockly.JavaScript.forBlock["turn_left_x_degrees"] = function (block) {
-        const amount =
-          Blockly.JavaScript.valueToCode(
-            block,
-            "DEGREES",
-            Blockly.JavaScript.ORDER_ATOMIC,
-          ) || "1";
-        return `await TurnXLeft(${amount});\n`;
-      };
-
-      Blockly.JavaScript.forBlock["turn_right_x_degrees"] = function (block) {
-        const amount =
-          Blockly.JavaScript.valueToCode(
-            block,
-            "DEGREES",
-            Blockly.JavaScript.ORDER_ATOMIC,
-          ) || "1";
-        return `await TurnXRight(${amount});\n`;
-      };
-      Blockly.JavaScript.forBlock["turn_harvesting_on"] = function (block) {
-        return "turnHarvestingOn();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_harvesting_off"] = function (block) {
-        return "turnHarvestingOff();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_seeding_on"] = function (block) {
-        return "turnSeedingOn();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_seeding_off"] = function (block) {
-        return "turnSeedingOff();\n";
-      };
-
-      Blockly.JavaScript.forBlock["math_number"] = function (block) {
-        const number = block.getFieldValue("NUM");
-        return [number, Blockly.JavaScript.ORDER_ATOMIC];
-      };
-
-      // Toolbox definition
-      const toolbox = {
-        kind: "categoryToolbox",
-        contents: [
+</body>
+<!--<script>
+    // Define custom blocks
+    Blockly.defineBlocksWithJsonArray([
+      {
+        type: "move_forward",
+        message0: "move forward for %1 seconds",
+        args0: [
           {
-            kind: "category",
-            name: "Movement",
-            colour: "#5b67a5",
-            contents: [
-              { kind: "block", type: "move_forward" },
-              { kind: "block", type: "turn_left" },
-              { kind: "block", type: "turn_right" },
-              { kind: "block", type: "turn_left_x_degrees" },
-              { kind: "block", type: "turn_right_x_degrees" },
-            ],
-          },
-          {
-            kind: "category",
-            name: "Numbers",
-            colour: "#5b9aa5",
-            contents: [
-              { kind: "block", type: "math_number" },
-              { kind: "block", type: "math_random_int" },
-            ],
-          },
-          {
-            kind: "category",
-            name: "Control",
-            colour: "#5b12a5",
-            contents: [
-              {
-                kind: "block",
-                type: "controls_if",
-              },
-              { kind: "block", type: "turn_harvesting_on" },
-              { kind: "block", type: "turn_harvesting_off" },
-              { kind: "block", type: "turn_seeding_on" },
-              { kind: "block", type: "turn_seeding_off" },
-            ],
-          },
-          {
-            kind: "category",
-            name: "Logic",
-            colour: "#5b9dd5",
-            contents: [{ kind: "block", type: "logic_boolean" }],
-          },
-          {
-            kind: "category",
-            name: "Loops",
-            colour: "#5a1dd5",
-            contents: [
-              { kind: "block", type: "controls_repeat_ext" },
-              { kind: "block", type: "controls_whileUntil" },
-            ],
+            type: "input_value",
+            name: "DURATION",
+            check: "Number",
           },
         ],
-      };
+        previousStatement: null,
+        nextStatement: null,
+        colour: 160,
+        tooltip: "Move forward for specified seconds",
+      },
+      {
+        type: "turn_left",
+        message0: "turn left",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turn the tractor left",
+      },
+      {
+        type: "turn_right",
+        message0: "turn right",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turn the tractor right",
+      },
+      {
+        type: "turn_left_x_degrees",
+        message0: "Turn %1 degrees left",
+        args0: [
+          {
+            type: "input_value",
+            name: "DEGREES",
+            check: "Number",
+          },
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turn the tractor a certain amount of degrees left",
+      },
+      {
+        type: "turn_right_x_degrees",
+        message0: "Turn %1 degrees right",
+        args0: [
+          {
+            type: "input_value",
+            name: "DEGREES",
+            check: "Number",
+          },
+        ],
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turn the tractor a certain amount of degrees right",
+      },
+      {
+        type: "math_number",
+        message0: "%1",
+        args0: [
+          {
+            type: "field_number",
+            name: "NUM",
+            value: 1,
+          },
+        ],
+        output: "Number",
+        colour: 230,
+      },
+      {
+        type: "turn_harvesting_on",
+        message0: "turn harvesting on",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turns harvesting on tractor on",
+      },
+      {
+        type: "turn_harvesting_off",
+        message0: "turn harvesting off",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turns harvesting on tractor off",
+      },
+      {
+        type: "turn_seeding_on",
+        message0: "turn seeding on",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turns seeding on tractor on",
+      },
+      {
+        type: "turn_seeding_off",
+        message0: "turn seeding off",
+        previousStatement: null,
+        nextStatement: null,
+        colour: 210,
+        tooltip: "Turns seeding on tractor off",
+      },
+    ]);
 
-      // Inject Blockly
-      const workspace = Blockly.inject("blocklyDiv", {
-        toolbox: toolbox,
-        trashcan: true,
-      });
+    // Define JavaScript generators
+    Blockly.JavaScript.forBlock["move_forward"] = function (block) {
+      const duration =
+        Blockly.JavaScript.valueToCode(
+          block,
+          "DURATION",
+          Blockly.JavaScript.ORDER_ATOMIC,
+        ) || "1";
+      return `await moveForward(${duration});\n`;
+    };
 
-      document
-        .getElementById("runButton")
-        .addEventListener("click", async function () {
-          const runButton = document.getElementById("runButton");
-          runButton.disabled = true;
+    Blockly.JavaScript.forBlock["turn_left"] = function (block) {
+      return "turnLeft();\n";
+    };
 
-          isMoving = true;
+    Blockly.JavaScript.forBlock["turn_right"] = function (block) {
+      return "turnRight();\n";
+    };
 
-          const allBlocks = workspace.getAllBlocks(false);
+    Blockly.JavaScript.forBlock["turn_left_x_degrees"] = function (block) {
+      const amount =
+        Blockly.JavaScript.valueToCode(
+          block,
+          "DEGREES",
+          Blockly.JavaScript.ORDER_ATOMIC,
+        ) || "1";
+      return `await TurnXLeft(${amount});\n`;
+    };
 
-          if (allBlocks.length > 0) {
-            const code = Blockly.JavaScript.workspaceToCode(workspace);
+    Blockly.JavaScript.forBlock["turn_right_x_degrees"] = function (block) {
+      const amount =
+        Blockly.JavaScript.valueToCode(
+          block,
+          "DEGREES",
+          Blockly.JavaScript.ORDER_ATOMIC,
+        ) || "1";
+      return `await TurnXRight(${amount});\n`;
+    };
+    Blockly.JavaScript.forBlock["turn_harvesting_on"] = function (block) {
+      return "turnHarvestingOn();\n";
+    };
+    Blockly.JavaScript.forBlock["turn_harvesting_off"] = function (block) {
+      return "turnHarvestingOff();\n";
+    };
+    Blockly.JavaScript.forBlock["turn_seeding_on"] = function (block) {
+      return "turnSeedingOn();\n";
+    };
+    Blockly.JavaScript.forBlock["turn_seeding_off"] = function (block) {
+      return "turnSeedingOff();\n";
+    };
 
-            if (code.trim()) {
-              try {
-                // Wrap the code in an async function and execute
-                const asyncCode = `(async function() { ${code} })()`;
-                await eval(asyncCode);
-              } catch (e) {
-                console.error("ERROR:", e);
-              }
+    Blockly.JavaScript.forBlock["math_number"] = function (block) {
+      const number = block.getFieldValue("NUM");
+      return [number, Blockly.JavaScript.ORDER_ATOMIC];
+    };
+
+    // Toolbox definition
+    const toolbox = {
+      kind: "categoryToolbox",
+      contents: [
+        {
+          kind: "category",
+          name: "Movement",
+          colour: "#5b67a5",
+          contents: [
+            { kind: "block", type: "move_forward" },
+            { kind: "block", type: "turn_left" },
+            { kind: "block", type: "turn_right" },
+            { kind: "block", type: "turn_left_x_degrees" },
+            { kind: "block", type: "turn_right_x_degrees" },
+          ],
+        },
+        {
+          kind: "category",
+          name: "Numbers",
+          colour: "#5b9aa5",
+          contents: [
+            { kind: "block", type: "math_number" },
+            { kind: "block", type: "math_random_int" },
+          ],
+        },
+        {
+          kind: "category",
+          name: "Control",
+          colour: "#5b12a5",
+          contents: [
+            {
+              kind: "block",
+              type: "controls_if",
+            },
+            { kind: "block", type: "turn_harvesting_on" },
+            { kind: "block", type: "turn_harvesting_off" },
+            { kind: "block", type: "turn_seeding_on" },
+            { kind: "block", type: "turn_seeding_off" },
+          ],
+        },
+        {
+          kind: "category",
+          name: "Logic",
+          colour: "#5b9dd5",
+          contents: [{ kind: "block", type: "logic_boolean" }],
+        },
+        {
+          kind: "category",
+          name: "Loops",
+          colour: "#5a1dd5",
+          contents: [
+            { kind: "block", type: "controls_repeat_ext" },
+            { kind: "block", type: "controls_whileUntil" },
+          ],
+        },
+      ],
+    };
+
+    // Inject Blockly
+    const workspace = Blockly.inject("blocklyDiv", {
+      toolbox: toolbox,
+      trashcan: true,
+    });
+
+    document
+      .getElementById("runButton")
+      .addEventListener("click", async function () {
+        const runButton = document.getElementById("runButton");
+        runButton.disabled = true;
+
+        isMoving = true;
+
+        const allBlocks = workspace.getAllBlocks(false);
+
+        if (allBlocks.length > 0) {
+          const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+          if (code.trim()) {
+            try {
+              // Wrap the code in an async function and execute
+              const asyncCode = `(async function() { ${code} })()`;
+              await eval(asyncCode);
+            } catch (e) {
+              console.error("ERROR:", e);
             }
           }
-          isMoving = false;
-          runButton.disabled = false;
-        });
+        }
+        isMoving = false;
+        runButton.disabled = false;
+      });
 
-      // Stop button
-      document
-        .getElementById("stopButton")
-        .addEventListener("click", function () {
-          stopMovement();
-          runButton.disabled = false;
-        });
+    // Stop button
+    document
+      .getElementById("stopButton")
+      .addEventListener("click", function () {
+        stopMovement();
+        runButton.disabled = false;
+      });
 
-      // Reset button
-      document
-        .getElementById("resetButton")
-        .addEventListener("click", function () {
-          stopMovement();
-          resetPosition();
-          runButton.disabled = false;
-        });
-    </script>
+    // Reset button
+    document
+      .getElementById("resetButton")
+      .addEventListener("click", function () {
+        stopMovement();
+        resetPosition();
+        runButton.disabled = false;
+      });
+  </script>-->
 </html>
-
-<!--
-
-    
--->
