@@ -389,7 +389,4 @@ export default class simulationMethods {
       this.animationId = -1;
     }
   }
-
-  // Initial draw
-  //if (imageLoadCount === imageCount) drawFieldAndTractor();
 }

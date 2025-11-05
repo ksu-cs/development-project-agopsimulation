@@ -1,6 +1,6 @@
 import * as React from "react";
+import { javascriptGenerator } from "blockly/javascript";
 import styles from "../index.module.css";
-import * as Blockly from "blockly";
 import simulationMethods from "../simulationMethods";
 
 class SimulationCanvasContainer extends React.Component {
@@ -8,7 +8,7 @@ class SimulationCanvasContainer extends React.Component {
     super(props);
     this.simulation = new simulationMethods(); 
   }
-
+//#region button OnClick methods
   async runButtonOnClick() {
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
@@ -20,7 +20,7 @@ class SimulationCanvasContainer extends React.Component {
     const allBlocks = workspace.getAllBlocks(false);
 
     if (allBlocks.length > 0) {
-      const code = Blockly.JavaScript.workspaceToCode(workspace);
+      const code = javascriptGenerator.workspaceToCode(workspace);
 
       if (code.trim()) {
         try {
@@ -46,13 +46,47 @@ class SimulationCanvasContainer extends React.Component {
     this.simulation.resetPosition();
     document.getElementById("runButton").runButton.disabled = false;
   }
+  //#endregion
+
+//#region exported canvas altering methods
+ moveForward(duration){
+  this.simulation.moveForward(duration);
+ }
+ turnLeft(){
+  this.simulation.turnLeft();
+ }
+ turnRight() {
+    this.simulation.turnRight();
+  }
+
+  TurnXLeft(amount) {
+    this.simulation.TurnXLeft(amount);
+  }
+
+  TurnXRight(amount) {
+    this.simulation.TurnXRight(amount);
+  }
+  turnHarvestingOn() {
+    this.simulation.turnHarvestingOn();
+  }
+  turnHarvestingOff() {
+    this.simulation.turnHarvestingOff();
+  }
+  turnSeedingOn() {
+    this.simulation.turnSeedingOn();
+  }
+  turnSeedingOff() {
+    this.simulation.turnSeedingOff();
+  }
+//#endregion
 
   render() {
+    this.simulation.drawFieldAndTractor();
     return (
       <React.Fragment>
         <div className={styles.canvasArea}>
           <p className={styles.scoreText}>Yield: 0</p>
-          <canvas className={styles.gameCanvas} />
+          <canvas id="gameCanvas" className={styles.gameCanvas} />
           <button
             onClick={this.runButtonOnClick}
             id="runButton"
