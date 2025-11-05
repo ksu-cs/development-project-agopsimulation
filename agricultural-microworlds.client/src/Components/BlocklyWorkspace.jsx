@@ -1,7 +1,7 @@
 import React from "react";
 import * as Blockly from "blockly";
 import "blockly/blocks";
-import styles from '../index.module.css';
+import styles from "../index.module.css";
 
 class BlocklyWorkspace extends React.Component {
   constructor(props) {
@@ -10,44 +10,42 @@ class BlocklyWorkspace extends React.Component {
     this.toolbox = React.createRef();
   }
 
-    componentDidMount() {
-        this.initBlockly();
+  componentDidMount() {
+    this.initBlockly();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.toolbox !== prevProps.toolbox) {
+      this.disposeWorkspace();
+      this.initBlockly();
     }
+  }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.toolbox !== prevProps.toolbox) {
-            this.disposeWorkspace();
-            this.initBlockly();
-        }
+  componentWillUnmount() {
+    this.disposeWorkspace();
+  }
+
+  initBlockly() {
+    if (this.primaryWorkspace) return;
+
+    const { initialXml, toolbox, ...rest } = this.props;
+    this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
+      toolbox: toolbox,
+      trashcan: true,
+      ...rest,
+    });
+
+    if (initialXml) {
+      this.setXml(initialXml);
     }
+  }
 
-    componentWillUnmount() {
-        this.disposeWorkspace();
+  disposeWorkspace() {
+    if (this.primaryWorkspace) {
+      this.primaryWorkspace.dispose();
+      this.primaryWorkspace = null;
     }
-
-
-    initBlockly() {
-        if (this.primaryWorkspace) return;
-
-        // eslint-disable-next-line no-unused-vars
-        const { initialXml, toolbox, ...rest } = this.props;
-        this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
-            toolbox: toolbox,
-            trashcan: true,
-            ...rest,
-        });
-
-        if (initialXml) {
-            this.setXml(initialXml);
-        }
-    }
-
-    disposeWorkspace() {
-        if (this.primaryWorkspace) {
-            this.primaryWorkspace.dispose();
-            this.primaryWorkspace = null;
-        }
-    }
+  }
 
   get workspace() {
     return this.primaryWorkspace;
@@ -61,7 +59,7 @@ class BlocklyWorkspace extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div ref={this.blocklyDiv} className={styles.blocklyContainer}/>
+        <div ref={this.blocklyDiv} className={styles.blocklyContainer} />
       </React.Fragment>
     );
   }

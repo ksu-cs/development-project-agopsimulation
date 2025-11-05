@@ -2,14 +2,14 @@ import React from "react";
 import "./App.css";
 import BlocklyWorkspaceContainer from "./Components/BlocklyWorkspaceContainer";
 import SimulationCanvasContainer from "./Components/SimulationCanvasContainer";
-import styles from './index.module.css';
+import styles from "./index.module.css";
 
 class App extends React.Component {
   render() {
     return (
       <React.Fragment>
         <div className={styles.container}>
-                <BlocklyWorkspaceContainer />
+          <BlocklyWorkspaceContainer />
           <SimulationCanvasContainer />
         </div>
       </React.Fragment>

@@ -14,12 +14,11 @@ function exampleFunction() {
 }
 
 Blockly.JavaScript["move_forward"] = function (block) {
-    const duration =
-        Blockly.JavaScript.valueToCode(
-            block,
-            "DURATION",
-            Blockly.JavaScript.ORDER_ATOMIC,
-        ) || "1";
-    return `await jsMethods.moveForward(${duration});\n`;
+  const duration =
+    Blockly.JavaScript.valueToCode(
+      block,
+      "DURATION",
+      Blockly.JavaScript.ORDER_ATOMIC,
+    ) || "1";
+  return `await jsMethods.moveForward(${duration});\n`;
 };
-

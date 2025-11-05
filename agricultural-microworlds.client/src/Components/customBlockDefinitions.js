@@ -61,152 +61,152 @@ var moveForward = {
 Blockly.Blocks["move_forward"] = {
   init: function () {
     this.jsonInit(moveForward);
-    },
+  },
 };
 
 var turnLeft = {
-    type: "turn_left",
-    message0: "turn left",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turn the tractor left",
+  type: "turn_left",
+  message0: "turn left",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turn the tractor left",
 };
 Blockly.Blocks["turn_left"] = {
-    init: function () {
-        this.jsonInit(turnLeft);
-    }
+  init: function () {
+    this.jsonInit(turnLeft);
+  },
 };
 
 var turnRight = {
-    type: "turn_right",
-    message0: "turn right",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turn the tractor right",
+  type: "turn_right",
+  message0: "turn right",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turn the tractor right",
 };
 Blockly.Blocks["turn_right"] = {
-    init: function () {
-        this.jsonInit(turnRight);
-    }
+  init: function () {
+    this.jsonInit(turnRight);
+  },
 };
 
 var turnLeftXDegrees = {
-    type: "turn_left_x_degrees",
-    message0: "Turn %1 degrees left",
-    args0: [
-        {
-            type: "input_value",
-            name: "DEGREES",
-            check: "Number",
-        },
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turn the tractor a certain amount of degrees left",
+  type: "turn_left_x_degrees",
+  message0: "Turn %1 degrees left",
+  args0: [
+    {
+      type: "input_value",
+      name: "DEGREES",
+      check: "Number",
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turn the tractor a certain amount of degrees left",
 };
 Blockly.Blocks["turn_left_x_degrees"] = {
-    init: function () {
-        this.jsonInit(turnLeftXDegrees);
-    }
+  init: function () {
+    this.jsonInit(turnLeftXDegrees);
+  },
 };
 
 var turnRightXDegrees = {
-    type: "turn_right_x_degrees",
-    message0: "Turn %1 degrees right",
-    args0: [
-        {
-            type: "input_value",
-            name: "DEGREES",
-            check: "Number",
-        },
-    ],
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turn the tractor a certain amount of degrees right",
+  type: "turn_right_x_degrees",
+  message0: "Turn %1 degrees right",
+  args0: [
+    {
+      type: "input_value",
+      name: "DEGREES",
+      check: "Number",
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turn the tractor a certain amount of degrees right",
 };
 Blockly.Blocks["turn_right_x_degrees"] = {
-    init: function () {
-        this.jsonInit(turnRightXDegrees);
-    }
+  init: function () {
+    this.jsonInit(turnRightXDegrees);
+  },
 };
 
 var mathNumber = {
-    type: "math_number",
-    message0: "%1",
-    args0: [
-        {
-            type: "field_number",
-            name: "NUM",
-            value: 1,
-        },
-    ],
-    output: "Number",
-    colour: 230,
+  type: "math_number",
+  message0: "%1",
+  args0: [
+    {
+      type: "field_number",
+      name: "NUM",
+      value: 1,
+    },
+  ],
+  output: "Number",
+  colour: 230,
 };
 Blockly.Blocks["math_number"] = {
-    init: function () {
-        this.jsonInit(mathNumber);
-    }
+  init: function () {
+    this.jsonInit(mathNumber);
+  },
 };
 
 var turnHarvestingOn = {
-    type: "turn_harvesting_on",
-    message0: "turn harvesting on",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turns harvesting on tractor on",
+  type: "turn_harvesting_on",
+  message0: "turn harvesting on",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turns harvesting on tractor on",
 };
 Blockly.Blocks["turn_harvesting_on"] = {
-    init: function () {
-        this.jsonInit(turnHarvestingOn);
-    }
+  init: function () {
+    this.jsonInit(turnHarvestingOn);
+  },
 };
 
 var turnHarvestingOff = {
-    type: "turn_harvesting_off",
-    message0: "turn harvesting off",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turns harvesting on tractor off",
+  type: "turn_harvesting_off",
+  message0: "turn harvesting off",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turns harvesting on tractor off",
 };
 Blockly.Blocks["turn_harvesting_off"] = {
-    init: function () {
-        this.jsonInit(turnHarvestingOff);
-    }
+  init: function () {
+    this.jsonInit(turnHarvestingOff);
+  },
 };
 
 var turnSeedingOn = {
-    type: "turn_seeding_on",
-    message0: "turn seeding on",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turns seeding on tractor on",
+  type: "turn_seeding_on",
+  message0: "turn seeding on",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turns seeding on tractor on",
 };
 Blockly.Blocks["turn_seeding_on"] = {
-    init: function () {
-        this.jsonInit(turnSeedingOn);
-    }
+  init: function () {
+    this.jsonInit(turnSeedingOn);
+  },
 };
 
 var turnSeedingOff = {
-    type: "turn_seeding_off",
-    message0: "turn seeding off",
-    previousStatement: null,
-    nextStatement: null,
-    colour: 210,
-    tooltip: "Turns seeding on tractor off",
+  type: "turn_seeding_off",
+  message0: "turn seeding off",
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: "Turns seeding on tractor off",
 };
 Blockly.Blocks["turn_seeding_off"] = {
-    init: function () {
-        this.jsonInit(turnSeedingOff);
-    }
+  init: function () {
+    this.jsonInit(turnSeedingOff);
+  },
 };
 
 //#endregion
