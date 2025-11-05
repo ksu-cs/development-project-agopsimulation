@@ -1,19 +1,32 @@
-import * as React from "react";
 import { javascriptGenerator } from "blockly/javascript";
 import styles from "../index.module.css";
 import simulationMethods from "../simulationMethods";
+import React from "react";
 
 class SimulationCanvasContainer extends React.Component {
   constructor(props) {
-    super(props);
-    this.simulation = new simulationMethods(); 
+      super(props);
+      this.canvasRef = React.createRef();
+      this.alterCanvasRef = null;
   }
+
+    componentDidMount() {
+        const canvas = this.canvasRef.current;
+        if (!canvas) return;
+        this.alterCanvasRef = new simulationMethods(canvas);
+        this.alterCanvasRef.setSpriteOnLoadMethods();
+        console.log(this.alterCanvasRef.fieldScale);
+        console.log(this.alterCanvasRef.canvas.width);
+        console.log(this.alterCanvasRef.canvas.height);
+
+    }
+
 //#region button OnClick methods
   async runButtonOnClick() {
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
 
-    this.simulation.isMoving = true;
+      this.alterCanvasRef.isMoving = true;
 
     const workspace = this.simpleWorkspace.current.workspace;
 
@@ -32,61 +45,60 @@ class SimulationCanvasContainer extends React.Component {
         }
       }
     }
-    this.simulation.isMoving = false;
+    this.alterCanvasRef.isMoving = false;
     runButton.disabled = false;
   }
 
   stopButtonOnClick() {
-    this.simulation.stopMovement();
+      this.alterCanvasRef.stopMovement();
     document.getElementById("runButton").runButton.disabled = false;
   }
 
   resetButtonOnClick() {
-    this.simulation.stopMovement();
-    this.simulation.resetPosition();
+    this.alterCanvasRef.stopMovement();
+    this.alterCanvasRef.resetPosition();
     document.getElementById("runButton").runButton.disabled = false;
   }
   //#endregion
 
 //#region exported canvas altering methods
  moveForward(duration){
-  this.simulation.moveForward(duration);
+  this.alterCanvasRef.moveForward(duration);
  }
  turnLeft(){
-  this.simulation.turnLeft();
+  this.alterCanvasRef.turnLeft();
  }
  turnRight() {
-    this.simulation.turnRight();
+    this.alterCanvasRef.turnRight();
   }
 
   TurnXLeft(amount) {
-    this.simulation.TurnXLeft(amount);
+    this.alterCanvasRef.TurnXLeft(amount);
   }
 
   TurnXRight(amount) {
-    this.simulation.TurnXRight(amount);
+    this.alterCanvasRef.TurnXRight(amount);
   }
   turnHarvestingOn() {
-    this.simulation.turnHarvestingOn();
+    this.alterCanvasRef.turnHarvestingOn();
   }
   turnHarvestingOff() {
-    this.simulation.turnHarvestingOff();
+    this.alterCanvasRef.turnHarvestingOff();
   }
   turnSeedingOn() {
-    this.simulation.turnSeedingOn();
+    this.alterCanvasRef.turnSeedingOn();
   }
   turnSeedingOff() {
-    this.simulation.turnSeedingOff();
+      this.alterCanvasRef.turnSeedingOff();
   }
 //#endregion
 
   render() {
-    this.simulation.drawFieldAndTractor();
     return (
       <React.Fragment>
         <div className={styles.canvasArea}>
-          <p className={styles.scoreText}>Yield: 0</p>
-          <canvas id="gameCanvas" className={styles.gameCanvas} />
+                <p id="scoreText" className={styles.scoreText}>Yield: 0</p>
+                <canvas id="gameCanvas" ref={this.canvasRef} className={styles.gameCanvas}/>
           <button
             onClick={this.runButtonOnClick}
             id="runButton"

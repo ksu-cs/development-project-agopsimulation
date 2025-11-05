@@ -59,14 +59,20 @@ canvas {
 }
 
 .canvasArea {
-  width: 800px;
-  background: #f0f0f0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-left: 3px solid #ccc;
-  padding: 20px;
+    width: 800px;
+    height: 800px;
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-left: 3px solid #ccc;
+    padding: 20px;
+}
+
+.gameCanvas {
+    width: 800px;
+    height: 800px;
 }
 
 .blocklyContainer {
