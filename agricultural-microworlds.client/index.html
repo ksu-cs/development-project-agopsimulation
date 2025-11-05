@@ -304,7 +304,18 @@ loadStations();
             },
             {
                 "type": "has_seed_in_front",
-                "message0": "has sprout in front",
+                "message0": "is over %1 tile",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TYPE",
+                        "options": [
+                            ["Unplanted", "0"],
+                            ["Seeded", "1"],
+                            ["Grown", "2"]
+                        ]
+                    }
+                ],
                 "output": "Boolean",
                 "colour": 210,
                 "tooltip": "Checks if a planted tile is in front of the tractor."
@@ -351,7 +362,8 @@ loadStations();
             return `await waitXWeeks(${weeks});\n`;
         };
         Blockly.JavaScript.forBlock['has_seed_in_front'] = function (block) {
-            return ['CheckIfPlantInFront()\n', Blockly.JavaScript.ORDER_ATOMIC];
+            const type = block.getFieldValue('TYPE');
+            return ['CheckIfPlantInFront(${type})', Blockly.JavaScript.ORDER_ATOMIC];
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -627,7 +639,7 @@ loadStations();
             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
         }
 
-        function CheckIfPlantInFront() {
+        function CheckIfPlantInFront(type) {
             const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
             const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
             const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
@@ -642,7 +654,7 @@ loadStations();
             ];
 
             const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
-            return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, 2);
+            return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, type);
         }
 
         function growCrops(weeks) {
@@ -765,6 +777,7 @@ loadStations();
             let D = (2 * deltaY) - deltaX;
             let y = y0;
             let hasChecked = false;
+            let tile = null;
 
             for (let x = x0; x < x1; x++) {
                 const tileX = Math.floor(x / TILE_WIDTH);
@@ -777,8 +790,7 @@ loadStations();
                 }
                 else D = D + 2 * deltaY;
 
-                let tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY, tileX] : null;
-                console.log("tile state:" + tile.state);
+                tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY][tileX] : null;
                 hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
 
@@ -799,6 +811,7 @@ loadStations();
             let D = (2 * deltaX) - deltaY;
             let x = x0;
             let hasChecked = false;
+            let tile = null;
 
             for (let y = y0; y < y1; y++) {
                 const tileX = Math.floor(x / TILE_WIDTH);
@@ -811,8 +824,7 @@ loadStations();
                 }
                 else D = D + 2 * deltaX;
 
-                let tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY, tileX] : null;
-                console.log("tile state:" + tile.state);
+                tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY][tileX] : null;
                 hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
 
