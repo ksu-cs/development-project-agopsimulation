@@ -304,6 +304,24 @@ loadStations();
                 "tooltip": "Wait for a certain number of weeks"
             },
             {
+                "type": "is_over_tile",
+                "message0": "is over %1 tile",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TYPE",
+                        "options": [
+                            ["Unplanted", "0"],
+                            ["Seeded", "1"],
+                            ["Grown", "2"]
+                        ]
+                    }
+                ],
+                "output": "Boolean",
+                "colour": 210,
+                "tooltip": "Checks if a planted tile is in front of the tractor."
+            },
+            {
                 "type": "custom_compare",
                 "message0": "%1 = %2",
                 "args0": [
@@ -370,6 +388,11 @@ loadStations();
         Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
             return `await waitXWeeks(${weeks});\n`;
+        };
+        Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
+            const type = block.getFieldValue('TYPE');
+            let checkResult = CheckIfPlantInFront(type);
+            return [checkResult, Blockly.JavaScript.ORDER_RELATIONAL];
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -479,6 +502,7 @@ loadStations();
                     "contents": [
                         { "kind": "block", "type": "controls_if" },
                         { "kind": "block", "type": "logic_boolean" },
+                        { "kind": "block", "type": "is_over_tile" },
                         { "kind": "block", "type": "custom_compare" },
                     ]
                 },
@@ -703,6 +727,24 @@ loadStations();
             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
         }
 
+        function CheckIfPlantInFront(type) {
+            const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const center = { x: tractorWorldX + (FRAME_WIDTH / 2), y: tractorWorldY + (FRAME_HEIGHT / 2) };
+
+            const corners = [
+                rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+                rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+                rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+                rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
+            ];
+
+            const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
+            return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, type);
+        }
+
         function growCrops(weeks) {
             const daysToAdd = weeks * 7.0;
 
@@ -763,7 +805,7 @@ loadStations();
 
             const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
 
-            detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y);
+            detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, -1);
 
             // draw the entire field using camera coordinates
 
@@ -810,7 +852,7 @@ loadStations();
         }
 
         // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
-        function detectGentleSlope(x0, y0, x1, y1) {
+        function detectGentleSlope(x0, y0, x1, y1, checkTiles = -1) {
             let deltaX = x1 - x0;
             let deltaY = y1 - y0;
 
@@ -822,19 +864,29 @@ loadStations();
             }
             let D = (2 * deltaY) - deltaX;
             let y = y0;
+            let hasChecked = false;
+            let tile = null;
 
             for (let x = x0; x < x1; x++) {
-                changeTile(Math.floor(x / TILE_WIDTH), Math.floor(y / TILE_HEIGHT));
+                const tileX = Math.floor(x / TILE_WIDTH);
+                const tileY = Math.floor(y / TILE_HEIGHT);
+                if (checkTiles < 0)
+                    changeTile(tileX, tileY);
                 if (D > 0) {
                     y = y + yi;
                     D = D + (2 * (deltaY - deltaX));
                 }
                 else D = D + 2 * deltaY;
+
+                tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY][tileX] : null;
+                hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
+
+            return hasChecked;
         }
 
         // Detects and changes which tiles are in the line from point0, to point1 for a steep slope
-        function detectSteepSlope(x0, y0, x1, y1) {
+        function detectSteepSlope(x0, y0, x1, y1, checkTiles = -1) {
             let deltaX = x1 - x0;
             let deltaY = y1 - y0;
 
@@ -846,15 +898,25 @@ loadStations();
             }
             let D = (2 * deltaX) - deltaY;
             let x = x0;
+            let hasChecked = false;
+            let tile = null;
 
             for (let y = y0; y < y1; y++) {
-                changeTile(Math.floor(x / TILE_WIDTH), Math.floor(y / TILE_HEIGHT));
+                const tileX = Math.floor(x / TILE_WIDTH);
+                const tileY = Math.floor(y / TILE_HEIGHT);
+                if (checkTiles < 0)
+                    changeTile(tileX, tileY);
                 if (D > 0) {
                     x = x + xi;
                     D = D + (2 * (deltaX - deltaY));
                 }
                 else D = D + 2 * deltaX;
+
+                tile = (tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows) ? field[tileY][tileX] : null;
+                hasChecked = hasChecked || checkTiles < 0 || (tile != null && tile.state == checkTiles);
             }
+
+            return hasChecked;
         }
 
         // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
@@ -884,14 +946,14 @@ loadStations();
         }
 
         // Detects wether the slope from point0 to point1 is steep or gentle then calls the appropriate method to detect tiles in that line
-        function detectWhatTilesAreHit(x0, y0, x1, y1) {
+        function detectWhatTilesAreHit(x0, y0, x1, y1, checkTiles = -1) {
             if (Math.abs(y1 - y0) < Math.abs(x1 - x0)) {
-                if (x0 > x1) detectGentleSlope(x1, y1, x0, y0);
-                else detectGentleSlope(x0, y0, x1, y1);
+                if (x0 > x1) return detectGentleSlope(x1, y1, x0, y0, checkTiles);
+                else return detectGentleSlope(x0, y0, x1, y1, checkTiles);
             }
             else {
-                if (y0 > y1) detectSteepSlope(x1, y1, x0, y0);
-                else detectSteepSlope(x0, y0, x1, y1);
+                if (y0 > y1) return detectSteepSlope(x1, y1, x0, y0, checkTiles);
+                else return detectSteepSlope(x0, y0, x1, y1, checkTiles);
             }
         }
 
