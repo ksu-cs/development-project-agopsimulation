@@ -88,7 +88,7 @@
             font-size: 12px;
         }
 
-        #weekText, #scoreText {
+        #weekText, #scoreText, #gddText {
             position: absolute;
             left: 20px;
             color: black;
@@ -99,13 +99,15 @@
             border-radius: 5px;
             z-index: 10;
         }
-
         #scoreText {
             top: 50px; 
         }
 
         #weekText {
-            top: 10px;
+            top: 5px;
+        }
+        #gddText {
+            top: 25px;
         }
     </style>
 </head>
@@ -130,8 +132,6 @@
 <label for="start">Start date:</label>
 <input type="date" id="start">
 
-<label for="end">End date:</label>
-<input type="date" id="end">
 
 
 <pre id="output"></pre>
@@ -157,17 +157,48 @@ async function loadStations() {
     });
 }
 
+let waitingWeeksCount = 1; // global variable, set elsewhere
+let cumulativeGDD = 0;
+let csvLines = []; // parsed CSV data
+const Wheatgdd = 10;
+
+function calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
+    let sum = 0;
+    const startIdx = weekIndex * daysPerWeek;
+    for (let i = startIdx; i < startIdx + daysPerWeek && i < csvLines.length; i++) {
+        const temp = parseFloat(csvLines[i][2]); // TEMP2MAVG
+        sum += Math.max(0, temp - Wheatgdd);
+    }
+    return sum;
+}
+
+
 async function fetchData() {
     const station = document.getElementById('station').value;
-    const start = document.getElementById('start').value.replaceAll('-', '');
-    const end = document.getElementById('end').value.replaceAll('-', '');
+    const startInput = document.getElementById('start').value; // YYYY-MM-DD
+    const startDate = new Date(startInput);
+
+    // Make sure waitingWeeksCount is a number
+    const weeks = Number(waitingWeeksCount) || 1;
+
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 7 * weeks); // 7 days per week
+
+    const start = startInput.replaceAll('-', '');
+    const end = `${endDate.getFullYear()}${(endDate.getMonth()+1).toString().padStart(2,'0')}${endDate.getDate().toString().padStart(2,'0')}`;
+
     const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG`;
+    console.log("Fetching URL:", url);
 
     const response = await fetch(url);
     const data = await response.text();
-    //document.getElementById('output').textContent = data;
 
+    const lines = data.trim().split('\n');
+    csvLines = lines.slice(1).map(line => line.split(',')); // skip header
+    cumulativeGDD = 0;
+    currentWeek = START_WEEK;
 }
+
 loadStations();
 
 </script>
@@ -387,6 +418,7 @@ loadStations();
         };
         Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            weeksToWait = weeks;
             return `await waitXWeeks(${weeks});\n`;
         };
         Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
@@ -681,57 +713,61 @@ loadStations();
         }
 
         // Method for Wait X Weeks Block
-        function waitXWeeks(weeks) {
-        	return new Promise((resolve) => {
-                let weeksToProcess = weeks;
+function waitXWeeks(weeks) {
+    waitingWeekscount = weeks;
+    return new Promise((resolve) => {
+        let weeksToProcess = weeks;
 
-                if (weeksToProcess > 0) {
-           	        nightFadeProgress = 0.0;
-                }
-                else{
-                    resolve();
-                    return;
-                }
+        if (weeksToProcess > 0) {
+            nightFadeProgress = 0.0;
+        } else {
+            resolve();
+            return;
+        }
 
-                let waitingTime = 0.2;
+        let waitingTime = 0.2;
 
-            	function UpdateNight() {
-                    const delta = 1 / 60; // assuming 60fps
-                    
-                    if (nightFadeProgress > 0.5 && waitingTime > 0)
-                    {
-                        // Wait for a period determined by the weeks set.
-                        waitingTime -= delta;
-                        if (waitingTime <= 0)
-                        {
-                            // Notify that a week has passed, and handle accordingly.
-                            currentWeek++;
-                            growCrops(1);
+        function UpdateNight() {
+            const delta = 1 / 60; // assuming 60fps
 
-                            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+            if (nightFadeProgress > 0.5 && waitingTime > 0) {
+                waitingTime -= delta;
+                if (waitingTime <= 0) {
+                    // A week has passed
+                    currentWeek++;
+                    growCrops(1);
 
-                            // console.log("Current Week:" + currentWeek);
-
-                            weeksToProcess--;
-                            if (weeksToProcess > 0)
-                                waitingTime = 0.2;
-                        }
+                    // Safely calculate GDD for this week
+                    const weekIndex = currentWeek - 1;
+                    let weekGDD = 0;
+                    const startIdx = weekIndex * 7;
+                    for (let i = startIdx; i < startIdx + 7 && i < csvLines.length; i++) {
+                        const temp = parseFloat(csvLines[i][2]);
+                        if (!isNaN(temp)) weekGDD += Math.max(0, temp - Wheatgdd);
                     }
-                    else
-                    {
-                        let fadeSpeed = (waitingTime > 0) ? 1.0 : 2.0;
-                        nightFadeProgress = Math.min(nightFadeProgress + (delta * fadeSpeed), 1.0);
-                    }
-                	if (weeksToProcess > 0 || nightFadeProgress < 1.0) {
-                    	drawFieldAndTractor();
-                    	animationId = requestAnimationFrame(UpdateNight);
-                	} else {
-                        nightFadeProgress = -1;
-                        drawFieldAndTractor();
-                        resolve();
-                	}
-            	}
+                    cumulativeGDD += weekGDD;
 
+                    // Update HTML
+                    document.getElementById('weekText').textContent = `Week ${currentWeek-1}`;
+                    document.getElementById('gddText').textContent = `GDD: ${cumulativeGDD.toFixed(2)}`;
+
+                    weeksToProcess--;
+                    if (weeksToProcess > 0) waitingTime = 0.2;
+                }
+            } else {
+                const fadeSpeed = (waitingTime > 0) ? 1.0 : 2.0;
+                nightFadeProgress = Math.min(nightFadeProgress + (delta * fadeSpeed), 1.0);
+            }
+
+            if (weeksToProcess > 0 || nightFadeProgress < 1.0) {
+                drawFieldAndTractor();
+                animationId = requestAnimationFrame(UpdateNight);
+            } else {
+                nightFadeProgress = -1;
+                drawFieldAndTractor();
+                resolve();
+            }
+        }
             	UpdateNight();
         	});
             currentWeek += weeks;
@@ -1146,16 +1182,18 @@ loadStations();
         // if (imageLoadCount === imageCount) drawFieldAndTractor();
 
         // Run button - now uses async/await
-        document.getElementById('runButton').addEventListener('click', async function () {
+document.getElementById('runButton').addEventListener('click', async function () {
             const runButton = document.getElementById('runButton');
             runButton.disabled = true;
-
             isMoving = true;
+            await fetchData();
 
+            console.log("csvLines length:", csvLines.length);
+console.log("First line:", csvLines[0]);
             const allBlocks = workspace.getAllBlocks(false);
 
             if (allBlocks.length > 0) {
-                await fetchData();
+
                 const code = Blockly.JavaScript.workspaceToCode(workspace);
 
                 if (code.trim()) {
@@ -1183,6 +1221,9 @@ loadStations();
             stopMovement();
             resetPosition();
             runButton.disabled = false;
+            waitingWeeksCount = 0;
+            currentWeek = 0;
+            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
         });
     </script>
 </body>
