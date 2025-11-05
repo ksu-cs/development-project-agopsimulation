@@ -363,7 +363,8 @@ loadStations();
         };
         Blockly.JavaScript.forBlock['has_seed_in_front'] = function (block) {
             const type = block.getFieldValue('TYPE');
-            return ['CheckIfPlantInFront(${type})', Blockly.JavaScript.ORDER_ATOMIC];
+            let checkResult = CheckIfPlantInFront(type);
+            return [checkResult, Blockly.JavaScript.ORDER_ATOMIC];
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
