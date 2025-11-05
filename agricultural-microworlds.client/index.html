@@ -303,7 +303,7 @@ loadStations();
                 "tooltip": "Wait for a certain number of weeks"
             },
             {
-                "type": "has_seed_in_front",
+                "type": "is_over_tile",
                 "message0": "is over %1 tile",
                 "args0": [
                     {
@@ -361,10 +361,10 @@ loadStations();
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
             return `await waitXWeeks(${weeks});\n`;
         };
-        Blockly.JavaScript.forBlock['has_seed_in_front'] = function (block) {
+        Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
             const type = block.getFieldValue('TYPE');
             let checkResult = CheckIfPlantInFront(type);
-            return [checkResult, Blockly.JavaScript.ORDER_ATOMIC];
+            return [checkResult, Blockly.JavaScript.ORDER_RELATIONAL];
         };
 
         Blockly.JavaScript.forBlock['math_number'] = function (block) {
@@ -417,7 +417,7 @@ loadStations();
                     "colour": "#5b9dd5",
                     "contents": [
                         { "kind": "block", "type": "logic_boolean" },
-                        { "kind": "block", "type": "has_seed_in_front" }
+                        { "kind": "block", "type": "is_over_tile" }
                     ]
                 },
                 {
