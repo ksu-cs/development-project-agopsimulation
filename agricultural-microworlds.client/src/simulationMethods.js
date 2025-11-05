@@ -2,8 +2,8 @@ export default class simulationMethods {
     constructor(canvas) {
       this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
-        this.canvas.width = 800;
-        this.canvas.height = 800;
+        this.canvas.width = 500;
+        this.canvas.height = 500;
 
     // Global variables
     this.x = this.canvas.width / 2;
