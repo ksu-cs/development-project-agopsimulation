@@ -415,8 +415,8 @@ loadStations();
         const myTheme = Blockly.Theme.defineTheme('myTheme', {
             'base': Blockly.Themes.Classic,
             'categoryStyles': {
-                'movement_category': {'colour': "230"},
-                'numbers_category': {'colour': "300"},
+                'movement_category': {'colour': "300"},
+                'numbers_category': {'colour': "230"},
                 'control_category': {'colour': "190" },
                 'logic_category': {'colour': "135" },
                 'loops_category': {'colour': "60"  },
@@ -424,7 +424,7 @@ loadStations();
             },
             'blockStyles': {
                 // Movement Blocks
-                'movement_blocks': { 'colourPrimary' : "230"},
+                'movement_blocks': { 'colourPrimary' : "300"},
 
                 // Style for all blocks in the "Numbers" category
                 // 'numbers_blocks': { 'colourPrimary': "300" },
@@ -439,7 +439,7 @@ loadStations();
                 'loop_blocks': { 'colourPrimary': "60" },
 
                 // Style for all blocks in the "Numbers" category
-                'math_blocks': { 'colorPrimary': "300"},
+                'math_blocks': { 'colorPrimary': "230"},
 
                 // Style for all blocks in the "Variables" category
                 'variable_blocks': { 'colorPrimary': "330" }
@@ -468,12 +468,13 @@ loadStations();
                     "kind": "category",
                     "name": "Variables",
                     "categorystyle": "variable_category",
+                    // "custom": "VARIABLE",
                     "contents": [
                         { "kind": "button", "text": "Create variable...", "callbackKey": "CREATE_VARIABLE" },
                         { "kind": "block", "type": "variables_get" },
                         { "kind": "block", "type": "variables_set" },
                         { "kind": "block", "type": "get_current_week" }
-                    ]
+                    ]     
                 },
                 {
                     "kind": "category",
@@ -492,7 +493,7 @@ loadStations();
                         { "kind": "block", "type": "turn_harvesting_off" },
                         { "kind": "block", "type": "turn_seeding_on" },
                         { "kind": "block", "type": "turn_seeding_off" },
-                        { "kind": "block", "type": "wait_x_weeks" }
+                        { "kind": "block", "type": "wait_x_weeks" },
                     ]
                 },
                 {
@@ -523,7 +524,18 @@ loadStations();
         const workspace = Blockly.inject('blocklyDiv', {
             toolbox: toolbox,
             trashcan: true,
-            theme: myTheme
+            theme: myTheme,
+
+            renderer: 'zelos',
+            rendererOptionis: {
+                'keyboardNavigation': true
+            }
+
+        });
+
+        // Register the callback for the "Create variable..." button
+        workspace.registerButtonCallback('CREATE_VARIABLE', function(button) {
+            Blockly.Variables.createVariableButtonHandler(button.getTargetWorkspace());
         });
 
         // Canvas and movement code
