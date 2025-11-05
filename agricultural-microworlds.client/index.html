@@ -243,19 +243,19 @@ loadStations();
                 "style": "movement_blocks",
                 "tooltip": "Turn the tractor a certain amount of degrees right"
             },
-            // {
-            //     "type": "math_number",
-            //     "message0": "%1",
-            //     "args0": [
-            //         {
-            //             "type": "field_number",
-            //             "name": "NUM",
-            //             "value": 1
-            //         }
-            //     ],
-            //     "output": "Number",
-            //     "style": "numbers_blocks",
-            // },
+            {
+                "type": "math_number",
+                "message0": "%1",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "NUM",
+                        "value": 1
+                    }
+                ],
+                "output": "Number",
+                "style": "math_blocks",
+            },
             {
                 "type": "turn_harvesting_on",
                 "message0": "turn harvesting on",
@@ -302,6 +302,33 @@ loadStations();
                 "nextStatement": null,
                 "style": "control_blocks",
                 "tooltip": "Wait for a certain number of weeks"
+            },
+            {
+                "type": "custom_compare",
+                "message0": "%1 = %2",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "A",
+                        "check": "Number"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "B",
+                        "check": "Number"
+                    }
+                ],
+                "output": "Boolean",
+                "style": "logic_blocks",
+                "tooltip": "Comparison block",
+                "inputsInline": true
+            },
+            {
+                "type": "get_current_week",
+                "message0": "Current Week",
+                "output": "Number",
+                "style": "variable_blocks",
+                "tooltip": "Gets the current week number from the simulation."
             }
         ]);
 
@@ -345,20 +372,32 @@ loadStations();
             return `await waitXWeeks(${weeks});\n`;
         };
 
-        // Blockly.JavaScript.forBlock['math_number'] = function (block) {
-        //     const number = block.getFieldValue('NUM');
-        //     return [number, Blockly.JavaScript.ORDER_ATOMIC];
-        // };
+        Blockly.JavaScript.forBlock['math_number'] = function (block) {
+            const number = block.getFieldValue('NUM');
+            return [number, Blockly.JavaScript.ORDER_ATOMIC];
+        };
+
+        Blockly.JavaScript.forBlock['custom_compare'] = function (block) {
+            const value_a = Blockly.JavaScript.valueToCode(block, 'A', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+            const value_b = Blockly.JavaScript.valueToCode(block, 'B', Blockly.JavaScript.ORDER_ATOMIC) || '0';
+            const code = `${value_a} == ${value_b}`;
+            return [code, Blockly.JavaScript.ORDER_EQUALITY];
+        };
+
+        Blockly.JavaScript.forBlock['get_current_week'] = function (block) {
+            return ['currentWeek', Blockly.JavaScript.ORDER_ATOMIC]
+        }
 
         // Custom theme for blocks
         const myTheme = Blockly.Theme.defineTheme('myTheme', {
-            // 'base': Blockly.Themes.Classic,
+            'base': Blockly.Themes.Classic,
             'categoryStyles': {
                 'movement_category': {'colour': "230"},
                 'numbers_category': {'colour': "300"},
                 'control_category': {'colour': "190" },
                 'logic_category': {'colour': "135" },
-                'loops_category': {'colour': "60"  }
+                'loops_category': {'colour': "60"  },
+                'variable_category': {'colour' : "330"}
             },
             'blockStyles': {
                 // Movement Blocks
@@ -376,7 +415,11 @@ loadStations();
                 // Style for all blocks in the "Loops" category
                 'loop_blocks': { 'colourPrimary': "60" },
 
-                'math_blocks': { 'colorPrimary': "300"}
+                // Style for all blocks in the "Numbers" category
+                'math_blocks': { 'colorPrimary': "300"},
+
+                // Style for all blocks in the "Variables" category
+                'variable_blocks': { 'colorPrimary': "330" }
 
             },
             'componentStyles': {}
@@ -396,6 +439,17 @@ loadStations();
                         { "kind": "block", "type": "turn_right" },
                         { "kind": "block", "type": "turn_left_x_degrees" },
                         { "kind": "block", "type": "turn_right_x_degrees" },
+                    ]
+                },
+                {
+                    "kind": "category",
+                    "name": "Variables",
+                    "categorystyle": "variable_category",
+                    "contents": [
+                        { "kind": "button", "text": "Create variable...", "callbackKey": "CREATE_VARIABLE" },
+                        { "kind": "block", "type": "variables_get" },
+                        { "kind": "block", "type": "variables_set" },
+                        { "kind": "block", "type": "get_current_week" }
                     ]
                 },
                 {
@@ -424,7 +478,8 @@ loadStations();
                     "categorystyle": "logic_category",
                     "contents": [
                         { "kind": "block", "type": "controls_if" },
-                        { "kind": "block", "type": "logic_boolean" }
+                        { "kind": "block", "type": "logic_boolean" },
+                        { "kind": "block", "type": "custom_compare" },
                     ]
                 },
                 {
