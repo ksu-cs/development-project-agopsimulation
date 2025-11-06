@@ -118,8 +118,9 @@
         <!-- Canvas + Run button -->
          <br><br/>
         <div id="canvasArea">
-                        <p id="weekText">Week 1</p>
+                        <p id="weekText">Week 0</p>
             <p id="scoreText">Yield: 0</p>
+            <p id="gddText">Growth Days: 0.00</p>
             <canvas id="gameCanvas" width="500" height="500"></canvas>
 
 
@@ -157,7 +158,7 @@ async function loadStations() {
     });
 }
 
-let waitingWeeksCount = 1; // global variable, set elsewhere
+let waitingweeksCount = 1; // global variable, set elsewhere
 let cumulativeGDD = 0;
 let csvLines = []; // parsed CSV data
 const Wheatgdd = 10;
@@ -178,8 +179,8 @@ async function fetchData() {
     const startInput = document.getElementById('start').value; // YYYY-MM-DD
     const startDate = new Date(startInput);
 
-    // Make sure waitingWeeksCount is a number
-    const weeks = Number(waitingWeeksCount) || 1;
+    // Make sure waitingweeksCount is a number
+    const weeks = Number(waitingweeksCount) || 1;
 
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 7 * weeks); // 7 days per week
@@ -418,7 +419,7 @@ loadStations();
         };
         Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            weeksToWait = weeks;
+            waitingweeksCount = weeks;
             return `await waitXWeeks(${weeks});\n`;
         };
         Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
@@ -714,7 +715,7 @@ loadStations();
 
         // Method for Wait X Weeks Block
 function waitXWeeks(weeks) {
-    waitingWeekscount = weeks;
+    waitingweeksCount = weeks; // Fixed variable name
     return new Promise((resolve) => {
         let weeksToProcess = weeks;
 
@@ -733,21 +734,28 @@ function waitXWeeks(weeks) {
             if (nightFadeProgress > 0.5 && waitingTime > 0) {
                 waitingTime -= delta;
                 if (waitingTime <= 0) {
-                    // A week has passed
-                    currentWeek++;
-                    growCrops(1);
-
-                    // Safely calculate GDD for this week
-                    const weekIndex = currentWeek - 1;
+                    // A week has passed - calculate GDD for this week
+                    const weekIndex = currentWeek - 1; // Convert to 0-based index
+                    
+                    // Calculate GDD for this week
                     let weekGDD = 0;
                     const startIdx = weekIndex * 7;
                     for (let i = startIdx; i < startIdx + 7 && i < csvLines.length; i++) {
-                        const temp = parseFloat(csvLines[i][2]);
-                        if (!isNaN(temp)) weekGDD += Math.max(0, temp - Wheatgdd);
+                        if (csvLines[i] && csvLines[i][2]) {
+                            const temp = parseFloat(csvLines[i][2]);
+                            if (!isNaN(temp)) {
+                                weekGDD += Math.max(0, temp - Wheatgdd);
+                            }
+                        }
                     }
+                    
                     cumulativeGDD += weekGDD;
+                    
+                    // Update week counter and grow crops
+                    currentWeek++;
+                    growCrops(1);
 
-                    // Update HTML
+                    // Update HTML displays
                     document.getElementById('weekText').textContent = `Week ${currentWeek-1}`;
                     document.getElementById('gddText').textContent = `GDD: ${cumulativeGDD.toFixed(2)}`;
 
@@ -768,12 +776,9 @@ function waitXWeeks(weeks) {
                 resolve();
             }
         }
-            	UpdateNight();
-        	});
-            currentWeek += weeks;
-            growCrops(weeks);   
-            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
-        }
+        UpdateNight();
+    });
+}
 
         function CheckIfPlantInFront(type) {
             const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
@@ -1221,9 +1226,10 @@ console.log("First line:", csvLines[0]);
             stopMovement();
             resetPosition();
             runButton.disabled = false;
-            waitingWeeksCount = 0;
+            waitingweeksCount = 0;
             currentWeek = 0;
             document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+            document.getElementById('gddText').textContent = `GDD: ${0.00}`;
         });
     </script>
 </body>
