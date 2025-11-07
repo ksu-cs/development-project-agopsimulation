@@ -1,9 +1,9 @@
 export default class simulationMethods {
-    constructor(canvas) {
-      this.canvas = canvas;
-        this.ctx = this.canvas.getContext("2d");
-        this.canvas.width = 500;
-        this.canvas.height = 500;
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.canvas.width = 500;
+    this.canvas.height = 500;
 
     // Global variables
     this.x = this.canvas.width / 2;
@@ -33,7 +33,6 @@ export default class simulationMethods {
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
-
   }
 
   setSpriteOnLoadMethods() {
@@ -69,8 +68,8 @@ export default class simulationMethods {
       console.error("failed to load SeedImage");
     };
     this.wheatImage.onload = () => {
-        console.log("WheatImage loaded!");
-        this.initializeField();
+      console.log("WheatImage loaded!");
+      this.initializeField();
       this.imageLoadCount++;
       if (this.imageLoadCount === this.imageCount) {
         this.drawFieldAndTractor();
@@ -80,25 +79,25 @@ export default class simulationMethods {
       console.error("failed to load WheatImage");
     };
 
-      this.drawFieldAndTractor();
+    this.drawFieldAndTractor();
   }
 
-    // Setting up the array that represents the field
-    initializeField() {
-        this.rows =
-        Math.floor(
-            (this.canvas.height / this.seedImage.height) * this.fieldScale,
-        ) + 1;
-        this.columns =
-            Math.floor((this.canvas.width / this.seedImage.width) * this.fieldScale) +
-            1;
-        this.field = Array.from({ length: this.rows }, () =>
-            new Array(this.columns).fill(2),
-        );
+  // Setting up the array that represents the field
+  initializeField() {
+    this.rows =
+      Math.floor(
+        (this.canvas.height / this.seedImage.height) * this.fieldScale,
+      ) + 1;
+    this.columns =
+      Math.floor((this.canvas.width / this.seedImage.width) * this.fieldScale) +
+      1;
+    this.field = Array.from({ length: this.rows }, () =>
+      new Array(this.columns).fill(2),
+    );
 
-        this.tileWidth = this.wheatImage.width / this.fieldScale; // one tiles width (all tiles same width and height)
-        this.tileHeight = this.wheatImage.height / this.fieldScale; // one tiles height (all tiles same width and height)
-    }
+    this.tileWidth = this.wheatImage.width / this.fieldScale; // one tiles width (all tiles same width and height)
+    this.tileHeight = this.wheatImage.height / this.fieldScale; // one tiles height (all tiles same width and height)
+  }
 
   // Methods for Harvesting and Seeding Blocks
   turnHarvestingOn() {
@@ -388,6 +387,10 @@ export default class simulationMethods {
     this.yieldScore = 0;
     this.resetField();
     this.drawFieldAndTractor();
+  }
+
+  startMoving(){
+    this.isMoving = true;
   }
 
   stopMovement() {

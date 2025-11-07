@@ -7,7 +7,6 @@ import { toolbox } from "./toolboxConfig";
 class BlocklyWorkspaceContainer extends React.Component {
   constructor(props) {
     super(props);
-    this.simpleWorkspace = React.createRef();
   }
 
   generateCode = () => {
@@ -19,7 +18,7 @@ class BlocklyWorkspaceContainer extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <BlocklyWorkspace toolbox={toolbox} />
+        <BlocklyWorkspace toolbox={toolbox} onWorkspaceReady={this.props.onWorkspaceReady} />
       </React.Fragment>
     );
   }
