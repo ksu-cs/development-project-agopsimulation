@@ -57,45 +57,13 @@ return (async () => { ${code} })();`);
 
   stopButtonOnClick() {
     this.alterCanvasRef.stopMovement();
-    document.getElementById("runButton").runButton.disabled = false;
+    document.getElementById("runButton").disabled = false;
   }
 
   resetButtonOnClick() {
     this.alterCanvasRef.stopMovement();
     this.alterCanvasRef.resetPosition();
-    document.getElementById("runButton").runButton.disabled = false;
-  }
-  //#endregion
-
-  //#region exported canvas altering methods
-  moveForward(duration) {
-    this.alterCanvasRef.moveForward(duration);
-  }
-  turnLeft() {
-    this.alterCanvasRef.turnLeft();
-  }
-  turnRight() {
-    this.alterCanvasRef.turnRight();
-  }
-
-  TurnXLeft(amount) {
-    this.alterCanvasRef.TurnXLeft(amount);
-  }
-
-  TurnXRight(amount) {
-    this.alterCanvasRef.TurnXRight(amount);
-  }
-  turnHarvestingOn() {
-    this.alterCanvasRef.turnHarvestingOn();
-  }
-  turnHarvestingOff() {
-    this.alterCanvasRef.turnHarvestingOff();
-  }
-  turnSeedingOn() {
-    this.alterCanvasRef.turnSeedingOn();
-  }
-  turnSeedingOff() {
-    this.alterCanvasRef.turnSeedingOff();
+    document.getElementById("runButton").disabled = false;
   }
   //#endregion
 
