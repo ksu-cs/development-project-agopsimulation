@@ -8,6 +8,9 @@ class SimulationCanvasContainer extends React.Component {
       super(props);
       this.canvasRef = React.createRef();
       this.alterCanvasRef = null;
+      this.runButtonOnClick = this.runButtonOnClick.bind(this);
+      this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
+      this.resetButtonOnClick = this.resetButtonOnClick.bind(this);
   }
 
     componentDidMount() {
@@ -15,16 +18,13 @@ class SimulationCanvasContainer extends React.Component {
         if (!canvas) return;
         this.alterCanvasRef = new simulationMethods(canvas);
         this.alterCanvasRef.setSpriteOnLoadMethods();
-        console.log(this.alterCanvasRef.fieldScale);
-        console.log(this.alterCanvasRef.canvas.width);
-        console.log(this.alterCanvasRef.canvas.height);
-
     }
 
 //#region button OnClick methods
-  async runButtonOnClick() {
+    async runButtonOnClick() {
+
     const runButton = document.getElementById("runButton");
-    runButton.disabled = true;
+      runButton.disabled = true;
 
       this.alterCanvasRef.isMoving = true;
 
