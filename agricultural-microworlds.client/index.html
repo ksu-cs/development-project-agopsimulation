@@ -424,7 +424,7 @@ loadStations();
         };
         Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
             const type = block.getFieldValue('TYPE');
-            const checkResult = `CheckIfPlantInFront(${type})`;
+            let checkResult = CheckIfPlantInFront(type);
             return [checkResult, Blockly.JavaScript.ORDER_RELATIONAL];
         };
 
@@ -1192,9 +1192,6 @@ document.getElementById('runButton').addEventListener('click', async function ()
             runButton.disabled = true;
             isMoving = true;
 
-   await new Promise(requestAnimationFrame);//let new values update to DOM
-
-            await fetchData();
 
             console.log("csvLines length:", csvLines.length);
 console.log("First line:", csvLines[0]);
@@ -1207,6 +1204,7 @@ console.log("First line:", csvLines[0]);
                 if (code.trim()) {
                     try {
                         // Wrap the code in an async function and execute
+                                    await fetchData();
                         const asyncCode = `(async function() { ${code} })()`;
                         await eval(asyncCode);
                     } catch (e) {
