@@ -246,13 +246,21 @@ loadStations();
                 "tooltip": "Turn the tractor right"
             },
             {
-                "type": "turn_left_x_degrees",
-                "message0": "Turn %1 degrees left",
+                "type": "turn_x_degrees",
+                "message0": "Turn %1 degrees %2",
                 "args0": [
                     {
                         "type": "input_value",
                         "name": "DEGREES",
                         "check": "Number"
+                    },
+                    {
+                        "type": "field_dropdown",
+                        "name": "DIRECTION",
+                        "options": [
+                            ["left", "0"],
+                            ["right", "1"]
+                        ]
                     }
                 ],
                 "previousStatement": null,
@@ -289,36 +297,40 @@ loadStations();
                 "style": "math_blocks",
             },
             {
-                "type": "turn_harvesting_on",
-                "message0": "turn harvesting on",
+                "type": "toggle_harvesting",
+                "message0": "turn harvesting %1",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "toggleType",
+                        "options": [
+                            ["ON", "1"],
+                            ["OFF", "0"]
+                        ]
+                    }
+                ],
                 "previousStatement": null,
                 "nextStatement": null,
                 "style": "control_blocks",
-                tooltip: "Turns harvesting on tractor on"
+                tooltip: "Turns harvesting on tractor on or off"
             },
             {
-                "type": "turn_harvesting_off",
-                "message0": "turn harvesting off",
+                "type": "toggle_seeding",
+                "message0": "turn seeding %1",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "toggleType",
+                        "options": [
+                            ["ON", "1"],
+                            ["OFF", "0"]
+                        ]
+                    }
+                ],
                 "previousStatement": null,
                 "nextStatement": null,
                 "style": "control_blocks",
-                tooltip: "Turns harvesting on tractor off"
-            },
-            {
-                "type": "turn_seeding_on",
-                "message0": "turn seeding on",
-                "previousStatement": null,
-                "nextStatement": null,
-                "style": "control_blocks",
-                tooltip: "Turns seeding on tractor on"
-            },
-            {
-                "type": "turn_seeding_off",
-                "message0": "turn seeding off",
-                "previousStatement": null,
-                "nextStatement": null,
-                "style": "control_blocks",
-                tooltip: "Turns seeding on tractor off"
+                tooltip: "Turns seeding on tractor on or off"
             },
             {
                 "type": "wait_x_weeks",
@@ -389,33 +401,31 @@ loadStations();
         };
 
         Blockly.JavaScript.forBlock['turn_left'] = function (block) {
-            return `await turnLeft();\n`;
+            return `await turnXDegrees(-90);\n`;
         };
 
         Blockly.JavaScript.forBlock['turn_right'] = function (block) {
-            return `await turnRight();\n`;
+            return `await turnXDegrees(90);\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function (block) {
-            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            return `await TurnXLeft(${amount});\n`;
+        Blockly.JavaScript.forBlock['turn_x_degrees'] = function (block) {
+            let amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            const direction = block.getFieldValue('DIRECTION');
+            if (direction == 0)
+                amount *= -1;
+            return `await turnXDegrees(${amount});\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function (block) {
-            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            return `await TurnXRight(${amount});\n`;
+        Blockly.JavaScript.forBlock['toggle_harvesting'] = function (block) {
+            const toggle = block.getFieldValue('toggleType');
+            const inputType = (toggle == 0) ? false : true;
+            return `toggleHarvesting(${inputType});\n`;
         };
-        Blockly.JavaScript.forBlock['turn_harvesting_on'] = function (block) {
-            return 'turnHarvestingOn();\n';
-        };
-        Blockly.JavaScript.forBlock['turn_harvesting_off'] = function (block) {
-            return 'turnHarvestingOff();\n';
-        };
-        Blockly.JavaScript.forBlock['turn_seeding_on'] = function (block) {
-            return 'turnSeedingOn();\n';
-        };
-        Blockly.JavaScript.forBlock['turn_seeding_off'] = function (block) {
-            return 'turnSeedingOff();\n';
+
+        Blockly.JavaScript.forBlock['toggle_seeding'] = function (block) {
+            const toggle = block.getFieldValue('toggleType');
+            const inputType = (toggle == 0) ? false : true;
+            return `toggleSeeding(${inputType});\n`;
         };
         Blockly.JavaScript.forBlock['wait_x_weeks'] = function (block) {
             const weeks = Blockly.JavaScript.valueToCode(block, 'WEEKS', Blockly.JavaScript.ORDER_ATOMIC) || '1';
@@ -442,7 +452,7 @@ loadStations();
 
         Blockly.JavaScript.forBlock['get_current_week'] = function (block) {
             return ['currentWeek', Blockly.JavaScript.ORDER_ATOMIC]
-        }
+        };
 
         // Custom theme for blocks
         const myTheme = Blockly.Theme.defineTheme('myTheme', {
@@ -493,8 +503,7 @@ loadStations();
                         { "kind": "block", "type": "move_forward" },
                         { "kind": "block", "type": "turn_left" },
                         { "kind": "block", "type": "turn_right" },
-                        { "kind": "block", "type": "turn_left_x_degrees" },
-                        { "kind": "block", "type": "turn_right_x_degrees" },
+                        { "kind": "block", "type": "turn_x_degrees" }
                     ]
                 },
                 {
@@ -522,10 +531,8 @@ loadStations();
                     "name": "Control",
                     "categorystyle": "control_category",
                     "contents": [
-                        { "kind": "block", "type": "turn_harvesting_on" },
-                        { "kind": "block", "type": "turn_harvesting_off" },
-                        { "kind": "block", "type": "turn_seeding_on" },
-                        { "kind": "block", "type": "turn_seeding_off" },
+                        { "kind": "block", "type": "toggle_harvesting" },
+                        { "kind": "block", "type": "toggle_seeding" },
                         { "kind": "block", "type": "wait_x_weeks" },
                     ]
                 },
@@ -698,19 +705,16 @@ loadStations();
         }
 
         // Methods for Harvesting and Seeding Blocks
-        function turnHarvestingOn() {
-            isHarvestingOn = true;
-            isSeedingOn = false;
+        function toggleHarvesting(isOn) {
+            isHarvestingOn = isOn;
+            if (isOn)
+                isSeedingOn = false;
         }
-        function turnHarvestingOff() {
-            isHarvestingOn = false;
-        }
-        function turnSeedingOn() {
-            isSeedingOn = true;
-            isHarvestingOn = false;
-        }
-        function turnSeedingOff() {
-            isSeedingOn = false;
+
+        function toggleSeeding(isOn) {
+            isSeedingOn = isOn;
+            if (isOn)
+                isHarvestingOn = false;
         }
 
         // Method for Wait X Weeks Block
@@ -1101,22 +1105,7 @@ function waitXWeeks(weeks) {
             });
         }
 
-    	function turnLeft() {
-        	goalAngle -= 90;
-        	return OnNewGoalRotation();
-    	}
-
-    	function turnRight() {
-        	goalAngle += 90;
-        	return OnNewGoalRotation();
-    	}
-
-    	function TurnXLeft(amount) {
-        	goalAngle -= amount;
-        	return OnNewGoalRotation();
-    	}
-
-    	function TurnXRight(amount) {
+    	function turnXDegrees(amount) {
         	goalAngle += amount;
         	return OnNewGoalRotation();
     	}
