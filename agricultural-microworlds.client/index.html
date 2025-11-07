@@ -401,11 +401,11 @@ loadStations();
         };
 
         Blockly.JavaScript.forBlock['turn_left'] = function (block) {
-            return `await turnLeft();\n`;
+            return `await turnXDegrees(-90);\n`;
         };
 
         Blockly.JavaScript.forBlock['turn_right'] = function (block) {
-            return `await turnRight();\n`;
+            return `await turnXDegrees(90);\n`;
         };
 
         Blockly.JavaScript.forBlock['turn_x_degrees'] = function (block) {
@@ -1104,16 +1104,6 @@ function waitXWeeks(weeks) {
                 animate();
             });
         }
-
-    	function turnLeft() {
-        	goalAngle -= 90;
-        	return OnNewGoalRotation();
-    	}
-
-    	function turnRight() {
-        	goalAngle += 90;
-        	return OnNewGoalRotation();
-    	}
 
     	function turnXDegrees(amount) {
         	goalAngle += amount;
