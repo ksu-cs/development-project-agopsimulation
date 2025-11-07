@@ -101,6 +101,7 @@
         border-radius: 5px;
         z-index: 10;
       }
+
       #scoreText {
         top: 50px;
       }
@@ -108,16 +109,19 @@
       #weekText {
         top: 5px;
       }
+
       #gddText {
         top: 25px;
       }
     </style>
   </head>
   <body>
-    <!--<div id="root" styles="margin: 0px, padding: 0px"></div>-->
-    <!--<script type="module" src="/src/main.jsx"></script>-->
+    <!--< div id = "root" styles = "margin: 0px, padding: 0px" ></div> -->
+    <!--< script type = "module" src = "/src/main.jsx" ></script> -->
     <div class="container">
+      <!-- Blockly workspace -->
       <div id="blocklyDiv"></div>
+      <!-- Canvas + Run button -->
       <br /><br />
       <div id="canvasArea">
         <p id="weekText">Week 0</p>
@@ -208,6 +212,7 @@
 
         <button id="runButton">Run Code</button>
         <button id="stopButton">Stop</button>
+        <!-- <button id="resetButton">Reset Position</button> -->
         <div id="debug">Drag blocks to workspace, then click Run</div>
       </div>
     </div>
@@ -406,49 +411,113 @@
       };
 
       Blockly.JavaScript.forBlock["turn_left"] = function (block) {
-        return "turnLeft();\n";
+        return `await turnXDegrees(-90);\n`;
       };
 
       Blockly.JavaScript.forBlock["turn_right"] = function (block) {
-        return "turnRight();\n";
+        return `await turnXDegrees(90);\n`;
       };
 
-      Blockly.JavaScript.forBlock["turn_left_x_degrees"] = function (block) {
-        const amount =
+      Blockly.JavaScript.forBlock["turn_x_degrees"] = function (block) {
+        let amount =
           Blockly.JavaScript.valueToCode(
             block,
             "DEGREES",
             Blockly.JavaScript.ORDER_ATOMIC,
           ) || "1";
-        return `await TurnXLeft(${amount});\n`;
+        const direction = block.getFieldValue("DIRECTION");
+        if (direction == 0) amount *= -1;
+        return `await turnXDegrees(${amount});\n`;
       };
 
-      Blockly.JavaScript.forBlock["turn_right_x_degrees"] = function (block) {
-        const amount =
+      Blockly.JavaScript.forBlock["toggle_harvesting"] = function (block) {
+        const toggle = block.getFieldValue("toggleType");
+        const inputType = toggle == 0 ? false : true;
+        return `toggleHarvesting(${inputType});\n`;
+      };
+
+      Blockly.JavaScript.forBlock["toggle_seeding"] = function (block) {
+        const toggle = block.getFieldValue("toggleType");
+        const inputType = toggle == 0 ? false : true;
+        return `toggleSeeding(${inputType});\n`;
+      };
+      Blockly.JavaScript.forBlock["wait_x_weeks"] = function (block) {
+        const weeks =
           Blockly.JavaScript.valueToCode(
             block,
-            "DEGREES",
+            "WEEKS",
             Blockly.JavaScript.ORDER_ATOMIC,
           ) || "1";
-        return `await TurnXRight(${amount});\n`;
+        waitingweeksCount = weeks;
+        return `await waitXWeeks(${weeks});\n`;
       };
-      Blockly.JavaScript.forBlock["turn_harvesting_on"] = function (block) {
-        return "turnHarvestingOn();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_harvesting_off"] = function (block) {
-        return "turnHarvestingOff();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_seeding_on"] = function (block) {
-        return "turnSeedingOn();\n";
-      };
-      Blockly.JavaScript.forBlock["turn_seeding_off"] = function (block) {
-        return "turnSeedingOff();\n";
+      Blockly.JavaScript.forBlock["is_over_tile"] = function (block) {
+        const type = block.getFieldValue("TYPE");
+        let checkResult = `CheckIfPlantInFront(${type})`;
+        return [checkResult, Blockly.JavaScript.ORDER_RELATIONAL];
       };
 
       Blockly.JavaScript.forBlock["math_number"] = function (block) {
         const number = block.getFieldValue("NUM");
         return [number, Blockly.JavaScript.ORDER_ATOMIC];
       };
+
+      Blockly.JavaScript.forBlock["custom_compare"] = function (block) {
+        const value_a =
+          Blockly.JavaScript.valueToCode(
+            block,
+            "A",
+            Blockly.JavaScript.ORDER_ATOMIC,
+          ) || "0";
+        const value_b =
+          Blockly.JavaScript.valueToCode(
+            block,
+            "B",
+            Blockly.JavaScript.ORDER_ATOMIC,
+          ) || "0";
+        const code = `${value_a} == ${value_b}`;
+        return [code, Blockly.JavaScript.ORDER_EQUALITY];
+      };
+
+      Blockly.JavaScript.forBlock["get_current_week"] = function (block) {
+        return ["currentWeek", Blockly.JavaScript.ORDER_ATOMIC];
+      };
+
+      // Custom theme for blocks
+      const myTheme = Blockly.Theme.defineTheme("myTheme", {
+        base: Blockly.Themes.Classic,
+        categoryStyles: {
+          movement_category: { colour: "300" },
+          numbers_category: { colour: "230" },
+          control_category: { colour: "190" },
+          logic_category: { colour: "135" },
+          loops_category: { colour: "60" },
+          variable_category: { colour: "330" },
+        },
+        blockStyles: {
+          // Movement Blocks
+          movement_blocks: { colourPrimary: "300" },
+
+          // Style for all blocks in the "Numbers" category
+          // 'numbers_blocks': { 'colourPrimary': "300" },
+
+          // Style for all blocks in the "Control" category
+          control_blocks: { colourPrimary: "190" },
+
+          // Style for all blocks in the "Logic" category
+          logic_blocks: { colourPrimary: "135" },
+
+          // Style for all blocks in the "Loops" category
+          loop_blocks: { colourPrimary: "60" },
+
+          // Style for all blocks in the "Numbers" category
+          math_blocks: { colorPrimary: "230" },
+
+          // Style for all blocks in the "Variables" category
+          variable_blocks: { colorPrimary: "330" },
+        },
+        componentStyles: {},
+      });
 
       // Toolbox definition
       const toolbox = {
@@ -457,19 +526,34 @@
           {
             kind: "category",
             name: "Movement",
-            colour: "#5b67a5",
+            categorystyle: "movement_category",
             contents: [
               { kind: "block", type: "move_forward" },
               { kind: "block", type: "turn_left" },
               { kind: "block", type: "turn_right" },
-              { kind: "block", type: "turn_left_x_degrees" },
-              { kind: "block", type: "turn_right_x_degrees" },
+              { kind: "block", type: "turn_x_degrees" },
+            ],
+          },
+          {
+            kind: "category",
+            name: "Variables",
+            categorystyle: "variable_category",
+            // "custom": "VARIABLE",
+            contents: [
+              {
+                kind: "button",
+                text: "Create variable...",
+                callbackKey: "CREATE_VARIABLE",
+              },
+              { kind: "block", type: "variables_get" },
+              { kind: "block", type: "variables_set" },
+              { kind: "block", type: "get_current_week" },
             ],
           },
           {
             kind: "category",
             name: "Numbers",
-            colour: "#5b9aa5",
+            categorystyle: "numbers_category",
             contents: [
               { kind: "block", type: "math_number" },
               { kind: "block", type: "math_random_int" },
@@ -478,28 +562,28 @@
           {
             kind: "category",
             name: "Control",
-            colour: "#5b12a5",
+            categorystyle: "control_category",
             contents: [
-              {
-                kind: "block",
-                type: "controls_if",
-              },
-              { kind: "block", type: "turn_harvesting_on" },
-              { kind: "block", type: "turn_harvesting_off" },
-              { kind: "block", type: "turn_seeding_on" },
-              { kind: "block", type: "turn_seeding_off" },
+              { kind: "block", type: "toggle_harvesting" },
+              { kind: "block", type: "toggle_seeding" },
+              { kind: "block", type: "wait_x_weeks" },
             ],
           },
           {
             kind: "category",
             name: "Logic",
-            colour: "#5b9dd5",
-            contents: [{ kind: "block", type: "logic_boolean" }],
+            categorystyle: "logic_category",
+            contents: [
+              { kind: "block", type: "controls_if" },
+              { kind: "block", type: "logic_boolean" },
+              { kind: "block", type: "is_over_tile" },
+              { kind: "block", type: "custom_compare" },
+            ],
           },
           {
             kind: "category",
             name: "Loops",
-            colour: "#5a1dd5",
+            categorystyle: "loops_category",
             contents: [
               { kind: "block", type: "controls_repeat_ext" },
               { kind: "block", type: "controls_whileUntil" },
@@ -512,6 +596,19 @@
       const workspace = Blockly.inject("blocklyDiv", {
         toolbox: toolbox,
         trashcan: true,
+        theme: myTheme,
+
+        renderer: "zelos",
+        rendererOptionis: {
+          keyboardNavigation: true,
+        },
+      });
+
+      // Register the callback for the "Create variable..." button
+      workspace.registerButtonCallback("CREATE_VARIABLE", function (button) {
+        Blockly.Variables.createVariableButtonHandler(
+          button.getTargetWorkspace(),
+        );
       });
 
       // Canvas and movement code
@@ -519,19 +616,61 @@
       const ctx = canvas.getContext("2d");
 
       // Global variables
-      let x = canvas.width / 2;
-      let y = canvas.height / 2;
-      let angle = 0; // 0 degrees = facing right
-      let isMoving = false;
-      let isHarvestingOn = false;
-      let isSeedingOn = false;
-      let animationId = -1;
-      let yieldScore = 0;
 
+      // Tractor variables
+      let tractorWorldX = canvas.width / 2; // Tractor's vertical position in the entire world
+      let tractorWorldY = canvas.height / 2; // Tractor's horizontal position in the entire world
+
+      let angle = 0; // 0 degrees = facing right
+      let goalAngle = 0; // Our angle will be set to move towards this.
+      let turnSpeed = 90; //How fast the tractor can turn.
+      let weeksToWait = 0;
+      let nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
+      let isMoving = false; // flag to indicate if the tractor is currently moving
+      let isHarvestingOn = false; // flag to indicate if harvesting mode is on
+      let isSeedingOn = false; // flag to indicate if seeding mode is on
+      let animationId = -1; // ID for the animation frame
+      let yieldScore = 0; // score for harvested crops
+
+      // Camera Variables
+      // const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
+      // const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
+      // let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
+      // let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
+      let cameraX = 0; //
+      let cameraY = 0;
+
+      // Game asset constants
       const FRAME_WIDTH = 64; // change to sprite’s frame width
       const FRAME_HEIGHT = 64; // change to sprite’s frame height
-      const fieldScale = 4; // The amount the field tiles will be scaled down by
-      const SPEED = 50; // pixels per second
+      const TILE_BASE_SIZE = 64; // The original size of the field tiles
+      const FIELD_SCALE = 8; // The amount the field tiles will be scaled down by
+      const SPEED = 20; // pixels per second
+
+      // Time variables
+      const START_WEEK = 1; // starting week
+      const GROWTH_DAYS = 1000.0; // days for crops to fully grow
+      let currentWeek = START_WEEK; // current week in simulation
+      // let weeksPassedSincePlanting = 0; // weeks passed since last planting
+
+      // Field variables
+      const TILE_WIDTH = TILE_BASE_SIZE / FIELD_SCALE; // Scaled width of each tile
+      const TILE_HEIGHT = TILE_BASE_SIZE / FIELD_SCALE; // Scaled height of each tile
+
+      // Setting up the array that represents the field
+      const WORLD_WIDTH_IN_SCREENS = 5; // Number of screens wide the world is
+      const WORLD_HEIGHT_IN_SCREENS = 5; // Number of screens high the world is
+      const SCREEN_ROWS = Math.floor(canvas.height / TILE_HEIGHT) + 2; // +2 to cover edges
+      const SCREEN_COLUMNS = Math.floor(canvas.width / TILE_WIDTH) + 2; // +2 to cover edges
+
+      const rows = SCREEN_ROWS * WORLD_HEIGHT_IN_SCREENS; // Total number of rows in the world
+      const columns = SCREEN_COLUMNS * WORLD_WIDTH_IN_SCREENS; // Total number of columns in the world
+
+      // World field dimensions
+      const worldPixelWidth = columns * TILE_WIDTH; // Total width of the world in pixels
+      const worldPixelHeight = rows * TILE_HEIGHT; // Total height of the world in pixels
+
+      let field = []; // 2D array representing the field tiles
 
       // --- Sprite setup ---
       const tractorSprite = new Image();
@@ -548,91 +687,211 @@
       // Variables to aid in image loading
       let imageLoadCount = 0;
       const imageCount = 4;
+      let isInitialized = false;
+
+      // Image loading
+      function onImageLoad() {
+        imageLoadCount++;
+        if (imageLoadCount === imageCount && !isInitialized) {
+          console.log("All images loaded!");
+          isInitialized = true;
+
+          // Initialize the field array
+          console.log(`Initalizing world: ${columns}x${rows} tiles`);
+          field = Array.from({ length: rows }, () =>
+            Array.from({ length: columns }, () => {
+              state: 2;
+              growth: 0.0;
+            }),
+          );
+
+          // Set initial position and draw
+          resetPosition();
+        }
+      }
 
       // Loading methods for images
       tractorSprite.onload = () => {
         console.log("✅ Tractor sprite loaded!");
-        imageLoadCount++;
-        if (imageLoadCount === imageCount) {
-          drawFieldAndTractor();
-        }
+        onImageLoad();
       };
       tractorSprite.onerror = () => {
         console.error("❌ Failed to load tractor sprite!");
       };
       dirtImage.onload = () => {
         console.log("DirtImage loaded!");
-        imageLoadCount++;
-        if (imageLoadCount === imageCount) {
-          drawFieldAndTractor();
-        }
+        onImageLoad();
       };
       dirtImage.onerror = () => {
         console.error("failed to load DirtImage");
       };
       seedImage.onload = () => {
         console.log("SeedImage loaded!");
-        imageLoadCount++;
-        if (imageLoadCount === imageCount) {
-          drawFieldAndTractor();
-        }
+        onImageLoad();
       };
       seedImage.onerror = () => {
         console.error("failed to load SeedImage");
       };
       wheatImage.onload = () => {
         console.log("WheatImage loaded!");
-        imageLoadCount++;
-        if (imageLoadCount === imageCount) {
-          drawFieldAndTractor();
-        }
+        onImageLoad();
       };
       wheatImage.onerror = () => {
         console.error("failed to load WheatImage");
       };
 
       // Methods for Harvesting and Seeding Blocks
-      function turnHarvestingOn() {
-        isHarvestingOn = true;
-        isSeedingOn = false;
-      }
-      function turnHarvestingOff() {
-        isHarvestingOn = false;
-      }
-      function turnSeedingOn() {
-        isSeedingOn = true;
-        isHarvestingOn = false;
-      }
-      function turnSeedingOff() {
-        isSeedingOn = false;
+      function toggleHarvesting(isOn) {
+        isHarvestingOn = isOn;
+        if (isOn) isSeedingOn = false;
       }
 
-      // Setting up the array that represents the field
-      const rows =
-        Math.floor((canvas.height / seedImage.height) * fieldScale) + 1;
-      const columns =
-        Math.floor((canvas.width / seedImage.width) * fieldScale) + 1;
-      let field = Array.from({ length: rows }, () =>
-        new Array(columns).fill(2),
-      );
+      function toggleSeeding(isOn) {
+        isSeedingOn = isOn;
+        if (isOn) isHarvestingOn = false;
+      }
 
-      const tileWidth = wheatImage.width / fieldScale; // one tiles width (all tiles same width and height)
-      const tileHeight = wheatImage.height / fieldScale; // one tiles height (all tiles same width and height)
+      // Method for Wait X Weeks Block
+      function waitXWeeks(weeks) {
+        waitingweeksCount = weeks; // Fixed variable name
+        return new Promise((resolve) => {
+          let weeksToProcess = weeks;
+
+          if (weeksToProcess > 0) {
+            nightFadeProgress = 0.0;
+          } else {
+            resolve();
+            return;
+          }
+
+          let waitingTime = 0.2;
+
+          function UpdateNight() {
+            const delta = 1 / 60; // assuming 60fps
+
+            if (nightFadeProgress > 0.5 && waitingTime > 0) {
+              waitingTime -= delta;
+              if (waitingTime <= 0) {
+                // A week has passed - calculate GDD for this week
+                const weekIndex = currentWeek - 1; // Convert to 0-based index
+
+                // Calculate GDD for this week
+                let weekGDD = 0;
+                const startIdx = weekIndex * 7;
+                for (
+                  let i = startIdx;
+                  i < startIdx + 7 && i < csvLines.length;
+                  i++
+                ) {
+                  if (csvLines[i] && csvLines[i][2]) {
+                    const temp = parseFloat(csvLines[i][2]);
+                    if (!isNaN(temp)) {
+                      weekGDD += Math.max(0, temp - Wheatgdd);
+                    }
+                  }
+                }
+
+                cumulativeGDD += weekGDD;
+
+                // Update week counter and grow crops
+                currentWeek++;
+                growCrops(weekGDD);
+
+                // Update HTML displays
+                document.getElementById("weekText").textContent =
+                  `Week ${currentWeek - 1}`;
+                document.getElementById("gddText").textContent =
+                  `GDD: ${cumulativeGDD.toFixed(2)}`;
+
+                weeksToProcess--;
+                if (weeksToProcess > 0) waitingTime = 0.2;
+              }
+            } else {
+              const fadeSpeed = waitingTime > 0 ? 1.0 : 2.0;
+              nightFadeProgress = Math.min(
+                nightFadeProgress + delta * fadeSpeed,
+                1.0,
+              );
+            }
+
+            if (weeksToProcess > 0 || nightFadeProgress < 1.0) {
+              drawFieldAndTractor();
+              animationId = requestAnimationFrame(UpdateNight);
+            } else {
+              nightFadeProgress = -1;
+              drawFieldAndTractor();
+              resolve();
+            }
+          }
+          UpdateNight();
+        });
+      }
+
+      function CheckIfPlantInFront(type) {
+        const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+        const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+        const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+        const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+        const center = {
+          x: tractorWorldX + FRAME_WIDTH / 2,
+          y: tractorWorldY + FRAME_HEIGHT / 2,
+        };
+
+        const corners = [
+          rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+          rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+          rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+          rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
+        ];
+
+        const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
+        return detectWhatTilesAreHit(
+          frontSide[0].x,
+          frontSide[0].y,
+          frontSide[1].x,
+          frontSide[1].y,
+          type,
+        );
+      }
+
+      function growCrops(weeklyGDD) {
+        const daysToAdd = weeklyGDD;
+
+        for (let i = 0; i < rows; i++) {
+          for (let j = 0; j < columns; j++) {
+            let tile = field[i][j];
+            if (tile.state === 1) {
+              // Seeded
+              tile.growth += daysToAdd;
+              if (tile.growth >= GROWTH_DAYS) {
+                tile.state = 2; // Fully grown
+                tile.growth = GROWTH_DAYS;
+              }
+            }
+          }
+        }
+        drawFieldAndTractor();
+      }
 
       // --- Draw the tractor sprite based on current direction ---
       function drawTractor() {
+        const screenX = tractorWorldX - cameraX;
+        const screenY = tractorWorldY - cameraY;
+
         const normalizedAngle = ((angle % 360) + 360) % 360;
         var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
         // tractorsprite
         ctx.save();
-        ctx.translate(x + FRAME_WIDTH / 2, y + FRAME_HEIGHT / 2);
+        ctx.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);
         ctx.rotate(angleInRadians);
         ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
         ctx.restore();
 
         document.getElementById("debug").innerHTML = //debugging window
-          `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+          `World Position: (${Math.round(tractorWorldX)}, ${Math.round(tractorWorldY)})<br>` +
+          `Camera Position: (${Math.round(cameraX)}, ${Math.round(cameraY)})<br>` +
+          `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
           `Angle: ${normalizedAngle}°<br>` +
           `Direction: ${getDirectionName(angle)}<br>` +
           `Moving: ${isMoving ? "Yes" : "No"} <br>`;
@@ -644,7 +903,10 @@
         const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
         const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
         const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
-        const center = { x: x + FRAME_WIDTH / 2, y: y + FRAME_HEIGHT / 2 };
+        const center = {
+          x: tractorWorldX + FRAME_WIDTH / 2,
+          y: tractorWorldY + FRAME_HEIGHT / 2,
+        };
 
         const corners = [
           rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
@@ -660,13 +922,22 @@
           frontSide[0].y,
           frontSide[1].x,
           frontSide[1].y,
+          -1,
         );
 
-        // draw the entire field
-        for (let i = 0; i < rows; i++) {
-          for (let j = 0; j < columns; j++) {
+        // draw the entire field using camera coordinates
+
+        const startCol = Math.floor(cameraX / TILE_WIDTH);
+        const endCol = Math.min(columns, startCol + SCREEN_COLUMNS);
+        const startRow = Math.floor(cameraY / TILE_HEIGHT);
+        const endRow = Math.min(rows, startRow + SCREEN_ROWS);
+
+        for (let i = startRow; i < endRow; i++) {
+          for (let j = startCol; j < endCol; j++) {
+            if (i < 0 || j < 0) continue; // skip negative indices
+
             let dirtOrWheat = dirtImage;
-            switch (field[i][j]) {
+            switch (field[i][j].state) {
               case 0:
                 dirtOrWheat = dirtImage;
                 break;
@@ -677,23 +948,36 @@
                 dirtOrWheat = wheatImage;
                 break;
             }
+            const tileWorldX = j * TILE_WIDTH;
+            const tileWorldY = i * TILE_HEIGHT;
+
+            const tileScreenX = tileWorldX - cameraX;
+            const tileScreenY = tileWorldY - cameraY;
+
             ctx.drawImage(
               dirtOrWheat,
               0,
               0,
-              seedImage.width,
-              seedImage.height,
-              (j * seedImage.width) / fieldScale,
-              (i * seedImage.height) / fieldScale,
-              seedImage.width / fieldScale,
-              seedImage.height / fieldScale,
+              TILE_BASE_SIZE,
+              TILE_BASE_SIZE,
+              Math.floor(tileScreenX),
+              Math.floor(tileScreenY),
+              TILE_WIDTH,
+              TILE_HEIGHT,
             );
           }
         }
       }
 
+      function DrawNight() {
+        let alpha =
+          0.75 * Math.min(1.2 * Math.sin(nightFadeProgress * Math.PI), 1.0);
+        ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
+        ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw the overlay
+      }
+
       // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
-      function detectGentleSlope(x0, y0, x1, y1) {
+      function detectGentleSlope(x0, y0, x1, y1, checkTiles = -1) {
         let deltaX = x1 - x0;
         let deltaY = y1 - y0;
 
@@ -705,18 +989,33 @@
         }
         let D = 2 * deltaY - deltaX;
         let y = y0;
+        let hasChecked = false;
+        let tile = null;
 
         for (let x = x0; x < x1; x++) {
-          changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+          const tileX = Math.floor(x / TILE_WIDTH);
+          const tileY = Math.floor(y / TILE_HEIGHT);
+          if (checkTiles < 0) changeTile(tileX, tileY);
           if (D > 0) {
             y = y + yi;
             D = D + 2 * (deltaY - deltaX);
           } else D = D + 2 * deltaY;
+
+          tile =
+            tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows
+              ? field[tileY][tileX]
+              : null;
+          hasChecked =
+            hasChecked ||
+            checkTiles < 0 ||
+            (tile != null && tile.state == checkTiles);
         }
+
+        return hasChecked;
       }
 
       // Detects and changes which tiles are in the line from point0, to point1 for a steep slope
-      function detectSteepSlope(x0, y0, x1, y1) {
+      function detectSteepSlope(x0, y0, x1, y1, checkTiles = -1) {
         let deltaX = x1 - x0;
         let deltaY = y1 - y0;
 
@@ -728,29 +1027,49 @@
         }
         let D = 2 * deltaX - deltaY;
         let x = x0;
+        let hasChecked = false;
+        let tile = null;
 
         for (let y = y0; y < y1; y++) {
-          changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+          const tileX = Math.floor(x / TILE_WIDTH);
+          const tileY = Math.floor(y / TILE_HEIGHT);
+          if (checkTiles < 0) changeTile(tileX, tileY);
           if (D > 0) {
             x = x + xi;
             D = D + 2 * (deltaX - deltaY);
           } else D = D + 2 * deltaX;
+
+          tile =
+            tileX >= 0 && tileX < columns && tileY >= 0 && tileY < rows
+              ? field[tileY][tileX]
+              : null;
+          hasChecked =
+            hasChecked ||
+            checkTiles < 0 ||
+            (tile != null && tile.state == checkTiles);
         }
+
+        return hasChecked;
       }
 
       // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
       function changeTile(x, y) {
         if (x >= 0 && x < columns && y >= 0 && y < rows) {
+          let tile = field[y][x];
+
           if (isHarvestingOn) {
-            if (field[y][x] === 2) {
-              field[y][x] = 0;
+            if (tile.state === 2) {
+              tile.state = 0;
+              tile.growth = 0.0;
               yieldScore++;
-            } else if (field[y][x] === 1) {
-              field[y][x] = 0;
+            } else if (tile.state === 1) {
+              tile.state = 0;
+              tile.growth = 0.0;
             }
           } else if (isSeedingOn) {
-            if (field[y][x] === 0) {
-              field[y][x] = 1;
+            if (tile.state === 0) {
+              tile.state = 1;
+              tile.growth = 0.0;
               yieldScore++;
             }
           }
@@ -758,13 +1077,13 @@
       }
 
       // Detects wether the slope from point0 to point1 is steep or gentle then calls the appropriate method to detect tiles in that line
-      function detectWhatTilesAreHit(x0, y0, x1, y1) {
+      function detectWhatTilesAreHit(x0, y0, x1, y1, checkTiles = -1) {
         if (Math.abs(y1 - y0) < Math.abs(x1 - x0)) {
-          if (x0 > x1) detectGentleSlope(x1, y1, x0, y0);
-          else detectGentleSlope(x0, y0, x1, y1);
+          if (x0 > x1) return detectGentleSlope(x1, y1, x0, y0, checkTiles);
+          else return detectGentleSlope(x0, y0, x1, y1, checkTiles);
         } else {
-          if (y0 > y1) detectSteepSlope(x1, y1, x0, y0);
-          else detectSteepSlope(x0, y0, x1, y1);
+          if (y0 > y1) return detectSteepSlope(x1, y1, x0, y0, checkTiles);
+          else return detectSteepSlope(x0, y0, x1, y1, checkTiles);
         }
       }
 
@@ -772,7 +1091,7 @@
       function resetField() {
         for (let i = 0; i < rows; i++) {
           for (let j = 0; j < columns; j++) {
-            field[i][j] = 2;
+            field[i][j] = { state: 2, growth: 0.0 };
           }
         }
       }
@@ -793,10 +1112,29 @@
         document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
         drawField();
         drawTractor();
+
+        if (nightFadeProgress >= 0.0) DrawNight();
+      }
+
+      // Updates camera position based on tractor position
+      function updateCamera() {
+        // Calculate the tractor's center point
+        let tractorCenterX = tractorWorldX + FRAME_WIDTH / 2;
+        let tractorCenterY = tractorWorldY + FRAME_HEIGHT / 2;
+
+        // Aim the camera so the tractor's center is at the screen's center
+        let targetCameraX = tractorCenterX - canvas.width / 2;
+        let targetCameraY = tractorCenterY - canvas.height / 2;
+
+        const maxCameraX = worldPixelWidth - canvas.width;
+        const maxCameraY = worldPixelHeight - canvas.height;
+
+        cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
+        cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
       }
 
       function getDirectionName(angle) {
-        const normalizedAngle = ((angle % 360) + 450) % 360;
+        const normalizedAngle = (((angle % 360) + 450) % 360) - 90;
         if (normalizedAngle === 0) return "Right →";
         if (normalizedAngle === 90) return "Down ↓";
         if (normalizedAngle === 180) return "Left ←";
@@ -820,8 +1158,13 @@
             if (currentTime < endTime && isMoving) {
               // Calculate how much to move based on frame time
               const deltaTime = 1 / 60; // assuming 60fps
-              x += moveX * deltaTime;
-              y += moveY * deltaTime;
+
+              tractorWorldX += moveX * deltaTime;
+              tractorWorldY += moveY * deltaTime;
+
+              // cameraX = tractorWorldX - tractorScreenX;
+              // cameraY = tractorWorldY - tractorScreenY;
+              updateCamera();
 
               drawFieldAndTractor();
               animationId = requestAnimationFrame(animate);
@@ -829,38 +1172,65 @@
               resolve();
             }
           }
+
           animate();
         });
       }
 
-      function turnLeft() {
-        angle -= 90;
-        drawFieldAndTractor();
+      function turnXDegrees(amount) {
+        goalAngle += amount;
+        return OnNewGoalRotation();
       }
 
-      function turnRight() {
-        angle += 90;
-        drawFieldAndTractor();
-      }
+      function OnNewGoalRotation() {
+        return new Promise((resolve) => {
+          function turn() {
+            const delta = 1 / 60; // assuming 60fps
 
-      function TurnXLeft(amount) {
-        angle -= amount;
-        drawFieldAndTractor();
-      }
+            if (angle != goalAngle) {
+              // For the actual turning.
+              var difference = goalAngle - angle;
+              var absDiff = Math.abs(difference);
+              var alpha = Math.min(turnSpeed * delta, absDiff) / absDiff;
+              angle = angle * (1 - alpha) + goalAngle * alpha;
 
-      function TurnXRight(amount) {
-        angle += amount;
-        drawFieldAndTractor();
+              // // Move the tractor while turning, to look more natural.
+              const moveX = SPEED * Math.cos((angle * Math.PI) / 180);
+              const moveY = SPEED * Math.sin((angle * Math.PI) / 180);
+              tractorWorldX += moveX * delta;
+              tractorWorldY += moveY * delta;
+
+              // cameraX = tractorWorldX - tractorScreenX;
+              // cameraY = tractorWorldY - tractorScreenY;
+              updateCamera();
+
+              drawFieldAndTractor();
+              animationId = requestAnimationFrame(turn);
+            } else {
+              resolve();
+            }
+          }
+          turn();
+        });
       }
 
       function resetPosition() {
-        x = canvas.width / 2;
-        y = canvas.height / 2;
+        if (!isInitialized) return;
+
+        tractorWorldX = (columns * TILE_WIDTH) / 2;
+        tractorWorldY = (rows * TILE_HEIGHT) / 2;
         angle = 0;
+
+        // cameraX = tractorWorldX - tractorScreenX;
+        // cameraY = tractorWorldY - tractorScreenY;
+        updateCamera();
+
+        goalAngle = 0;
         isHarvestingOn = false;
         isSeedingOn = false;
         isTractorOn = false;
         yieldScore = 0;
+        nightFadeProgress = -1.0;
         resetField();
         drawFieldAndTractor();
       }
@@ -873,18 +1243,30 @@
         }
       }
 
+      function resetEverything() {
+        stopMovement();
+        resetPosition();
+        runButton.disabled = false;
+        waitingweeksCount = 0;
+        currentWeek = 0;
+        document.getElementById("weekText").innerHTML = `Week ${currentWeek}`;
+        document.getElementById("gddText").textContent = `GDD: ${0.0}`;
+      }
+
       // Initial draw
-      if (imageLoadCount === imageCount) drawFieldAndTractor();
+      // if (imageLoadCount === imageCount) drawFieldAndTractor();
 
       // Run button - now uses async/await
       document
         .getElementById("runButton")
         .addEventListener("click", async function () {
+          resetEverything();
           const runButton = document.getElementById("runButton");
           runButton.disabled = true;
-
           isMoving = true;
 
+          console.log("csvLines length:", csvLines.length);
+          console.log("First line:", csvLines[0]);
           const allBlocks = workspace.getAllBlocks(false);
 
           if (allBlocks.length > 0) {
@@ -893,6 +1275,7 @@
             if (code.trim()) {
               try {
                 // Wrap the code in an async function and execute
+                await fetchData();
                 const asyncCode = `(async function() { ${code} })()`;
                 await eval(asyncCode);
               } catch (e) {
@@ -913,13 +1296,9 @@
         });
 
       // Reset button
-      document
-        .getElementById("resetButton")
-        .addEventListener("click", function () {
-          stopMovement();
-          resetPosition();
-          runButton.disabled = false;
-        });
+      // document.getElementById('resetButton').addEventListener('click', function () {
+      //     resetEverything();
+      // });
     </script>
   </body>
 </html>
