@@ -1,125 +1,400 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>AGsim</title>
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
-    <style></style>
-  </head>
-  <body>
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #blocklyDiv {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #canvasArea {
+            width: 800px;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-left: 3px solid #ccc;
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            margin-bottom: 20px;
+            margin-top: 100px;
+        }
+
+        #runButton {
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+
+        #resetButton {
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #stopButton {
+            padding: 10px 20px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #debug {
+            background: white;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        #weekText, #scoreText, #gddText {
+            position: absolute;
+            left: 20px;
+            color: black;
+            font-weight: bold;
+            font-size: 18px;
+            background: rgba(255,255,255,0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            z-index: 10;
+        }
+        #scoreText {
+            top: 50px; 
+        }
+
+        #weekText {
+            top: 5px;
+        }
+        #gddText {
+            top: 25px;
+        }
+    </style>
+</head>
+<body>
     <div id="root" styles="margin: 0px, padding: 0px"></div>
     <script type="module" src="/src/main.jsx"></script>
-  </body>
-  <!--<script>
-    // Define custom blocks
-    Blockly.defineBlocksWithJsonArray([
-      {
-        type: "move_forward",
-        message0: "move forward for %1 seconds",
-        args0: [
-          {
-            type: "input_value",
-            name: "DURATION",
-            check: "Number",
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        colour: 160,
-        tooltip: "Move forward for specified seconds",
-      },
-      {
-        type: "turn_left",
-        message0: "turn left",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turn the tractor left",
-      },
-      {
-        type: "turn_right",
-        message0: "turn right",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turn the tractor right",
-      },
-      {
-        type: "turn_left_x_degrees",
-        message0: "Turn %1 degrees left",
-        args0: [
-          {
-            type: "input_value",
-            name: "DEGREES",
-            check: "Number",
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turn the tractor a certain amount of degrees left",
-      },
-      {
-        type: "turn_right_x_degrees",
-        message0: "Turn %1 degrees right",
-        args0: [
-          {
-            type: "input_value",
-            name: "DEGREES",
-            check: "Number",
-          },
-        ],
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turn the tractor a certain amount of degrees right",
-      },
-      {
-        type: "math_number",
-        message0: "%1",
-        args0: [
-          {
-            type: "field_number",
-            name: "NUM",
-            value: 1,
-          },
-        ],
-        output: "Number",
-        colour: 230,
-      },
-      {
-        type: "turn_harvesting_on",
-        message0: "turn harvesting on",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turns harvesting on tractor on",
-      },
-      {
-        type: "turn_harvesting_off",
-        message0: "turn harvesting off",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turns harvesting on tractor off",
-      },
-      {
-        type: "turn_seeding_on",
-        message0: "turn seeding on",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turns seeding on tractor on",
-      },
-      {
-        type: "turn_seeding_off",
-        message0: "turn seeding off",
-        previousStatement: null,
-        nextStatement: null,
-        colour: 210,
-        tooltip: "Turns seeding on tractor off",
-      },
-    ]);
+    <div class="container">
+        <!-- Blockly workspace -->
+        <div id="blocklyDiv"></div>
+        <!-- Canvas + Run button -->
+         <br><br/>
+        <div id="canvasArea">
+                        <p id="weekText">Week 0</p>
+            <p id="scoreText">Yield: 0</p>
+            <p id="gddText">Growth Days: 0.00</p>
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+
+
+
+<label for="station">Choose a station:</label>
+<select id="station">
+    <option>Loading stations...</option>
+</select>
+
+<label for="start">Start date:</label>
+<input type="date" id="start">
+
+
+
+<pre id="output"></pre>
+
+<script>
+async function loadStations() {
+    const response = await fetch('https://mesonet.k-state.edu/rest/stationnames/');
+    const text = await response.text();
+    const lines = text.split('\n').slice(1); // skip header
+    const stationSelect = document.getElementById('station');
+    stationSelect.innerHTML = ''; // clear loading option
+
+    lines.forEach(line => {
+        const cols = line.split(',');
+        const NAME = cols[0];
+        const ABBR = cols[0];
+        if (NAME && ABBR) {
+            const option = document.createElement('option');
+            option.value = ABBR;      // for URL
+            option.textContent = NAME; // for user display
+            stationSelect.appendChild(option);
+        }
+    });
+}
+
+let waitingweeksCount = 1; // global variable, set elsewhere
+let cumulativeGDD = 0;
+let csvLines = []; // parsed CSV data
+const Wheatgdd = 10;
+
+function calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
+    let sum = 0;
+    const startIdx = weekIndex * daysPerWeek;
+    for (let i = startIdx; i < startIdx + daysPerWeek && i < csvLines.length; i++) {
+        const temp = parseFloat(csvLines[i][2]); // TEMP2MAVG
+        sum += Math.max(0, temp - Wheatgdd);
+    }
+    return sum;
+}
+
+
+async function fetchData() {
+    const station = document.getElementById('station').value;
+    const startInput = document.getElementById('start').value; // YYYY-MM-DD
+    const startDate = new Date(startInput);
+
+    // Make sure waitingweeksCount is a number
+    const weeks = Number(waitingweeksCount) || 1;
+
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 7 * weeks); // 7 days per week
+
+    const start = startInput.replaceAll('-', '');
+    const end = `${endDate.getFullYear()}${(endDate.getMonth()+1).toString().padStart(2,'0')}${endDate.getDate().toString().padStart(2,'0')}`;
+
+    const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG`;
+    console.log("Fetching URL:", url);
+
+    const response = await fetch(url);
+    const data = await response.text();
+
+    const lines = data.trim().split('\n');
+    csvLines = lines.slice(1).map(line => line.split(',')); // skip header
+    cumulativeGDD = 0;
+    currentWeek = START_WEEK;
+}
+
+loadStations();
+
+</script>
+
+
+            <button id="runButton">Run Code</button>
+            <button id="stopButton">Stop</button>
+            <!-- <button id="resetButton">Reset Position</button> -->
+            <div id="debug">Drag blocks to workspace, then click Run</div>
+        </div>
+    </div>
+    <script>
+        // Define custom blocks
+        Blockly.defineBlocksWithJsonArray([
+            {
+                "type": "move_forward",
+                "message0": "move forward for %1 seconds",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DURATION",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "movement_blocks",
+                "tooltip": "Move forward for specified seconds"
+            },
+            {
+                "type": "turn_left",
+                "message0": "turn left",
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "movement_blocks",
+                "tooltip": "Turn the tractor left"
+            },
+            {
+                "type": "turn_right",
+                "message0": "turn right",
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "movement_blocks",
+                "tooltip": "Turn the tractor right"
+            },
+            {
+                "type": "turn_x_degrees",
+                "message0": "Turn %1 degrees %2",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    },
+                    {
+                        "type": "field_dropdown",
+                        "name": "DIRECTION",
+                        "options": [
+                            ["left", "0"],
+                            ["right", "1"]
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "movement_blocks",
+                "tooltip": "Turn the tractor a certain amount of degrees left"
+            },
+            {
+                "type": "turn_right_x_degrees",
+                "message0": "Turn %1 degrees right",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "DEGREES",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "movement_blocks",
+                "tooltip": "Turn the tractor a certain amount of degrees right"
+            },
+            {
+                "type": "math_number",
+                "message0": "%1",
+                "args0": [
+                    {
+                        "type": "field_number",
+                        "name": "NUM",
+                        "value": 1
+                    }
+                ],
+                "output": "Number",
+                "style": "math_blocks",
+            },
+            {
+                "type": "toggle_harvesting",
+                "message0": "turn harvesting %1",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "toggleType",
+                        "options": [
+                            ["ON", "1"],
+                            ["OFF", "0"]
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "control_blocks",
+                tooltip: "Turns harvesting on tractor on or off"
+            },
+            {
+                "type": "toggle_seeding",
+                "message0": "turn seeding %1",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "toggleType",
+                        "options": [
+                            ["ON", "1"],
+                            ["OFF", "0"]
+                        ]
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "control_blocks",
+                tooltip: "Turns seeding on tractor on or off"
+            },
+            {
+                "type": "wait_x_weeks",
+                "message0": "wait %1 weeks",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "WEEKS",
+                        "check": "Number"
+                    }
+                ],
+                "previousStatement": null,
+                "nextStatement": null,
+                "style": "control_blocks",
+                "tooltip": "Wait for a certain number of weeks"
+            },
+            {
+                "type": "is_over_tile",
+                "message0": "is over %1 tile",
+                "args0": [
+                    {
+                        "type": "field_dropdown",
+                        "name": "TYPE",
+                        "options": [
+                            ["Unplanted", "0"],
+                            ["Seeded", "1"],
+                            ["Grown", "2"]
+                        ]
+                    }
+                ],
+                "output": "Boolean",
+                "style": "logic_blocks",
+                "tooltip": "Checks if a planted tile is in front of the tractor."
+            },
+            {
+                "type": "custom_compare",
+                "message0": "%1 = %2",
+                "args0": [
+                    {
+                        "type": "input_value",
+                        "name": "A",
+                        "check": "Number"
+                    },
+                    {
+                        "type": "input_value",
+                        "name": "B",
+                        "check": "Number"
+                    }
+                ],
+                "output": "Boolean",
+                "style": "logic_blocks",
+                "tooltip": "Comparison block",
+                "inputsInline": true
+            },
+            {
+                "type": "get_current_week",
+                "message0": "Current Week",
+                "output": "Number",
+                "style": "variable_blocks",
+                "tooltip": "Gets the current week number from the simulation."
+            }
+        ]);
 
     // Define JavaScript generators
     Blockly.JavaScript.forBlock["move_forward"] = function (block) {
@@ -132,141 +407,474 @@
       return `await moveForward(${duration});\n`;
     };
 
-    Blockly.JavaScript.forBlock["turn_left"] = function (block) {
-      return "turnLeft();\n";
-    };
+        Blockly.JavaScript.forBlock['turn_left'] = function (block) {
+            return 'turnLeft();\n';
+        };
 
-    Blockly.JavaScript.forBlock["turn_right"] = function (block) {
-      return "turnRight();\n";
-    };
+        Blockly.JavaScript.forBlock['turn_right'] = function (block) {
+            return 'turnRight();\n';
+        };
 
-    Blockly.JavaScript.forBlock["turn_left_x_degrees"] = function (block) {
-      const amount =
-        Blockly.JavaScript.valueToCode(
-          block,
-          "DEGREES",
-          Blockly.JavaScript.ORDER_ATOMIC,
-        ) || "1";
-      return `await TurnXLeft(${amount});\n`;
-    };
+        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function (block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXLeft(${amount});\n`;
+        };
 
-    Blockly.JavaScript.forBlock["turn_right_x_degrees"] = function (block) {
-      const amount =
-        Blockly.JavaScript.valueToCode(
-          block,
-          "DEGREES",
-          Blockly.JavaScript.ORDER_ATOMIC,
-        ) || "1";
-      return `await TurnXRight(${amount});\n`;
-    };
-    Blockly.JavaScript.forBlock["turn_harvesting_on"] = function (block) {
-      return "turnHarvestingOn();\n";
-    };
-    Blockly.JavaScript.forBlock["turn_harvesting_off"] = function (block) {
-      return "turnHarvestingOff();\n";
-    };
-    Blockly.JavaScript.forBlock["turn_seeding_on"] = function (block) {
-      return "turnSeedingOn();\n";
-    };
-    Blockly.JavaScript.forBlock["turn_seeding_off"] = function (block) {
-      return "turnSeedingOff();\n";
-    };
+        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function (block) {
+            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            return `await TurnXRight(${amount});\n`;
+        };
+        Blockly.JavaScript.forBlock['turn_harvesting_on'] = function (block) {
+            return 'turnHarvestingOn();\n';
+        };
+        Blockly.JavaScript.forBlock['turn_harvesting_off'] = function (block) {
+            return 'turnHarvestingOff();\n';
+        };
+        Blockly.JavaScript.forBlock['turn_seeding_on'] = function (block) {
+            return 'turnSeedingOn();\n';
+        };
+        Blockly.JavaScript.forBlock['turn_seeding_off'] = function (block) {
+            return 'turnSeedingOff();\n';
+        };
 
     Blockly.JavaScript.forBlock["math_number"] = function (block) {
       const number = block.getFieldValue("NUM");
       return [number, Blockly.JavaScript.ORDER_ATOMIC];
     };
 
-    // Toolbox definition
-    const toolbox = {
-      kind: "categoryToolbox",
-      contents: [
-        {
-          kind: "category",
-          name: "Movement",
-          colour: "#5b67a5",
-          contents: [
-            { kind: "block", type: "move_forward" },
-            { kind: "block", type: "turn_left" },
-            { kind: "block", type: "turn_right" },
-            { kind: "block", type: "turn_left_x_degrees" },
-            { kind: "block", type: "turn_right_x_degrees" },
-          ],
-        },
-        {
-          kind: "category",
-          name: "Numbers",
-          colour: "#5b9aa5",
-          contents: [
-            { kind: "block", type: "math_number" },
-            { kind: "block", type: "math_random_int" },
-          ],
-        },
-        {
-          kind: "category",
-          name: "Control",
-          colour: "#5b12a5",
-          contents: [
-            {
-              kind: "block",
-              type: "controls_if",
-            },
-            { kind: "block", type: "turn_harvesting_on" },
-            { kind: "block", type: "turn_harvesting_off" },
-            { kind: "block", type: "turn_seeding_on" },
-            { kind: "block", type: "turn_seeding_off" },
-          ],
-        },
-        {
-          kind: "category",
-          name: "Logic",
-          colour: "#5b9dd5",
-          contents: [{ kind: "block", type: "logic_boolean" }],
-        },
-        {
-          kind: "category",
-          name: "Loops",
-          colour: "#5a1dd5",
-          contents: [
-            { kind: "block", type: "controls_repeat_ext" },
-            { kind: "block", type: "controls_whileUntil" },
-          ],
-        },
-      ],
-    };
+        // Toolbox definition
+        const toolbox = {
+            "kind": "categoryToolbox",
+            "contents": [
+                {
+                    "kind": "category",
+                    "name": "Movement",
+                    "colour": "#5b67a5",
+                    "contents": [
+                        { "kind": "block", "type": "move_forward" },
+                        { "kind": "block", "type": "turn_left" },
+                        { "kind": "block", "type": "turn_right" },
+                        { "kind": "block", "type": "turn_left_x_degrees" },
+                        { "kind": "block", "type": "turn_right_x_degrees" },
+                    ]
+                },
+                {
+                    "kind": "category",
+                    "name": "Numbers",
+                    "colour": "#5b9aa5",
+                    "contents": [
+                        { "kind": "block", "type": "math_number" },
+                        { "kind": "block", "type": "math_random_int" }
+                    ]
+                }, {
+                    "kind": "category",
+                    "name": "Control",
+                    "colour": "#5b12a5",
+                    "contents": [
+                        {
+                            "kind": "block", "type": "controls_if"
+                        },
+                        { "kind": "block", "type": "turn_harvesting_on" },
+                        { "kind": "block", "type": "turn_harvesting_off" },
+                        { "kind": "block", "type": "turn_seeding_on" },
+                        { "kind": "block", "type": "turn_seeding_off" },
+                    ]
+                },
+                {
+                    "kind": "category",
+                    "name": "Logic",
+                    "colour": "#5b9dd5",
+                    "contents": [
+                        { "kind": "block", "type": "logic_boolean" }
+                    ]
+                },
+                {
+                    "kind": "category",
+                    "name": "Loops",
+                    "colour": "#5a1dd5",
+                    "contents": [
+                        { "kind": "block", "type": "controls_repeat_ext" },
+                        { "kind": "block", "type": "controls_whileUntil" }
 
-    // Inject Blockly
-    const workspace = Blockly.inject("blocklyDiv", {
-      toolbox: toolbox,
-      trashcan: true,
-    });
+                    ]
+                }
+            ]
+        };
 
-    document
-      .getElementById("runButton")
-      .addEventListener("click", async function () {
-        const runButton = document.getElementById("runButton");
-        runButton.disabled = true;
+        // Inject Blockly
+        const workspace = Blockly.inject('blocklyDiv', {
+            toolbox: toolbox,
+            trashcan: true
+        });
 
-        isMoving = true;
+        // Canvas and movement code
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        const allBlocks = workspace.getAllBlocks(false);
+        // Global variables
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        let angle = 0; // 0 degrees = facing right
+        let isMoving = false;
+        let isHarvestingOn = false;
+        let isSeedingOn = false;
+        let animationId = -1;
+        let yieldScore = 0;
 
-        if (allBlocks.length > 0) {
-          const code = Blockly.JavaScript.workspaceToCode(workspace);
+        const FRAME_WIDTH = 64;  // change to sprite’s frame width
+        const FRAME_HEIGHT = 64; // change to sprite’s frame height
+        const fieldScale = 4; // The amount the field tiles will be scaled down by
+        const SPEED = 50; // pixels per second
 
-          if (code.trim()) {
-            try {
-              // Wrap the code in an async function and execute
-              const asyncCode = `(async function() { ${code} })()`;
-              await eval(asyncCode);
-            } catch (e) {
-              console.error("ERROR:", e);
-            }
-          }
+        // --- Sprite setup ---
+        const tractorSprite = new Image();
+        const wheatImage = new Image();
+        const seedImage = new Image();
+        const dirtImage = new Image();
+
+        // Paths for the images
+        tractorSprite.src = "./src/assets/combine-harvester.png";
+        wheatImage.src = "./src/assets/wheat.png";
+        seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
+        dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+
+        // Variables to aid in image loading
+        let imageLoadCount = 0;
+        const imageCount = 4;
+
+        // Loading methods for images
+        tractorSprite.onload = () => {
+            console.log("✅ Tractor sprite loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+        };
+        tractorSprite.onerror = () => {
+            console.error("❌ Failed to load tractor sprite!");
+        };
+        dirtImage.onload = () => {
+            console.log("DirtImage loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
         }
-        isMoving = false;
-        runButton.disabled = false;
-      });
+        dirtImage.onerror = () => {
+            console.error("failed to load DirtImage");
+        }
+        seedImage.onload = () => {
+            console.log("SeedImage loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+        }
+        seedImage.onerror = () => {
+            console.error("failed to load SeedImage");
+        }
+        wheatImage.onload = () => {
+            console.log("WheatImage loaded!");
+            imageLoadCount++;
+            if (imageLoadCount === imageCount) { drawFieldAndTractor(); }
+        }
+        wheatImage.onerror = () => {
+            console.error("failed to load WheatImage");
+        }
+
+        // Methods for Harvesting and Seeding Blocks
+        function turnHarvestingOn() {
+            isHarvestingOn = true;
+            isSeedingOn = false;
+        }
+        function turnHarvestingOff() {
+            isHarvestingOn = false;
+        }
+        function turnSeedingOn() {
+            isSeedingOn = true;
+            isHarvestingOn = false;
+        }
+        function turnSeedingOff() {
+            isSeedingOn = false;
+        }
+
+        // Setting up the array that represents the field
+        const rows = Math.floor(canvas.height / seedImage.height * fieldScale) + 1;
+        const columns = Math.floor(canvas.width / seedImage.width * fieldScale) + 1;
+        let field = Array.from({ length: rows }, () => new Array(columns).fill(2));
+
+        const tileWidth = wheatImage.width / fieldScale; // one tiles width (all tiles same width and height)
+        const tileHeight = wheatImage.height / fieldScale; // one tiles height (all tiles same width and height)
+
+
+        // --- Draw the tractor sprite based on current direction ---
+        function drawTractor() {
+            const normalizedAngle = ((angle % 360) + 360) % 360;
+            var angleInRadians = normalizedAngle * Math.PI / 180;
+
+            // tractorsprite
+            ctx.save();
+            ctx.translate(x + FRAME_WIDTH / 2, y + FRAME_HEIGHT / 2);
+            ctx.rotate(angleInRadians);
+            ctx.drawImage(tractorSprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
+            ctx.restore();
+
+            document.getElementById('debug').innerHTML = //debugging window
+                `Position: (${Math.round(x)}, ${Math.round(y)})<br>` +
+                `Angle: ${normalizedAngle}°<br>` +
+                `Direction: ${getDirectionName(angle)}<br>` +
+                `Moving: ${isMoving ? 'Yes' : 'No'} <br>`;
+        }
+
+
+        // Draws the field onto the canvas
+        function drawField() {
+            const topLeft = { x: -FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const topRight = { x: FRAME_WIDTH / 2, y: -FRAME_HEIGHT / 2 };
+            const bottomRight = { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const bottomLeft = { x: -FRAME_WIDTH / 2, y: FRAME_HEIGHT / 2 };
+            const center = { x: x + (FRAME_WIDTH / 2), y: y + (FRAME_HEIGHT / 2) };
+
+            const corners = [
+                rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+                rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+                rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+                rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
+            ];
+
+            const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
+
+            detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y);
+
+            // draw the entire field
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    let dirtOrWheat = dirtImage;
+                    switch (field[i][j]) {
+                        case 0:
+                            dirtOrWheat = dirtImage;
+                            break;
+                        case 1:
+                            dirtOrWheat = seedImage;
+                            break;
+                        case 2:
+                            dirtOrWheat = wheatImage;
+                            break;
+                    }
+                    ctx.drawImage(dirtOrWheat, 0, 0, seedImage.width, seedImage.height, (j * seedImage.width / fieldScale), (i * seedImage.height / fieldScale), seedImage.width / fieldScale, seedImage.height / fieldScale);
+                }
+            }
+        }
+
+        // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
+        function detectGentleSlope(x0, y0, x1, y1) {
+            let deltaX = x1 - x0;
+            let deltaY = y1 - y0;
+
+            let yi = 1;
+
+            if (deltaY < 0) {
+                yi = -1;
+                deltaY = -deltaY;
+            }
+            let D = (2 * deltaY) - deltaX;
+            let y = y0;
+
+            for (let x = x0; x < x1; x++) {
+                changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+                if (D > 0) {
+                    y = y + yi;
+                    D = D + (2 * (deltaY - deltaX));
+                }
+                else D = D + 2 * deltaY;
+            }
+        }
+
+        // Detects and changes which tiles are in the line from point0, to point1 for a steep slope
+        function detectSteepSlope(x0, y0, x1, y1) {
+            let deltaX = x1 - x0;
+            let deltaY = y1 - y0;
+
+            let xi = 1;
+
+            if (deltaX < 0) {
+                xi = -1;
+                deltaX = -deltaX;
+            }
+            let D = (2 * deltaX) - deltaY;
+            let x = x0;
+
+            for (let y = y0; y < y1; y++) {
+                changeTile(Math.floor(x / tileWidth), Math.floor(y / tileHeight));
+                if (D > 0) {
+                    x = x + xi;
+                    D = D + (2 * (deltaX - deltaY));
+                }
+                else D = D + 2 * deltaX;
+            }
+        }
+
+        // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
+        function changeTile(x, y) {
+            if (x >= 0 && x < columns && y >= 0 && y < rows) {
+                if (isHarvestingOn) {
+                    if (field[y][x] === 2) {
+                        field[y][x] = 0;
+                        yieldScore++;
+                    }
+                    else if (field[y][x] === 1) {
+                        field[y][x] = 0;
+                    }
+                }
+                else if (isSeedingOn) {
+                    if (field[y][x] === 0) {
+                        field[y][x] = 1;
+                        yieldScore++;
+                    }
+                }
+            }
+        }
+
+        // Detects wether the slope from point0 to point1 is steep or gentle then calls the appropriate method to detect tiles in that line
+        function detectWhatTilesAreHit(x0, y0, x1, y1) {
+            if (Math.abs(y1 - y0) < Math.abs(x1 - x0)) {
+                if (x0 > x1) detectGentleSlope(x1, y1, x0, y0);
+                else detectGentleSlope(x0, y0, x1, y1);
+            }
+            else {
+                if (y0 > y1) detectSteepSlope(x1, y1, x0, y0);
+                else detectSteepSlope(x0, y0, x1, y1);
+            }
+        }
+
+        // Resets the field to be the value of the Wheat tile
+        function resetField() {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    field[i][j] = 2;
+                }
+            }
+        }
+
+        // Rotates x and y coordinates to a new location based on the an angle and the center of rotation
+        function rotatePoint(x0, y0, angle, centerX, centerY) {
+            const angleInRadians = angle * (Math.PI / 180);
+            const cos = Math.cos(angleInRadians);
+            const sin = Math.sin(angleInRadians);
+            var newX = centerX + ((x0 * cos) - (y0 * sin));
+            var newY = centerY + ((x0 * sin) + (y0 * cos));
+            return { x: newX, y: newY };
+        }
+
+        // Draws the field then the tractor
+        function drawFieldAndTractor() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("scoreText").innerHTML = "Yield: " + yieldScore;
+            drawField();
+            drawTractor();
+        }
+
+
+        function getDirectionName(angle) {
+            const normalizedAngle = ((angle % 360) + 450) % 360;
+            if (normalizedAngle === 0) return "Right →";
+            if (normalizedAngle === 90) return "Down ↓";
+            if (normalizedAngle === 180) return "Left ←";
+            if (normalizedAngle === 270) return "Up ↑";
+            return `${normalizedAngle}°`;
+        }
+
+        // moveForward function that moves over time
+        function moveForward(duration) {
+            return new Promise((resolve) => {
+                const startTime = Date.now();
+                const endTime = startTime + (duration * 1000);
+
+                const moveX = SPEED * Math.cos(angle * Math.PI / 180);
+                const moveY = SPEED * Math.sin(angle * Math.PI / 180);
+
+                function animate() {
+                    const currentTime = Date.now();
+                    const elapsed = (currentTime - startTime) / 1000;
+
+                    if (currentTime < endTime && isMoving) {
+                        // Calculate how much to move based on frame time
+                        const deltaTime = 1 / 60; // assuming 60fps
+                        x += moveX * deltaTime;
+                        y += moveY * deltaTime;
+
+                        drawFieldAndTractor();
+                        animationId = requestAnimationFrame(animate);
+                    } else {
+                        resolve();
+                    }
+                }
+                animate();
+            });
+        }
+
+        function turnLeft() {
+            angle -= 90;
+            drawFieldAndTractor();
+        }
+
+        function turnRight() {
+            angle += 90;
+            drawFieldAndTractor();
+        }
+
+        function TurnXLeft(amount) {
+            angle -= amount;
+            drawFieldAndTractor();
+        }
+
+        function TurnXRight(amount) {
+            angle += amount;
+            drawFieldAndTractor();
+        }
+
+        function resetPosition() {
+            x = canvas.width / 2;
+            y = canvas.height / 2;
+            angle = 0;
+            isHarvestingOn = false;
+            isSeedingOn = false;
+            isTractorOn = false;
+            yieldScore = 0;
+            resetField();
+            drawFieldAndTractor();
+        }
+
+        function stopMovement() {
+            isMoving = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = -1;
+            }
+        }
+
+        // Initial draw
+        if (imageLoadCount === imageCount) drawFieldAndTractor();
+
+        // Run button - now uses async/await
+        document.getElementById('runButton').addEventListener('click', async function () {
+            const runButton = document.getElementById('runButton');
+            runButton.disabled = true;
+
+            isMoving = true;
+
+            const allBlocks = workspace.getAllBlocks(false);
+
+            if (allBlocks.length > 0) {
+                const code = Blockly.JavaScript.workspaceToCode(workspace);
+
+                if (code.trim()) {
+                    try {
+                        // Wrap the code in an async function and execute
+                        const asyncCode = `(async function() { ${code} })()`;
+                        await eval(asyncCode);
+                    } catch (e) {
+                        console.error('ERROR:', e);
+                    }
+                }
+            }
+            isMoving = false;
+            runButton.disabled = false;
+        });
 
     // Stop button
     document
@@ -276,13 +884,12 @@
         runButton.disabled = false;
       });
 
-    // Reset button
-    document
-      .getElementById("resetButton")
-      .addEventListener("click", function () {
-        stopMovement();
-        resetPosition();
-        runButton.disabled = false;
-      });
-  </script>-->
+        // Reset button
+        document.getElementById('resetButton').addEventListener('click', function () {
+            stopMovement();
+            resetPosition();
+            runButton.disabled = false;
+        });
+    </script>
+</body>
 </html>
