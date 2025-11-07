@@ -1191,6 +1191,9 @@ document.getElementById('runButton').addEventListener('click', async function ()
             const runButton = document.getElementById('runButton');
             runButton.disabled = true;
             isMoving = true;
+
+   await new Promise(requestAnimationFrame);//let new values update to DOM
+
             await fetchData();
 
             console.log("csvLines length:", csvLines.length);
