@@ -1,51 +1,57 @@
 import { javascriptGenerator } from "blockly/javascript";
 import styles from "../index.module.css";
 import simulationMethods from "../simulationMethods";
+import weatherAPIAccessor from "./weatherAPIAccessor";
 import React from "react";
-import './blocklyJSGenerator';
+import "./blocklyJSGenerator";
 
 class SimulationCanvasContainer extends React.Component {
   constructor(props) {
-      super(props);
-      this.canvasRef = React.createRef();
-      this.alterCanvasRef = null;
-      this.runButtonOnClick = this.runButtonOnClick.bind(this);
-      this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
-      this.resetButtonOnClick = this.resetButtonOnClick.bind(this);
+    super(props);
+    this.canvasRef = React.createRef();
+    this.alterCanvasRef = null;
+    this.weatherApi = null;
+    this.runButtonOnClick = this.runButtonOnClick.bind(this);
+    this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
+    this.resetButtonOnClick = this.resetButtonOnClick.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
     this.alterCanvasRef = new simulationMethods(canvas);
     this.alterCanvasRef.setSpriteOnLoadMethods();
+    this.weatherApi = new weatherAPIAccessor();
+    await this.weatherApi.loadStations();
   }
 
   //#region button OnClick methods
   async runButtonOnClick() {
-
-    const{ workspace } = this.props;
-    if (!workspace){
+    const { workspace } = this.props;
+    if (!workspace) {
       console.warn("Workspace not ready yet");
       return;
     }
-    
-    const runButton = document.getElementById("runButton");
-      runButton.disabled = true;
 
-      this.alterCanvasRef.startMoving();
+    const runButton = document.getElementById("runButton");
+    runButton.disabled = true;
+
+    this.alterCanvasRef.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
 
     if (allBlocks.length > 0) {
       const code = javascriptGenerator.workspaceToCode(workspace);
-        console.log(code);
+      console.log(code);
 
       if (code.trim()) {
         try {
-            const run = new Function("simulationMethods", `
-return (async () => { ${code} })();`);
-            await run(this.alterCanvasRef);
+          const run = new Function(
+            "simulationMethods",
+            `
+return (async () => { ${code} })();`,
+          );
+          await run(this.alterCanvasRef);
         } catch (e) {
           console.error("ERROR:", e);
         }
@@ -71,14 +77,31 @@ return (async () => { ${code} })();`);
     return (
       <React.Fragment>
         <div className={styles.canvasArea}>
-          <p id="scoreText" className={styles.scoreText}>
-            Yield: 0
-          </p>
+          <div className={styles.statTextContainer}>
+            <p className={styles.statText} id="weekText">
+              Week 0
+            </p>
+            <p className={styles.statText} id="scoreText">
+              Yield: 0
+            </p>
+            <p className={styles.statText} id="gddText">
+              Growth Days: 0.00
+            </p>
+          </div>
           <canvas
             id="gameCanvas"
             ref={this.canvasRef}
             className={styles.gameCanvas}
           />
+          <label for="station">Choose a station:</label>
+          <select id="station">
+            <option>Loading stations...</option>
+          </select>
+
+          <label for="start">Start date:</label>
+          <input type="date" id="start" />
+
+          <pre id="output"></pre>
           <button
             onClick={this.runButtonOnClick}
             id="runButton"
@@ -92,13 +115,6 @@ return (async () => { ${code} })();`);
             className={styles.stopButton}
           >
             Stop
-          </button>
-          <button
-            onClick={this.resetButtonOnClick}
-            id="resetButton"
-            className={styles.resetButton}
-          >
-            Reset Position
           </button>
           <div id="debug" className="debug">
             Drag blocks to workspace, then click Run

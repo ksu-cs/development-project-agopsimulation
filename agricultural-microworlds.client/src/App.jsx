@@ -5,21 +5,24 @@ import SimulationCanvasContainer from "./Components/SimulationCanvasContainer";
 import styles from "./index.module.css";
 
 class App extends React.Component {
-constructor(props){
-  super(props);
-  this.simpleWorkspace = React.createRef();
-  this.state = {workspace: null};
-}
-setWorkspace = (workspace) => {
-  this.setState({workspace});
-}
+  constructor(props) {
+    super(props);
+    this.simpleWorkspace = React.createRef();
+    this.state = { workspace: null };
+  }
+  setWorkspace = (workspace) => {
+    this.setState({ workspace });
+  };
 
   render() {
-    const {workspace} = this.state;
+    const { workspace } = this.state;
     return (
       <React.Fragment>
         <div className={styles.container}>
-          <BlocklyWorkspaceContainer simpleWorkspace={this.simpleWorkspace} onWorkspaceReady={this.setWorkspace}/>
+          <BlocklyWorkspaceContainer
+            simpleWorkspace={this.simpleWorkspace}
+            onWorkspaceReady={this.setWorkspace}
+          />
           <SimulationCanvasContainer workspace={workspace} />
         </div>
       </React.Fragment>

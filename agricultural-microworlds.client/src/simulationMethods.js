@@ -330,7 +330,7 @@ export default class simulationMethods {
   }
 
   // moveForward function that moves over time
-    async moveForward(duration) {
+  async moveForward(duration) {
     return new Promise((resolve) => {
       const startTime = Date.now();
       const endTime = startTime + duration * 1000;
@@ -341,7 +341,7 @@ export default class simulationMethods {
         const currentTime = Date.now();
         //const elapsed = (currentTime - startTime) / 1000;
 
-          //console.log(this.isMoving);
+        //console.log(this.isMoving);
         if (currentTime < endTime && this.isMoving) {
           // Calculate how much to move based on frame time
           const deltaTime = 1 / 60; // assuming 60fps
@@ -353,13 +353,13 @@ export default class simulationMethods {
         } else {
           resolve();
         }
-      }
+      };
       animate();
     });
   }
 
   turnLeft() {
-      this.angle -= 90;
+    this.angle -= 90;
     this.drawFieldAndTractor();
   }
 
@@ -389,8 +389,8 @@ export default class simulationMethods {
     this.drawFieldAndTractor();
   }
 
-  startMoving(){
-      this.isMoving = true;
+  startMoving() {
+    this.isMoving = true;
   }
 
   stopMovement() {

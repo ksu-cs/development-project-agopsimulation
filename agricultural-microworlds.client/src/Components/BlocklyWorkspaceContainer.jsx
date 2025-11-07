@@ -18,7 +18,10 @@ class BlocklyWorkspaceContainer extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <BlocklyWorkspace toolbox={toolbox} onWorkspaceReady={this.props.onWorkspaceReady} />
+        <BlocklyWorkspace
+          toolbox={toolbox}
+          onWorkspaceReady={this.props.onWorkspaceReady}
+        />
       </React.Fragment>
     );
   }
