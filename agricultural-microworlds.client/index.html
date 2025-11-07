@@ -246,13 +246,21 @@ loadStations();
                 "tooltip": "Turn the tractor right"
             },
             {
-                "type": "turn_left_x_degrees",
-                "message0": "Turn %1 degrees left",
+                "type": "turn_x_degrees",
+                "message0": "Turn %1 degrees %2",
                 "args0": [
                     {
                         "type": "input_value",
                         "name": "DEGREES",
                         "check": "Number"
+                    },
+                    {
+                        "type": "field_dropdown",
+                        "name": "DIRECTION",
+                        "options": [
+                            ["left", "0"],
+                            ["right", "1"]
+                        ]
                     }
                 ],
                 "previousStatement": null,
@@ -400,20 +408,20 @@ loadStations();
             return `await turnRight();\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_left_x_degrees'] = function (block) {
-            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            return `await TurnXLeft(${amount});\n`;
+        Blockly.JavaScript.forBlock['turn_x_degrees'] = function (block) {
+            let amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
+            const direction = block.getFieldValue('DIRECTION');
+            if (direction == 0)
+                amount *= -1;
+            return `await turnXDegrees(${amount});\n`;
         };
 
-        Blockly.JavaScript.forBlock['turn_right_x_degrees'] = function (block) {
-            const amount = Blockly.JavaScript.valueToCode(block, 'DEGREES', Blockly.JavaScript.ORDER_ATOMIC) || '1';
-            return `await TurnXRight(${amount});\n`;
-        };
         Blockly.JavaScript.forBlock['toggle_harvesting'] = function (block) {
             const toggle = block.getFieldValue('toggleType');
             const inputType = (toggle == 0) ? false : true;
             return `toggleHarvesting(${inputType});\n`;
         };
+
         Blockly.JavaScript.forBlock['toggle_seeding'] = function (block) {
             const toggle = block.getFieldValue('toggleType');
             const inputType = (toggle == 0) ? false : true;
@@ -444,7 +452,7 @@ loadStations();
 
         Blockly.JavaScript.forBlock['get_current_week'] = function (block) {
             return ['currentWeek', Blockly.JavaScript.ORDER_ATOMIC]
-        }
+        };
 
         // Custom theme for blocks
         const myTheme = Blockly.Theme.defineTheme('myTheme', {
@@ -495,8 +503,7 @@ loadStations();
                         { "kind": "block", "type": "move_forward" },
                         { "kind": "block", "type": "turn_left" },
                         { "kind": "block", "type": "turn_right" },
-                        { "kind": "block", "type": "turn_left_x_degrees" },
-                        { "kind": "block", "type": "turn_right_x_degrees" },
+                        { "kind": "block", "type": "turn_x_degrees" }
                     ]
                 },
                 {
@@ -1108,12 +1115,7 @@ function waitXWeeks(weeks) {
         	return OnNewGoalRotation();
     	}
 
-    	function TurnXLeft(amount) {
-        	goalAngle -= amount;
-        	return OnNewGoalRotation();
-    	}
-
-    	function TurnXRight(amount) {
+    	function turnXDegrees(amount) {
         	goalAngle += amount;
         	return OnNewGoalRotation();
     	}
