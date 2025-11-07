@@ -207,7 +207,7 @@ loadStations();
 
             <button id="runButton">Run Code</button>
             <button id="stopButton">Stop</button>
-            <button id="resetButton">Reset Position</button>
+            <!-- <button id="resetButton">Reset Position</button> -->
             <div id="debug">Drag blocks to workspace, then click Run</div>
         </div>
     </div>
@@ -616,7 +616,7 @@ loadStations();
 
         // Time variables
         const START_WEEK = 1; // starting week
-        const GROWTH_DAYS = 100.0; // weeks for crops to fully grow
+        const GROWTH_DAYS = 1000.0; // days for crops to fully grow
         let currentWeek = START_WEEK; // current week in simulation
         // let weeksPassedSincePlanting = 0; // weeks passed since last planting
 
@@ -757,7 +757,7 @@ function waitXWeeks(weeks) {
                     
                     // Update week counter and grow crops
                     currentWeek++;
-                    growCrops(1);
+                    growCrops(weekGDD);
 
                     // Update HTML displays
                     document.getElementById('weekText').textContent = `Week ${currentWeek-1}`;
@@ -802,8 +802,8 @@ function waitXWeeks(weeks) {
             return detectWhatTilesAreHit(frontSide[0].x, frontSide[0].y, frontSide[1].x, frontSide[1].y, type);
         }
 
-        function growCrops(weeks) {
-            const daysToAdd = weeks * 7.0;
+        function growCrops(weeklyGDD) {
+            const daysToAdd = weeklyGDD;
 
             for (let i = 0; i < rows; i++) {
                 for (let j = 0; j < columns; j++) {
@@ -1172,11 +1172,22 @@ function waitXWeeks(weeks) {
             }
         }
 
+        function resetEverything(){
+            stopMovement();
+            resetPosition();
+            runButton.disabled = false;
+            waitingweeksCount = 0;
+            currentWeek = 0;
+            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
+            document.getElementById('gddText').textContent = `GDD: ${0.00}`;
+        }
+
         // Initial draw
         // if (imageLoadCount === imageCount) drawFieldAndTractor();
 
         // Run button - now uses async/await
 document.getElementById('runButton').addEventListener('click', async function () {
+            resetEverything();
             const runButton = document.getElementById('runButton');
             runButton.disabled = true;
             isMoving = true;
@@ -1212,15 +1223,9 @@ console.log("First line:", csvLines[0]);
         });
 
         // Reset button
-        document.getElementById('resetButton').addEventListener('click', function () {
-            stopMovement();
-            resetPosition();
-            runButton.disabled = false;
-            waitingweeksCount = 0;
-            currentWeek = 0;
-            document.getElementById('weekText').innerHTML = `Week ${currentWeek}`;
-            document.getElementById('gddText').textContent = `GDD: ${0.00}`;
-        });
+        // document.getElementById('resetButton').addEventListener('click', function () {
+                //     resetEverything();
+                        // });
     </script>
 </body>
 </html>
