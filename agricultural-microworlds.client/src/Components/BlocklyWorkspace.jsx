@@ -12,6 +12,7 @@ class BlocklyWorkspace extends React.Component {
 
   componentDidMount() {
     this.initBlockly();
+    this.props.onWorkspaceReady(this.primaryWorkspace);
   }
 
   componentDidUpdate(prevProps) {
