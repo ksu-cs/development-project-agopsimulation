@@ -424,7 +424,7 @@ loadStations();
         };
         Blockly.JavaScript.forBlock['is_over_tile'] = function (block) {
             const type = block.getFieldValue('TYPE');
-            let checkResult = CheckIfPlantInFront(type);
+            const checkResult = `CheckIfPlantInFront(${type})`;
             return [checkResult, Blockly.JavaScript.ORDER_RELATIONAL];
         };
 
