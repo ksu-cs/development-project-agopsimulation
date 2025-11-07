@@ -51,7 +51,7 @@ return (async () => { ${code} })();`);
         }
       }
     }
-    //this.alterCanvasRef.stopMovement();
+    this.alterCanvasRef.stopMovement();
     runButton.disabled = false;
   }
 
