@@ -11,7 +11,6 @@ class SimulationCanvasContainer extends React.Component {
     this.alterCanvasRef = null;
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
-    this.resetButtonOnClick = this.resetButtonOnClick.bind(this);
   }
 
   async componentDidMount() {
@@ -29,10 +28,11 @@ class SimulationCanvasContainer extends React.Component {
       console.warn("Workspace not ready yet");
       return;
     }
-
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
 
+      this.alterCanvasRef.resetEverything();
+      runButton.disabled = false;
     this.alterCanvasRef.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
@@ -84,12 +84,12 @@ return (async () => { ${code} })();`,
             ref={this.canvasRef}
             className={styles.gameCanvas}
           />
-          <label for="station">Choose a station:</label>
+          <label htmlFor="station">Choose a station:</label>
           <select id="station">
             <option>Loading stations...</option>
           </select>
 
-          <label for="start">Start date:</label>
+          <label htmlFor="start">Start date:</label>
           <input type="date" id="start" />
 
           <pre id="output"></pre>

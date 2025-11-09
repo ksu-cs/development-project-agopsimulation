@@ -47,8 +47,8 @@ export default class simulationMethods {
     // let weeksPassedSincePlanting = 0; // weeks passed since last planting
 
     // Field variables
-    const TILE_WIDTH = TILE_BASE_SIZE / FIELD_SCALE; // Scaled width of each tile
-    const TILE_HEIGHT = TILE_BASE_SIZE / FIELD_SCALE; // Scaled height of each tile
+    this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE; // Scaled width of each tile
+    this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE; // Scaled height of each tile
 
     // Setting up the array that represents the field
     this.WORLD_WIDTH_IN_SCREENS = 5; // Number of screens wide the world is
@@ -84,6 +84,7 @@ export default class simulationMethods {
   }
 
   async loadStations() {
+    // invalid Dom property 'for' did you mean 'htmlFor' error
     const response = await fetch(
       "https://mesonet.k-state.edu/rest/stationnames/",
     );
@@ -198,6 +199,17 @@ export default class simulationMethods {
     };
   }
 
+  // Methods for Harvesting and Seeding Blocks
+  toggleHarvesting(isOn) {
+    this.isHarvestingOn = isOn;
+    if (isOn) this.isSeedingOn = false;
+  }
+
+  toggleSeeding(isOn) {
+    this.isSeedingOn = isOn;
+    if (isOn) this.isHarvestingOn = false;
+  }
+
   // Method for Wait X Weeks Block
   waitXWeeks(weeks) {
     this.waitingweeksCount = weeks; // Fixed variable name
@@ -213,7 +225,7 @@ export default class simulationMethods {
 
       let waitingTime = 0.2;
 
-      function UpdateNight() {
+      const UpdateNight = () => {
         const delta = 1 / 60; // assuming 60fps
 
         if (this.nightFadeProgress > 0.5 && waitingTime > 0) {
@@ -347,7 +359,7 @@ export default class simulationMethods {
       `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
       `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
       `Angle: ${normalizedAngle}°<br>` +
-      `Direction: ${getDirectionName(this.angle)}<br>` +
+      `Direction: ${this.getDirectionName(this.angle)}<br>` +
       `Moving: ${this.isMoving ? "Yes" : "No"} <br>`;
   }
 
@@ -616,7 +628,7 @@ export default class simulationMethods {
       const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
       const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
 
-      function animate() {
+      const animate =() => {
         const currentTime = Date.now();
         const elapsed = (currentTime - startTime) / 1000;
 
@@ -647,7 +659,7 @@ export default class simulationMethods {
 
   OnNewGoalRotation() {
     return new Promise((resolve) => {
-      function turn() {
+      const turn = () => {
         const delta = 1 / 60; // assuming 60fps
 
         if (this.angle != this.goalAngle) {
@@ -705,10 +717,9 @@ export default class simulationMethods {
   resetEverything() {
     this.stopMovement();
     this.resetPosition();
-    this.runButton.disabled = false;
     this.waitingweeksCount = 0;
     this.currentWeek = 0;
-    document.getElementById("weekText").innerHTML = `Week ${currentWeek}`;
+    document.getElementById("weekText").innerHTML = `Week ${this.currentWeek}`;
     document.getElementById("gddText").textContent = `GDD: ${0.0}`;
   }
 
