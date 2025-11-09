@@ -740,17 +740,6 @@
         console.error("failed to load WheatImage");
       };
 
-      // Methods for Harvesting and Seeding Blocks
-      function toggleHarvesting(isOn) {
-        isHarvestingOn = isOn;
-        if (isOn) isSeedingOn = false;
-      }
-
-      function toggleSeeding(isOn) {
-        isSeedingOn = isOn;
-        if (isOn) isHarvestingOn = false;
-      }
-
       // Method for Wait X Weeks Block
       function waitXWeeks(weeks) {
         waitingweeksCount = weeks; // Fixed variable name

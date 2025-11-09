@@ -2,7 +2,7 @@ import { javascriptGenerator } from "blockly/javascript";
 import React from "react";
 import "./customBlockDefinitions";
 import BlocklyWorkspace from "./BlocklyWorkspace";
-import { toolbox } from "./toolboxConfig";
+import { toolbox, myTheme } from "./toolboxConfig";
 
 class BlocklyWorkspaceContainer extends React.Component {
   constructor(props) {
@@ -20,6 +20,7 @@ class BlocklyWorkspaceContainer extends React.Component {
       <React.Fragment>
         <BlocklyWorkspace
           toolbox={toolbox}
+          myTheme={myTheme}
           onWorkspaceReady={this.props.onWorkspaceReady}
         />
       </React.Fragment>

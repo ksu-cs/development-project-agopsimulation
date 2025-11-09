@@ -29,12 +29,26 @@ class BlocklyWorkspace extends React.Component {
   initBlockly() {
     if (this.primaryWorkspace) return;
 
-    const { initialXml, toolbox, ...rest } = this.props;
+    const { initialXml, toolbox, myTheme, ...rest } = this.props;
     this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
       toolbox: toolbox,
       trashcan: true,
+      theme: myTheme,
+      renderer: "zelos",
+      rendererOptionis: {
+        keyboardNavigation: true,
+      },
       ...rest,
     });
+
+    this.primaryWorkspace.registerButtonCallback(
+      "CREATE_VARIABLE",
+      function (button) {
+        Blockly.Variables.createVariableButtonHandler(
+          button.getTargetWorkspace(),
+        );
+      },
+    );
 
     if (initialXml) {
       this.setXml(initialXml);

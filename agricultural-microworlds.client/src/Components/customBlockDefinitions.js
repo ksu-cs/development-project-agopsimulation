@@ -55,7 +55,7 @@ var moveForward = {
   ],
   previousStatement: null,
   nextStatement: null,
-  colour: 160,
+  style: "movement_blocks",
   tooltip: "Move forward for specified seconds",
 };
 Blockly.Blocks["move_forward"] = {
@@ -69,7 +69,7 @@ var turnLeft = {
   message0: "turn left",
   previousStatement: null,
   nextStatement: null,
-  colour: 210,
+  style: "movement_blocks",
   tooltip: "Turn the tractor left",
 };
 Blockly.Blocks["turn_left"] = {
@@ -83,7 +83,7 @@ var turnRight = {
   message0: "turn right",
   previousStatement: null,
   nextStatement: null,
-  colour: 210,
+  style: "movement_blocks",
   tooltip: "Turn the tractor right",
 };
 Blockly.Blocks["turn_right"] = {
@@ -132,7 +132,7 @@ var mathNumber = {
     },
   ],
   output: "Number",
-  colour: 230,
+  style: "math_blocks",
 };
 Blockly.Blocks["math_number"] = {
   init: function () {

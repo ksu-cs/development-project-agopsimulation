@@ -6,19 +6,54 @@ export default class simulationMethods {
     this.canvas.height = 500;
 
     // Global variables
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height / 2;
+    this.tractorWorldX = this.canvas.width / 2; // Tractor's vertical position in the entire world
+    this.tractorWorldY = this.canvas.height / 2; // Tractor's horizontal position in the entire world
     this.angle = 0; // 0 degrees = facing right
-    this.isMoving = false;
-    this.isHarvestingOn = false;
-    this.isSeedingOn = false;
-    this.animationId = -1;
-    this.yieldScore = 0;
+    this.goalAngle = 0; // Our angle will be set to move towards this.
+    this.turnSpeed = 90; // How fast the tractor can turn.
+    this.weeksToWait = 0;
+    this.nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
+    this.isMoving = false; // flag to indicate if the tractor is currently moving
+    this.isHarvestingOn = false; // flag to indicate if harvesting mode is on
+    this.isSeedingOn = false; // flag to indicate if seeding mode is on
+    this.animationId = -1; // ID for the animation frame
+    this.yieldScore = 0; // score for harvested crops
 
+    // Game asset constants
     this.FRAME_WIDTH = 64; // change to sprite’s frame width
     this.FRAME_HEIGHT = 64; // change to sprite’s frame height
-    this.fieldScale = 4; // The amount the field tiles will be scaled down by
-    this.SPEED = 50; // pixels per second
+    this.TILE_BASE_SIZE = 64; // The original size of the field tiles
+    this.FIELD_SCALE = 8; // The amount the field tiles will be scaled down by
+    this.SPEED = 20; // pixels per second
+
+    // Camera Variables
+    // const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
+    // const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
+    // let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
+    // let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
+    this.cameraX = 0;
+    this.cameraY = 0;
+
+    // Time variables
+    this.START_WEEK = 1; // starting week
+    this.GROWTH_DAYS = 1000.0; // days for crops to fully grow
+    this.currentWeek = START_WEEK; // current week in simulation
+
+    // Field variables
+    this.TILE_WIDTH = TILE_BASE_SIZE / FIELD_SCALE; // Scaled width of each tile
+    this.TILE_HEIGHT = TILE_BASE_SIZE / FIELD_SCALE; // Scaled height of each tile
+
+    this.SCREEN_ROWS = Math.floor(canvas.height / TILE_HEIGHT) + 2; // +2 to cover edges
+    this.SCREEN_COLUMNS = Math.floor(canvas.width / TILE_WIDTH) + 2; // +2 to cover this.
+
+    this.rows = SCREEN_ROWS * WORLD_HEIGHT_IN_SCREENS; // Total number of rows in the world
+    this.columns = SCREEN_COLUMNS * WORLD_WIDTH_IN_SCREENS; // Total number of columns in the world
+
+    // World field dimensions
+    this.worldPixelWidth = columns * TILE_WIDTH; // Total width of the world in pixels
+    this.worldPixelHeight = rows * TILE_HEIGHT; // Total height of the world in pixels
+
+    this.field = [];
 
     // --- Sprite setup ---
     this.tractorSprite = new Image();
@@ -27,6 +62,7 @@ export default class simulationMethods {
     this.dirtImage = new Image();
     this.imageLoadCount = 0;
     this.imageCount = 4;
+    this.isInitialized = false;
 
     // Paths for the images
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
@@ -37,82 +73,181 @@ export default class simulationMethods {
 
   setSpriteOnLoadMethods() {
     // Loading methods for images
-    this.tractorSprite.onload = () => {
-      console.log("✅ Tractor sprite loaded!");
-      this.imageLoadCount++;
-      if (this.imageLoadCount === this.imageCount) {
-        this.drawFieldAndTractor();
-      }
+    tractorSprite.onload = () => {
+      console.log("Tractor sprite loaded!");
+      onImageLoad();
     };
-    this.tractorSprite.onerror = () => {
-      console.error("❌ Failed to load tractor sprite!");
+    tractorSprite.onerror = () => {
+      console.error("Failed to load tractor sprite!");
     };
-    this.dirtImage.onload = () => {
+    dirtImage.onload = () => {
       console.log("DirtImage loaded!");
-      this.imageLoadCount++;
-      if (this.imageLoadCount === this.imageCount) {
-        this.drawFieldAndTractor();
-      }
+      onImageLoad();
     };
-    this.dirtImage.onerror = () => {
+    dirtImage.onerror = () => {
       console.error("failed to load DirtImage");
     };
-    this.seedImage.onload = () => {
+    seedImage.onload = () => {
       console.log("SeedImage loaded!");
-      this.imageLoadCount++;
-      if (this.imageLoadCount === this.imageCount) {
-        this.drawFieldAndTractor();
-      }
+      onImageLoad();
     };
-    this.seedImage.onerror = () => {
+    seedImage.onerror = () => {
       console.error("failed to load SeedImage");
     };
-    this.wheatImage.onload = () => {
+    wheatImage.onload = () => {
       console.log("WheatImage loaded!");
-      this.initializeField();
-      this.imageLoadCount++;
-      if (this.imageLoadCount === this.imageCount) {
-        this.drawFieldAndTractor();
-      }
+      onImageLoad();
     };
-    this.wheatImage.onerror = () => {
+    wheatImage.onerror = () => {
       console.error("failed to load WheatImage");
     };
+  }
 
-    this.drawFieldAndTractor();
+  // Image loading
+  onImageLoad() {
+    this.imageLoadCount++;
+    if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
+      console.log("All images loaded!");
+      this.isInitialized = true;
+
+      // Initialize the field array
+      console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
+      this.field = Array.from({ length: this.rows }, () =>
+        Array.from({ length: columns }, () => {
+          state: 2;
+          growth: 0.0;
+        }),
+      );
+
+      // Set initial position and draw
+      resetPosition();
+    }
   }
 
   // Setting up the array that represents the field
   initializeField() {
     this.rows =
       Math.floor(
-        (this.canvas.height / this.seedImage.height) * this.fieldScale,
+        (this.canvas.height / this.seedImage.height) * this.FIELD_SCALE,
       ) + 1;
     this.columns =
-      Math.floor((this.canvas.width / this.seedImage.width) * this.fieldScale) +
-      1;
-    this.field = Array.from({ length: this.rows }, () =>
-      new Array(this.columns).fill(2),
-    );
-
-    this.tileWidth = this.wheatImage.width / this.fieldScale; // one tiles width (all tiles same width and height)
-    this.tileHeight = this.wheatImage.height / this.fieldScale; // one tiles height (all tiles same width and height)
+      Math.floor(
+        (this.canvas.width / this.seedImage.width) * this.FIELD_SCALE,
+      ) + 1;
   }
 
   // Methods for Harvesting and Seeding Blocks
-  turnHarvestingOn() {
-    this.isHarvestingOn = true;
-    this.isSeedingOn = false;
+  toggleHarvesting(isOn) {
+    this.isHarvestingOn = isOn;
+    if (isOn) this.isSeedingOn = false;
   }
-  turnHarvestingOff() {
-    this.isHarvestingOn = false;
+
+  toggleSeeding(isOn) {
+    this.isSeedingOn = isOn;
+    if (isOn) this.isHarvestingOn = false;
   }
-  turnSeedingOn() {
-    this.isSeedingOn = true;
-    this.isHarvestingOn = false;
+
+  async waitXWeeks(weeks) {
+    // needs fixed, some vars in weatherApiAccessor.js
+    this.waitingweeksCount = weeks; // Fixed variable name
+    return new Promise((resolve) => {
+      let weeksToProcess = weeks;
+
+      if (weeksToProcess > 0) {
+        this.nightFadeProgress = 0.0;
+      } else {
+        resolve();
+        return;
+      }
+
+      let waitingTime = 0.2;
+
+      function UpdateNight() {
+        const delta = 1 / 60; // assuming 60fps
+
+        if (this.nightFadeProgress > 0.5 && waitingTime > 0) {
+          waitingTime -= delta;
+          if (waitingTime <= 0) {
+            // A week has passed - calculate GDD for this week
+            const weekIndex = this.currentWeek - 1; // Convert to 0-based index
+
+            // Calculate GDD for this week
+            let weekGDD = 0;
+            const startIdx = weekIndex * 7;
+            for (
+              let i = startIdx;
+              i < startIdx + 7 && i < this.csvLines.length;
+              i++
+            ) {
+              if (csvLines[i] && csvLines[i][2]) {
+                const temp = parseFloat(csvLines[i][2]);
+                if (!isNaN(temp)) {
+                  weekGDD += Math.max(0, temp - Wheatgdd);
+                }
+              }
+            }
+
+            cumulativeGDD += weekGDD;
+
+            // Update week counter and grow crops
+            currentWeek++;
+            growCrops(weekGDD);
+
+            // Update HTML displays
+            document.getElementById("weekText").textContent =
+              `Week ${currentWeek - 1}`;
+            document.getElementById("gddText").textContent =
+              `GDD: ${cumulativeGDD.toFixed(2)}`;
+
+            weeksToProcess--;
+            if (weeksToProcess > 0) waitingTime = 0.2;
+          }
+        } else {
+          const fadeSpeed = waitingTime > 0 ? 1.0 : 2.0;
+          nightFadeProgress = Math.min(
+            nightFadeProgress + delta * fadeSpeed,
+            1.0,
+          );
+        }
+
+        if (weeksToProcess > 0 || nightFadeProgress < 1.0) {
+          drawFieldAndTractor();
+          animationId = requestAnimationFrame(UpdateNight);
+        } else {
+          nightFadeProgress = -1;
+          drawFieldAndTractor();
+          resolve();
+        }
+      }
+      UpdateNight();
+    });
   }
-  turnSeedingOff() {
-    this.isSeedingOn = false;
+
+  CheckIfPlantInFront(type) {
+    const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
+    const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
+    const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
+    const bottomLeft = { x: -this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
+    const center = {
+      x: this.tractorWorldX + this.FRAME_WIDTH / 2,
+      y: this.tractorWorldY + this.FRAME_HEIGHT / 2,
+    };
+
+    const corners = [
+      rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+      rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+      rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+      rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
+    ];
+
+    const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
+    return detectWhatTilesAreHit(
+      frontSide[0].x,
+      frontSide[0].y,
+      frontSide[1].x,
+      frontSide[1].y,
+      type,
+    );
   }
 
   // --- Draw the tractor sprite based on current direction ---
@@ -123,8 +258,8 @@ export default class simulationMethods {
     // tractorsprite
     this.ctx.save();
     this.ctx.translate(
-      this.x + this.FRAME_WIDTH / 2,
-      this.y + this.FRAME_HEIGHT / 2,
+      this.tractorWorldX + this.FRAME_WIDTH / 2,
+      this.tractorWorldY + this.FRAME_HEIGHT / 2,
     );
     this.ctx.rotate(angleInRadians);
     this.ctx.drawImage(
@@ -135,7 +270,7 @@ export default class simulationMethods {
     this.ctx.restore();
 
     document.getElementById("debug").innerHTML = //debugging window
-      `Position: (${Math.round(this.x)}, ${Math.round(this.y)})<br>` +
+      `Position: (${Math.round(this.tractorWorldX)}, ${Math.round(this.tractorWorldY)})<br>` +
       `Angle: ${normalizedAngle}°<br>` +
       `Direction: ${this.getDirectionName(this.angle)}<br>` +
       `Moving: ${this.isMoving ? "Yes" : "No"} <br>`;
@@ -148,8 +283,8 @@ export default class simulationMethods {
     const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const bottomLeft = { x: -this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const center = {
-      x: this.x + this.FRAME_WIDTH / 2,
-      y: this.y + this.FRAME_HEIGHT / 2,
+      x: this.tractorWorldX + this.FRAME_WIDTH / 2,
+      y: this.tractorWorldY + this.FRAME_HEIGHT / 2,
     };
 
     const corners = [
@@ -201,10 +336,10 @@ export default class simulationMethods {
           0,
           this.seedImage.width,
           this.seedImage.height,
-          (j * this.seedImage.width) / this.fieldScale,
-          (i * this.seedImage.height) / this.fieldScale,
-          this.seedImage.width / this.fieldScale,
-          this.seedImage.height / this.fieldScale,
+          (j * this.seedImage.width) / this.FIELD_SCALE,
+          (i * this.seedImage.height) / this.FIELD_SCALE,
+          this.seedImage.width / this.FIELD_SCALE,
+          this.seedImage.height / this.FIELD_SCALE,
         );
       }
     }
@@ -226,8 +361,8 @@ export default class simulationMethods {
 
     for (let x = x0; x < x1; x++) {
       this.changeTile(
-        Math.floor(x / this.tileWidth),
-        Math.floor(y / this.tileHeight),
+        Math.floor(x / this.TILE_WIDTH),
+        Math.floor(y / this.TILE_HEIGHT),
       );
       if (D > 0) {
         y = y + yi;
@@ -252,8 +387,8 @@ export default class simulationMethods {
 
     for (let y = y0; y < y1; y++) {
       this.changeTile(
-        Math.floor(x / this.tileWidth),
-        Math.floor(y / this.tileHeight),
+        Math.floor(x / this.TILE_WIDTH),
+        Math.floor(y / this.TILE_HEIGHT),
       );
       if (D > 0) {
         x = x + xi;
@@ -345,8 +480,8 @@ export default class simulationMethods {
         if (currentTime < endTime && this.isMoving) {
           // Calculate how much to move based on frame time
           const deltaTime = 1 / 60; // assuming 60fps
-          this.x += moveX * deltaTime;
-          this.y += moveY * deltaTime;
+          this.tractorWorldX += moveX * deltaTime;
+          this.tractorWorldY += moveY * deltaTime;
 
           this.drawFieldAndTractor();
           this.animationId = requestAnimationFrame(animate);
@@ -379,8 +514,8 @@ export default class simulationMethods {
   }
 
   resetPosition() {
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height / 2;
+    this.tractorWorldX = this.canvas.width / 2;
+    this.tractorWorldY = this.canvas.height / 2;
     this.angle = 0;
     this.isHarvestingOn = false;
     this.isSeedingOn = false;
