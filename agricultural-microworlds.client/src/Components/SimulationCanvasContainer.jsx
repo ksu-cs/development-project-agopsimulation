@@ -1,7 +1,6 @@
 import { javascriptGenerator } from "blockly/javascript";
 import styles from "../index.module.css";
 import simulationMethods from "../simulationMethods";
-import weatherAPIAccessor from "./weatherAPIAccessor";
 import React from "react";
 import "./blocklyJSGenerator";
 
@@ -10,7 +9,6 @@ class SimulationCanvasContainer extends React.Component {
     super(props);
     this.canvasRef = React.createRef();
     this.alterCanvasRef = null;
-    this.weatherApi = null;
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
     this.resetButtonOnClick = this.resetButtonOnClick.bind(this);
@@ -21,8 +19,7 @@ class SimulationCanvasContainer extends React.Component {
     if (!canvas) return;
     this.alterCanvasRef = new simulationMethods(canvas);
     this.alterCanvasRef.setSpriteOnLoadMethods();
-    this.weatherApi = new weatherAPIAccessor();
-    await this.weatherApi.loadStations();
+    await this.alterCanvasRef.loadStations();
   }
 
   //#region button OnClick methods
@@ -63,12 +60,6 @@ return (async () => { ${code} })();`,
 
   stopButtonOnClick() {
     this.alterCanvasRef.stopMovement();
-    document.getElementById("runButton").disabled = false;
-  }
-
-  resetButtonOnClick() {
-    this.alterCanvasRef.stopMovement();
-    this.alterCanvasRef.resetPosition();
     document.getElementById("runButton").disabled = false;
   }
   //#endregion
