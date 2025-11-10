@@ -143,7 +143,7 @@ export default class simulationMethods {
     const lines = data.trim().split("\n");
     this.csvLines = lines.slice(1).map((line) => line.split(",")); // skip header
     this.cumulativeGDD = 0;
-    this.currentWeek = START_WEEK;
+    this.currentWeek = this.START_WEEK;
   }
 
   // Image loading
@@ -245,7 +245,7 @@ export default class simulationMethods {
               if (this.csvLines[i] && this.csvLines[i][2]) {
                 const temp = parseFloat(this.csvLines[i][2]);
                 if (!isNaN(temp)) {
-                  weekGDD += Math.max(0, temp - Wheatgdd);
+                  weekGDD += Math.max(0, temp - this.Wheatgdd);
                 }
               }
             }
@@ -275,14 +275,14 @@ export default class simulationMethods {
 
         if (weeksToProcess > 0 || this.nightFadeProgress < 1.0) {
           this.drawFieldAndTractor();
-          animationId = requestAnimationFrame(UpdateNight);
+          this.animationId = requestAnimationFrame(UpdateNight);
         } else {
           this.nightFadeProgress = -1;
           this.drawFieldAndTractor();
           resolve();
         }
       }
-      this.UpdateNight();
+      UpdateNight();
     });
   }
 
@@ -297,10 +297,10 @@ export default class simulationMethods {
     };
 
     const corners = [
-      this.rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
-      this.rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
-      this.rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
-      this.rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
+      this.rotatePoint(topLeft.x, topLeft.y, this.angle, center.x, center.y), //topLeft
+      this.rotatePoint(topRight.x, topRight.y, this.angle, center.x, center.y), //topRight
+      this.rotatePoint(bottomRight.x, bottomRight.y, this.angle, center.x, center.y), // bottomRight
+      this.rotatePoint(bottomLeft.x, bottomLeft.y, this.angle, center.x, center.y), // bottomLeft
     ];
 
     const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
