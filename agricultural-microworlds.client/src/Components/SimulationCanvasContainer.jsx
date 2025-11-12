@@ -1,8 +1,8 @@
 import { javascriptGenerator } from "blockly/javascript";
-import styles from "../index.module.css";
-import simulationMethods from "../simulationMethods";
+import styles from "../Styles/index.module.css";
+import simulationMethods from "../alterSimulationClasses/simulationMethods";
 import React from "react";
-import "./blocklyJSGenerator";
+import "../SetUpCustomBlocks/blocklyJSGenerator";
 
 class SimulationCanvasContainer extends React.Component {
   constructor(props) {
@@ -31,8 +31,8 @@ class SimulationCanvasContainer extends React.Component {
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
 
-      this.alterCanvasRef.resetEverything();
-      runButton.disabled = false;
+    this.alterCanvasRef.resetEverything();
+    runButton.disabled = false;
     this.alterCanvasRef.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);

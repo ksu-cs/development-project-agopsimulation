@@ -1,3 +1,5 @@
+import * as Blockly from "blockly/core";
+
 export const toolbox = {
   kind: "categoryToolbox",
   contents: [

@@ -1,8 +1,8 @@
 import { javascriptGenerator } from "blockly/javascript";
 import React from "react";
-import "./customBlockDefinitions";
+import "../../SetUpCustomBlocks/customBlockDefinitions";
 import BlocklyWorkspace from "./BlocklyWorkspace";
-import { toolbox, myTheme } from "./toolboxConfig";
+import { toolbox, myTheme } from "../../SetUpCustomBlocks/toolboxConfig";
 
 class BlocklyWorkspaceContainer extends React.Component {
   constructor(props) {

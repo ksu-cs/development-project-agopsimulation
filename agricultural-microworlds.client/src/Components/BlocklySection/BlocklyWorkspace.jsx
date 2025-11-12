@@ -1,7 +1,7 @@
 import React from "react";
 import * as Blockly from "blockly";
 import "blockly/blocks";
-import styles from "../index.module.css";
+import styles from "../../Styles/index.module.css";
 
 class BlocklyWorkspace extends React.Component {
   constructor(props) {

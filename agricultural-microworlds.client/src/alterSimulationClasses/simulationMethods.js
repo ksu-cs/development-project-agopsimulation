@@ -157,7 +157,9 @@ export default class simulationMethods {
       console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
       this.field = Array.from({ length: this.rows }, () =>
         Array.from({ length: this.columns }, () => {
+          // eslint-disable-next-line no-unused-labels
           state: 2;
+          // eslint-disable-next-line no-unused-labels
           growth: 0.0;
         }),
       );
@@ -281,7 +283,7 @@ export default class simulationMethods {
           this.drawFieldAndTractor();
           resolve();
         }
-      }
+      };
       UpdateNight();
     });
   }
@@ -299,8 +301,20 @@ export default class simulationMethods {
     const corners = [
       this.rotatePoint(topLeft.x, topLeft.y, this.angle, center.x, center.y), //topLeft
       this.rotatePoint(topRight.x, topRight.y, this.angle, center.x, center.y), //topRight
-      this.rotatePoint(bottomRight.x, bottomRight.y, this.angle, center.x, center.y), // bottomRight
-      this.rotatePoint(bottomLeft.x, bottomLeft.y, this.angle, center.x, center.y), // bottomLeft
+      this.rotatePoint(
+        bottomRight.x,
+        bottomRight.y,
+        this.angle,
+        center.x,
+        center.y,
+      ), // bottomRight
+      this.rotatePoint(
+        bottomLeft.x,
+        bottomLeft.y,
+        this.angle,
+        center.x,
+        center.y,
+      ), // bottomLeft
     ];
 
     const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
@@ -628,9 +642,8 @@ export default class simulationMethods {
       const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
       const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
 
-      const animate =() => {
+      const animate = () => {
         const currentTime = Date.now();
-        const elapsed = (currentTime - startTime) / 1000;
 
         if (currentTime < endTime && this.isMoving) {
           // Calculate how much to move based on frame time
@@ -646,7 +659,7 @@ export default class simulationMethods {
         } else {
           resolve();
         }
-      }
+      };
 
       animate();
     });
@@ -682,7 +695,7 @@ export default class simulationMethods {
         } else {
           resolve();
         }
-      }
+      };
       turn();
     });
   }

@@ -1,8 +1,8 @@
 import React from "react";
 import "./App.css";
-import BlocklyWorkspaceContainer from "./Components/BlocklyWorkspaceContainer";
+import BlocklyWorkspaceContainer from "./Components/BlocklySection/BlocklyWorkspaceContainer";
 import SimulationCanvasContainer from "./Components/SimulationCanvasContainer";
-import styles from "./index.module.css";
+import styles from "./Styles/index.module.css";
 
 class App extends React.Component {
   constructor(props) {
