@@ -121,6 +121,7 @@ export default class simulationMethods {
   }
 
   async fetchData() {
+    console.log("fetching data")
     const station = document.getElementById("station").value;
     const startInput = document.getElementById("start").value; // YYYY-MM-DD
     const startDate = new Date(startInput);
@@ -258,7 +259,7 @@ export default class simulationMethods {
 
             // Update HTML displays
             document.getElementById("weekText").textContent =
-              `Week ${this.currentWeek - 1}`;
+              `Week ${this.currentWeek}`;
             document.getElementById("gddText").textContent =
               `GDD: ${this.cumulativeGDD.toFixed(2)}`;
 
