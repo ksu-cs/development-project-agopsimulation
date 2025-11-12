@@ -1,51 +1,35 @@
-import { useEffect, useState } from 'react';
-import './App.css';
+import React from "react";
+import "./App.css";
+import BlocklyWorkspaceContainer from "./Components/BlocklyWorkspaceContainer";
+import SimulationCanvasContainer from "./Components/SimulationCanvasContainer";
+import styles from "./index.module.css";
 
-function App() {
-    const [forecasts, setForecasts] = useState();
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.simpleWorkspace = React.createRef();
+    this.state = { workspace: null };
+  }
+  setWorkspace = (workspace) => {
+    this.setState({ workspace });
+  };
 
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
+  render() {
+    const { workspace } = this.state;
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
+      <React.Fragment>
+        <div className={styles.container}>
+          <BlocklyWorkspaceContainer
+            simpleWorkspace={this.simpleWorkspace}
+            onWorkspaceReady={this.setWorkspace}
+          />
+          <SimulationCanvasContainer workspace={workspace} />
         </div>
+      </React.Fragment>
     );
-    
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
-    }
+  }
 }
+//example
+//https://codesandbox.io/p/sandbox/blockly-react-sample-xylu7x?file=%2Fpublic%2Findex.html%3A15%2C46
 
 export default App;
