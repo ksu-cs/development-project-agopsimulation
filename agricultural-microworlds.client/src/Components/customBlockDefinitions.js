@@ -271,4 +271,18 @@ Blockly.Blocks["get_current_week"] = {
     this.jsonInit(getCurrentWeek);
   },
 };
+
+var onStartProgram = {
+  type: "start_program",
+  message0: "On Begin",
+  nextStatement: null,
+  style: "event_blocks",
+  tooltip: "Is called when the program begins."
+};
+Blockly.Blocks["start_program"] = {
+  init: function () {
+    this.jsonInit(onStartProgram);
+  },
+};
+
 //#endregion
