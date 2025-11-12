@@ -1,6 +1,6 @@
 import React from "react";
-import styles from "../Styles/index.module.css";
-import simulationMethods from "../alterSimulationClasses/simulationMethods";
+import styles from "../../Styles/index.module.css";
+import simulationMethods from "../../alterSimulationClasses/simulationMethods";
 import { javascriptGenerator } from "blockly/javascript";
 
 class SimulationControlsContainer extends React.Component {

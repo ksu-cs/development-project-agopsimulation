@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../Styles/index.module.css";
+import styles from "../../Styles/index.module.css";
 import WeatherData from "./WeatherData";
 
 class CanvasContainer extends React.Component {

@@ -1,7 +1,7 @@
 import React from "react";
-import "../SetUpCustomBlocks/blocklyJSGenerator";
+import "../../SetUpCustomBlocks/blocklyJSGenerator";
 import SimulationControlsContainer from "./SimulationControlsContainer";
-import styles from "../Styles/index.module.css";
+import styles from "../../Styles/index.module.css";
 import CanvasContainer from "./CanvasContainer";
 
 class SimulationCanvasContainer extends React.Component {
