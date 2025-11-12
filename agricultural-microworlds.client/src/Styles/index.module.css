@@ -5,15 +5,20 @@
   flex-direction: row;
 }
 
-.canvasArea {
-  width: 800px;
-  background: #f0f0f0;
+.alignItemsCenterColumn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.canvasSection {
+  width: 800px;
+  background: #f0f0f0;
+}
+
+.canvasArea {
   border-left: 3px solid #ccc;
-  padding: 20px;
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
@@ -32,17 +37,6 @@
 .runButton {
   padding: 10px 20px;
   background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-.resetButton {
-  padding: 10px 20px;
-  background: #f44336;
   color: white;
   border: none;
   border-radius: 5px;
@@ -76,7 +70,7 @@
   left: 20px;
   color: black;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 15px;
   background: rgba(255, 255, 255, 0.7);
   padding: 5px 10px;
   border-radius: 5px;
