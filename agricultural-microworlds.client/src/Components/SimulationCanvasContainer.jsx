@@ -23,7 +23,7 @@ class SimulationCanvasContainer extends React.Component {
 
   //#region button OnClick methods
   async runButtonOnClick() {
-await this.alterCanvasRef.fetchData();
+//await this.alterCanvasRef.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {

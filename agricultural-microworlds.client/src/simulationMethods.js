@@ -212,8 +212,9 @@ export default class simulationMethods {
   }
 
   // Method for Wait X Weeks Block
-  waitXWeeks(weeks) {
+ async waitXWeeks(weeks) {
     this.waitingweeksCount = weeks; // Fixed variable name
+        await this.fetchData();
     return new Promise((resolve) => {
       let weeksToProcess = weeks;
 
@@ -237,7 +238,7 @@ export default class simulationMethods {
 
             // Calculate GDD for this week
             let weekGDD = 0;
-            const startIdx = weekIndex * 7;
+            const startIdx = (weekIndex - 1) * 7;
             for (
               let i = startIdx;
               i < startIdx + 7 && i < this.csvLines.length;
@@ -259,7 +260,7 @@ export default class simulationMethods {
 
             // Update HTML displays
             document.getElementById("weekText").textContent =
-              `Week ${this.currentWeek > 0 ? this.currentWeek - 1 : 0}`;
+              `Week ${this.currentWeek > 0 ? this.currentWeek - 2 : 0}`;
             document.getElementById("gddText").textContent =
               `GDD: ${this.cumulativeGDD.toFixed(2)}`;
 
