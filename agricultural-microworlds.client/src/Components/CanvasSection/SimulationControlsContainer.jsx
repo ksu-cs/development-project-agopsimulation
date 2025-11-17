@@ -1,18 +1,17 @@
+import {Component, Fragment} from "react";
+import styles from "../../Styles/index.module.css";
+import simulationMethods from "../../alterSimulationClasses/simulationMethods";
 import { javascriptGenerator } from "blockly/javascript";
-import styles from "../index.module.css";
-import simulationMethods from "../simulationMethods";
-import React from "react";
-import "./blocklyJSGenerator";
 
-class SimulationCanvasContainer extends React.Component {
+class SimulationControlsContainer extends Component {
   constructor(props) {
     super(props);
-    this.canvasRef = React.createRef();
+    this.canvasRef = props.canvasRef;
+    this.workspace = props.workspace;
     this.alterCanvasRef = null;
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
-
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
@@ -33,8 +32,8 @@ class SimulationCanvasContainer extends React.Component {
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
 
-      this.alterCanvasRef.resetEverything();
-      runButton.disabled = false;
+    this.alterCanvasRef.resetEverything();
+    runButton.disabled = false;
     this.alterCanvasRef.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
@@ -68,33 +67,10 @@ return (async () => { ${code} })();`,
 
   render() {
     return (
-      <React.Fragment>
-        <div className={styles.canvasArea}>
-          <div className={styles.statTextContainer}>
-            <p className={styles.statText} id="weekText">
-              Week 0
-            </p>
-            <p className={styles.statText} id="scoreText">
-              Yield: 0
-            </p>
-            <p className={styles.statText} id="gddText">
-              Growth Days: 0.00
-            </p>
-          </div>
-          <canvas
-            id="gameCanvas"
-            ref={this.canvasRef}
-            className={styles.gameCanvas}
-          />
-          <label htmlFor="station">Choose a station:</label>
-          <select id="station">
-            <option>Loading stations...</option>
-          </select>
-
-          <label htmlFor="start">Start date:</label>
-          <input type="date" id="start" />
-
-          <pre id="output"></pre>
+      <Fragment>
+        <div
+          className={`${styles.alignItemsCenterColumn}`}
+        >
           <button
             onClick={this.runButtonOnClick}
             id="runButton"
@@ -109,13 +85,13 @@ return (async () => { ${code} })();`,
           >
             Stop
           </button>
-          <div id="debug" className="debug">
+          <div id="debug" className={styles.debug}>
             Drag blocks to workspace, then click Run
           </div>
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }
 
-export default SimulationCanvasContainer;
+export default SimulationControlsContainer;

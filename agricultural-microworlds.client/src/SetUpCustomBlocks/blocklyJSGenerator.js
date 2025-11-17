@@ -1,15 +1,4 @@
-/* eslint-disable no-unused-vars */
 import { javascriptGenerator } from "blockly/javascript";
-
-/**
- * links the function to run to the custom block being called
- */
-javascriptGenerator.forBlock["example"] = function (block) {
-  return "exampleFunction()";
-};
-function exampleFunction() {
-  console.log("proof");
-}
 
 javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
   const duration =
@@ -21,7 +10,7 @@ javascriptGenerator.forBlock["turn_left"] = function () {
   return `await simulationMethods.turnXDegrees(-90);\n`;
 };
 
-javascriptGenerator.forBlock["turn_right"] = function (block) {
+javascriptGenerator.forBlock["turn_right"] = function () {
   return `await simulationMethods.turnXDegrees(90);\n`;
 };
 

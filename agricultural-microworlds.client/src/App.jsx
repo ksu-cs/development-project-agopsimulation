@@ -1,13 +1,13 @@
-import React from "react";
+import {Component, Fragment, createRef} from "react";
 import "./App.css";
-import BlocklyWorkspaceContainer from "./Components/BlocklyWorkspaceContainer";
-import SimulationCanvasContainer from "./Components/SimulationCanvasContainer";
-import styles from "./index.module.css";
+import BlocklyWorkspaceContainer from "./Components/BlocklySection/BlocklyWorkspaceContainer";
+import SimulationCanvasContainer from "./Components/CanvasSection/SimulationCanvasContainer";
+import styles from "./Styles/index.module.css";
 
-class App extends React.Component {
+class App extends Component {
   constructor(props) {
     super(props);
-    this.simpleWorkspace = React.createRef();
+    this.simpleWorkspace = createRef();
     this.state = { workspace: null };
   }
   setWorkspace = (workspace) => {
@@ -17,7 +17,7 @@ class App extends React.Component {
   render() {
     const { workspace } = this.state;
     return (
-      <React.Fragment>
+      <Fragment>
         <div className={styles.container}>
           <BlocklyWorkspaceContainer
             simpleWorkspace={this.simpleWorkspace}
@@ -25,7 +25,7 @@ class App extends React.Component {
           />
           <SimulationCanvasContainer workspace={workspace} />
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }
