@@ -15,13 +15,14 @@
 .canvasSection {
   width: 800px;
   background: #f0f0f0;
+  border-left: 3px solid #ccc;
 }
 
 .canvasArea {
-  border-left: 3px solid #ccc;
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
+  width: 800px;
 }
 
 .gameCanvas {
@@ -62,6 +63,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   width: 100%;
+  min-height: 60px;
   font-family: monospace;
   font-size: 12px;
 }
@@ -86,4 +88,8 @@
   flex-grow: 1;
   top: 5px;
   position: absolute;
+}
+
+.weatherDataContainer{
+  margin-bottom: 10px;
 }

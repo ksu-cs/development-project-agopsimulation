@@ -69,7 +69,7 @@ return (async () => { ${code} })();`,
     return (
       <Fragment>
         <div
-          className={`${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
+          className={`${styles.alignItemsCenterColumn}`}
         >
           <button
             onClick={this.runButtonOnClick}
@@ -85,7 +85,7 @@ return (async () => { ${code} })();`,
           >
             Stop
           </button>
-          <div id="debug" className="debug">
+          <div id="debug" className={styles.debug}>
             Drag blocks to workspace, then click Run
           </div>
         </div>

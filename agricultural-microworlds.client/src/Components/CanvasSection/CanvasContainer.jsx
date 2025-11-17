@@ -12,7 +12,7 @@ class CanvasContainer extends Component {
     return (
       <Fragment>
         <div
-          className={`${styles.canvasArea} ${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
+          className={`${styles.canvasArea} ${styles.alignItemsCenterColumn}`}
         >
           <div className={styles.statTextContainer}>
             <p className={styles.statText} id="weekText">
