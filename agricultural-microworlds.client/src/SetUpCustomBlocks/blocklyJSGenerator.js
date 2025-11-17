@@ -63,3 +63,7 @@ javascriptGenerator.forBlock["custom_compare"] = function (block, generator) {
 javascriptGenerator.forBlock["get_current_week"] = function (block, generator) {
   return ["simulationMethods.currentWeek", generator.ORDER_ATOMIC];
 };
+
+javascriptGenerator.forBlock["start_program"] = function (block, generator) {
+  return `\n`;
+};

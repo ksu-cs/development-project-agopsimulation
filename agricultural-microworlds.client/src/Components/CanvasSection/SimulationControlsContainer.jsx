@@ -22,6 +22,8 @@ class SimulationControlsContainer extends React.Component {
 
   //#region button OnClick methods
   async runButtonOnClick() {
+await this.alterCanvasRef.fetchData();
+
     const { workspace } = this.props;
     if (!workspace) {
       console.warn("Workspace not ready yet");

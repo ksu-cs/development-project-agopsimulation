@@ -120,7 +120,8 @@ export default class simulationMethods {
     return sum;
   }
 
-  async fetchData() {
+ async fetchData() {
+    console.log("fetching data")
     const station = document.getElementById("station").value;
     const startInput = document.getElementById("start").value; // YYYY-MM-DD
     const startDate = new Date(startInput);
@@ -234,7 +235,7 @@ export default class simulationMethods {
           waitingTime -= delta;
           if (waitingTime <= 0) {
             // A week has passed - calculate GDD for this week
-            const weekIndex = this.currentWeek - 1; // Convert to 0-based index
+            const weekIndex = this.currentWeek; // Convert to 0-based index
 
             // Calculate GDD for this week
             let weekGDD = 0;
@@ -260,12 +261,12 @@ export default class simulationMethods {
 
             // Update HTML displays
             document.getElementById("weekText").textContent =
-              `Week ${this.currentWeek - 1}`;
+              `Week ${this.currentWeek > 0 ? this.currentWeek - 1 : 0}`;
             document.getElementById("gddText").textContent =
               `GDD: ${this.cumulativeGDD.toFixed(2)}`;
 
             weeksToProcess--;
-            if (weeksToProcess > 0) waitingTime = 0.2;
+            if (weeksToProcess > -1) waitingTime = 0.2;
           }
         } else {
           const fadeSpeed = waitingTime > 0 ? 1.0 : 2.0;

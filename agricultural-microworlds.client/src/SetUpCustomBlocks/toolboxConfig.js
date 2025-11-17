@@ -69,6 +69,14 @@ export const toolbox = {
         { kind: "block", type: "controls_whileUntil" },
       ],
     },
+    {
+      kind: "category",
+      name: "Events",
+      categorystyle: "events_category",
+      contents: [
+        { kind: "block", type: "start_program" },
+      ],
+    },
   ],
 };
 
@@ -81,13 +89,14 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
     logic_category: { colour: "135" },
     loops_category: { colour: "60" },
     variable_category: { colour: "330" },
+    events_category: { colour: "150" },
   },
   blockStyles: {
     // Movement Blocks
     movement_blocks: { colourPrimary: "300" },
 
     // Style for all blocks in the "Numbers" category
-    // 'numbers_blocks': { 'colourPrimary': "300" },
+    math_blocks: { colorPrimary: "230" },
 
     // Style for all blocks in the "Control" category
     control_blocks: { colourPrimary: "190" },
@@ -98,11 +107,11 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
     // Style for all blocks in the "Loops" category
     loop_blocks: { colourPrimary: "60" },
 
-    // Style for all blocks in the "Numbers" category
-    math_blocks: { colorPrimary: "230" },
-
     // Style for all blocks in the "Variables" category
-    variable_blocks: { colorPrimary: "330" },
+    variable_blocks: { colourPrimary: "330" },
+
+    // Style for all blocks in the "Events" category
+    event_blocks: { colourPrimary: "150" },
   },
   componentStyles: {},
 });
