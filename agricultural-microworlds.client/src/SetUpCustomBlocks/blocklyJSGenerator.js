@@ -67,3 +67,12 @@ javascriptGenerator.forBlock["get_current_week"] = function (generator) {
 javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
 };
+
+javascriptGenerator.forBlock["world_speed_multiplyer"] = function (
+  block,
+  generator,
+) {
+  const speedValue =
+    generator.valueToCode(block, "MULTIPLYER", generator.ORDER_ATOMIC) || "1";
+  return `simulationMethods.changeWorldSpeed(${speedValue});\n`;
+};

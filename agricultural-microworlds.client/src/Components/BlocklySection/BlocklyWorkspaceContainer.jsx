@@ -1,5 +1,5 @@
 import { javascriptGenerator } from "blockly/javascript";
-import {Component, Fragment} from "react";
+import { Component, Fragment } from "react";
 import "../../SetUpCustomBlocks/customBlockDefinitions";
 import BlocklyWorkspace from "./BlocklyWorkspace";
 import { toolbox, myTheme } from "../../SetUpCustomBlocks/toolboxConfig";

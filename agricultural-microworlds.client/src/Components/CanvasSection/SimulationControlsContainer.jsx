@@ -1,4 +1,4 @@
-import {Component, Fragment} from "react";
+import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
 import simulationMethods from "../../alterSimulationClasses/simulationMethods";
 import { javascriptGenerator } from "blockly/javascript";
@@ -22,7 +22,7 @@ class SimulationControlsContainer extends Component {
 
   //#region button OnClick methods
   async runButtonOnClick() {
-//await this.alterCanvasRef.fetchData();
+    //await this.alterCanvasRef.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {
@@ -68,9 +68,7 @@ return (async () => { ${code} })();`,
   render() {
     return (
       <Fragment>
-        <div
-          className={`${styles.alignItemsCenterColumn}`}
-        >
+        <div className={`${styles.alignItemsCenterColumn}`}>
           <button
             onClick={this.runButtonOnClick}
             id="runButton"

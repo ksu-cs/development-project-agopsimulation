@@ -16,7 +16,6 @@ export default class simulationMethods {
 
     this.angle = 0; // 0 degrees = facing right
     this.goalAngle = 0; // Our angle will be set to move towards this.
-    this.turnSpeed = 90; //How fast the tractor can turn.
     this.weeksToWait = 0;
     this.nightFadeProgress = -1.0; // The progress for the night transition animation. Ranges from 0-1 when active.
     this.isMoving = false; // flag to indicate if the tractor is currently moving
@@ -39,6 +38,9 @@ export default class simulationMethods {
     this.TILE_BASE_SIZE = 64; // The original size of the field tiles
     this.FIELD_SCALE = 8; // The amount the field tiles will be scaled down by
     this.SPEED = 20; // pixels per second
+    this.TURN_SPEED = 90; //How fast the tractor can turn.
+
+    this.worldSpeedMultiplyer = 1;
 
     // Time variables
     this.START_WEEK = 1; // starting week
@@ -120,8 +122,8 @@ export default class simulationMethods {
     return sum;
   }
 
- async fetchData() {
-    console.log("fetching data")
+  async fetchData() {
+    console.log("fetching data");
     const station = document.getElementById("station").value;
     const startInput = document.getElementById("start").value; // YYYY-MM-DD
     const startDate = new Date(startInput);
@@ -214,9 +216,9 @@ export default class simulationMethods {
   }
 
   // Method for Wait X Weeks Block
- async waitXWeeks(weeks) {
+  async waitXWeeks(weeks) {
     this.waitingweeksCount = weeks; // Fixed variable name
-        await this.fetchData();
+    await this.fetchData();
     return new Promise((resolve) => {
       let weeksToProcess = weeks;
 
@@ -227,7 +229,7 @@ export default class simulationMethods {
         return;
       }
 
-      let waitingTime = 0.2;
+      let waitingTime = 0.2; // UPDATE: remove waitXWeeks block and instead have block to speed up time?
 
       const UpdateNight = () => {
         const delta = 1 / 60; // assuming 60fps
@@ -641,8 +643,14 @@ export default class simulationMethods {
       const startTime = Date.now();
       const endTime = startTime + duration * 1000;
 
-      const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-      const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+      const moveX =
+        this.SPEED *
+        Math.cos((this.angle * Math.PI) / 180) *
+        this.worldSpeedMultiplyer;
+      const moveY =
+        this.SPEED *
+        Math.sin((this.angle * Math.PI) / 180) *
+        this.worldSpeedMultiplyer;
 
       const animate = () => {
         const currentTime = Date.now();
@@ -681,12 +689,16 @@ export default class simulationMethods {
           // For the actual turning.
           var difference = this.goalAngle - this.angle;
           var absDiff = Math.abs(difference);
-          var alpha = Math.min(this.turnSpeed * delta, absDiff) / absDiff;
+          var alpha = Math.min(this.TURN_SPEED * this.worldSpeedMultiplyer * delta, absDiff) / absDiff;
           this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
 
           // // Move the tractor while turning, to look more natural.
-          const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-          const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+          const moveX =
+            this.SPEED *
+            Math.cos((this.angle * Math.PI) / 180);
+          const moveY =
+            this.SPEED *
+            Math.sin((this.angle * Math.PI) / 180);
           this.tractorWorldX += moveX * delta;
           this.tractorWorldY += moveY * delta;
 
@@ -734,11 +746,16 @@ export default class simulationMethods {
     this.resetPosition();
     this.waitingweeksCount = 0;
     this.currentWeek = 0;
+    this.worldSpeedMultiplyer = 1;
     document.getElementById("weekText").innerHTML = `Week ${this.currentWeek}`;
     document.getElementById("gddText").textContent = `GDD: ${0.0}`;
   }
 
   startMoving() {
     this.isMoving = true;
+  }
+
+  changeWorldSpeed(speedMultiplyer) {
+    this.worldSpeedMultiplyer = speedMultiplyer; // limit of 24 then it starts skipping tiles
   }
 }

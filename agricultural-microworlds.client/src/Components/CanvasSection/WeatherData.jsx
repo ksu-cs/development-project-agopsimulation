@@ -1,11 +1,13 @@
 import styles from "../../Styles/index.module.css";
-import {Component, Fragment} from "react";
+import { Component, Fragment } from "react";
 
 class WeatherData extends Component {
   render() {
     return (
       <Fragment>
-        <div className={`${styles.alignItemsCenterColumn} ${styles.weatherDataContainer}`}>
+        <div
+          className={`${styles.alignItemsCenterColumn} ${styles.weatherDataContainer}`}
+        >
           <label htmlFor="station">Choose a station:</label>
           <select id="station">
             <option>Loading stations...</option>

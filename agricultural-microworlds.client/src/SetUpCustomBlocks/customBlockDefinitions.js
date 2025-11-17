@@ -1,4 +1,4 @@
-import {Blocks} from "blockly/core";
+import { Blocks } from "blockly/core";
 
 //#region examples
 var example = {
@@ -277,7 +277,7 @@ var onStartProgram = {
   message0: "On Begin",
   nextStatement: null,
   style: "event_blocks",
-  tooltip: "Is called when the program begins."
+  tooltip: "Is called when the program begins.",
 };
 Blocks["start_program"] = {
   init: function () {
@@ -285,4 +285,24 @@ Blocks["start_program"] = {
   },
 };
 
+var worldSpeedMultiplyer = {
+  type: "world_speed_multiplyer",
+  message0: "Multiply world speed by %1",
+  args0: [
+    {
+      type: "input_value",
+      name: "MULTIPLYER",
+      check: "Number",
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Increase or decrease the speed at which the simulation runs at",
+};
+Blocks["world_speed_multiplyer"] = {
+  init: function () {
+    this.jsonInit(worldSpeedMultiplyer);
+  },
+};
 //#endregion

@@ -1,4 +1,4 @@
-import {Theme, Themes} from "blockly/core";
+import { Theme, Themes } from "blockly/core";
 
 export const toolbox = {
   kind: "categoryToolbox",
@@ -47,6 +47,7 @@ export const toolbox = {
         { kind: "block", type: "toggle_harvesting" },
         { kind: "block", type: "toggle_seeding" },
         { kind: "block", type: "wait_x_weeks" },
+        { kind: "block", type: "world_speed_multiplyer" },
       ],
     },
     {
@@ -73,9 +74,7 @@ export const toolbox = {
       kind: "category",
       name: "Events",
       categorystyle: "events_category",
-      contents: [
-        { kind: "block", type: "start_program" },
-      ],
+      contents: [{ kind: "block", type: "start_program" }],
     },
   ],
 };
