@@ -1,10 +1,10 @@
 import { javascriptGenerator } from "blockly/javascript";
-import React from "react";
+import {Component, Fragment} from "react";
 import "../../SetUpCustomBlocks/customBlockDefinitions";
 import BlocklyWorkspace from "./BlocklyWorkspace";
 import { toolbox, myTheme } from "../../SetUpCustomBlocks/toolboxConfig";
 
-class BlocklyWorkspaceContainer extends React.Component {
+class BlocklyWorkspaceContainer extends Component {
   constructor(props) {
     super(props);
   }
@@ -17,13 +17,13 @@ class BlocklyWorkspaceContainer extends React.Component {
   };
   render() {
     return (
-      <React.Fragment>
+      <Fragment>
         <BlocklyWorkspace
           toolbox={toolbox}
           myTheme={myTheme}
           onWorkspaceReady={this.props.onWorkspaceReady}
         />
-      </React.Fragment>
+      </Fragment>
     );
   }
 }

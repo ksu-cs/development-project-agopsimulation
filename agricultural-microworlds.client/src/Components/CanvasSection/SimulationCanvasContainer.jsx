@@ -1,19 +1,19 @@
-import React from "react";
+import {Component, Fragment, createRef} from "react";
 import "../../SetUpCustomBlocks/blocklyJSGenerator";
 import SimulationControlsContainer from "./SimulationControlsContainer";
 import styles from "../../Styles/index.module.css";
 import CanvasContainer from "./CanvasContainer";
 
-class SimulationCanvasContainer extends React.Component {
+class SimulationCanvasContainer extends Component {
   constructor(props) {
     super(props);
-    this.canvasRef = React.createRef();
+    this.canvasRef = createRef();
   }
 
   render() {
     const { workspace } = this.props;
     return (
-      <React.Fragment>
+      <Fragment>
         <div
           className={`${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
         >
@@ -23,7 +23,7 @@ class SimulationCanvasContainer extends React.Component {
             canvasRef={this.canvasRef}
           />
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }

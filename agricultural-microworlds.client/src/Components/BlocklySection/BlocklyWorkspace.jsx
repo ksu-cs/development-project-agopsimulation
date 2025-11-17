@@ -1,13 +1,13 @@
-import React from "react";
-import * as Blockly from "blockly";
+import {Component, Fragment, createRef} from "react";
+import {inject, Variables, utils, Xml} from "blockly";
 import "blockly/blocks";
 import styles from "../../Styles/index.module.css";
 
-class BlocklyWorkspace extends React.Component {
+class BlocklyWorkspace extends Component {
   constructor(props) {
     super(props);
-    this.blocklyDiv = React.createRef();
-    this.toolbox = React.createRef();
+    this.blocklyDiv = createRef();
+    this.toolbox = createRef();
   }
 
   componentDidMount() {
@@ -30,7 +30,7 @@ class BlocklyWorkspace extends React.Component {
     if (this.primaryWorkspace) return;
 
     const { initialXml, toolbox, myTheme, ...rest } = this.props;
-    this.primaryWorkspace = Blockly.inject(this.blocklyDiv.current, {
+    this.primaryWorkspace = inject(this.blocklyDiv.current, {
       toolbox: toolbox,
       trashcan: true,
       theme: myTheme,
@@ -44,7 +44,7 @@ class BlocklyWorkspace extends React.Component {
     this.primaryWorkspace.registerButtonCallback(
       "CREATE_VARIABLE",
       function (button) {
-        Blockly.Variables.createVariableButtonHandler(
+        Variables.createVariableButtonHandler(
           button.getTargetWorkspace(),
         );
       },
@@ -67,15 +67,15 @@ class BlocklyWorkspace extends React.Component {
   }
 
   setXml(xml) {
-    const xmlDom = Blockly.utils.xml.textToDom(xml);
-    Blockly.Xml.domToWorkspace(xmlDom, this.primaryWorkspace);
+    const xmlDom = utils.xml.textToDom(xml);
+    Xml.domToWorkspace(xmlDom, this.primaryWorkspace);
   }
 
   render() {
     return (
-      <React.Fragment>
+      <Fragment>
         <div ref={this.blocklyDiv} className={styles.blocklyContainer} />
-      </React.Fragment>
+      </Fragment>
     );
   }
 }

@@ -1,4 +1,4 @@
-import * as Blockly from "blockly/core";
+import {Theme, Themes} from "blockly/core";
 
 export const toolbox = {
   kind: "categoryToolbox",
@@ -80,8 +80,8 @@ export const toolbox = {
   ],
 };
 
-export const myTheme = Blockly.Theme.defineTheme("myTheme", {
-  base: Blockly.Themes.Classic,
+export const myTheme = Theme.defineTheme("myTheme", {
+  base: Themes.Classic,
   categoryStyles: {
     movement_category: { colour: "300" },
     numbers_category: { colour: "230" },

@@ -1,9 +1,9 @@
-import React from "react";
+import {Component, Fragment} from "react";
 import styles from "../../Styles/index.module.css";
 import simulationMethods from "../../alterSimulationClasses/simulationMethods";
 import { javascriptGenerator } from "blockly/javascript";
 
-class SimulationControlsContainer extends React.Component {
+class SimulationControlsContainer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = props.canvasRef;
@@ -67,7 +67,7 @@ return (async () => { ${code} })();`,
 
   render() {
     return (
-      <React.Fragment>
+      <Fragment>
         <div
           className={`${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
         >
@@ -89,7 +89,7 @@ return (async () => { ${code} })();`,
             Drag blocks to workspace, then click Run
           </div>
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }

@@ -1,9 +1,9 @@
-import React from "react";
+import {Component, Fragment} from "react";
 
-class WeatherData extends React.Component {
+class WeatherData extends Component {
   render() {
     return (
-      <React.Fragment>
+      <Fragment>
         <label htmlFor="station">Choose a station:</label>
         <select id="station">
           <option>Loading stations...</option>
@@ -13,7 +13,7 @@ class WeatherData extends React.Component {
         <input type="date" id="start" />
 
         <pre id="output"></pre>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }

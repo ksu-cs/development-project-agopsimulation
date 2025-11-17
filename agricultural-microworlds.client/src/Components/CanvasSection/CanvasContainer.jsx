@@ -1,8 +1,8 @@
-import React from "react";
+import {Component, Fragment} from "react";
 import styles from "../../Styles/index.module.css";
 import WeatherData from "./WeatherData";
 
-class CanvasContainer extends React.Component {
+class CanvasContainer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = props.canvasRef;
@@ -10,7 +10,7 @@ class CanvasContainer extends React.Component {
 
   render() {
     return (
-      <React.Fragment>
+      <Fragment>
         <div
           className={`${styles.canvasArea} ${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
         >
@@ -32,7 +32,7 @@ class CanvasContainer extends React.Component {
           />
           <WeatherData />
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }
