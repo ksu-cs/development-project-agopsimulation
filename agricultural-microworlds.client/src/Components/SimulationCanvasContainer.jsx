@@ -21,9 +21,19 @@ class SimulationCanvasContainer extends React.Component {
     await this.alterCanvasRef.loadStations();
   }
 
+  addBlocksToArray(block) {
+    let nextBlock = block.getNextBlock();
+    if (nextBlock != null) {
+      //console.log(block.nextConnection);
+      return javascriptGenerator.blockToCode(nextBlock);
+    }
+
+    return "";
+  }
+
   //#region button OnClick methods
   async runButtonOnClick() {
-await this.alterCanvasRef.fetchData();
+    await this.alterCanvasRef.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {
@@ -38,24 +48,62 @@ await this.alterCanvasRef.fetchData();
     this.alterCanvasRef.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
+    //console.log(allBlocks);
 
-    if (allBlocks.length > 0) {
-      const code = javascriptGenerator.workspaceToCode(workspace);
-      console.log(code);
+    let blockChunks = [];
 
-      if (code.trim()) {
-        try {
-          const run = new Function(
-            "simulationMethods",
-            `
-return (async () => { ${code} })();`,
-          );
-          await run(this.alterCanvasRef);
-        } catch (e) {
-          console.error("ERROR:", e);
-        }
+    allBlocks.forEach(block => {
+      if (block.type == "start_program") {
+        let currentChunk = "";
+        currentChunk = this.addBlocksToArray(block);
+        //console.log("Current Chunk:" + currentChunk);
+
+        if (currentChunk != "")
+          blockChunks.push(currentChunk.split(/\r?\n/).filter(Boolean));
       }
+    });
+
+    //console.log("Chunks:" + blockChunks);
+    let formattedCode = "";
+    let chunkIdx = 0;
+
+    while (blockChunks.length > 0) {
+      let c = 0;
+      //console.log("Chunk length:" + blockChunks[chunkIdx].length);
+      for (c = 0; c < blockChunks[chunkIdx].length; c++) {
+        formattedCode += blockChunks[chunkIdx][c];
+        if (blockChunks[chunkIdx][c].includes("await")) {
+          c++;
+          break;
+        }
+
+        //console.log("Current code:" + formattedCode);
+      }
+
+      blockChunks[chunkIdx].splice(0, c);
+      if (blockChunks[chunkIdx].length <= 0)
+        blockChunks.splice(chunkIdx, 1);
+      if (blockChunks.length > 0)
+        chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
+
+    if (formattedCode != "") {
+        console.log(formattedCode);
+
+        if (formattedCode.trim()) {
+          try {
+            const run = new Function(
+              "simulationMethods",
+              `
+              return (async () => { ${formattedCode} })();`,
+            );
+            await run(this.alterCanvasRef);
+          } catch (e) {
+            console.error("ERROR:", e);
+          }
+        }
+    }
+
     this.alterCanvasRef.stopMovement();
     runButton.disabled = false;
   }

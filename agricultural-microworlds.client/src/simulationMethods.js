@@ -264,7 +264,7 @@ export default class simulationMethods {
               `GDD: ${this.cumulativeGDD.toFixed(2)}`;
 
             weeksToProcess--;
-            if (weeksToProcess > 0) waitingTime = 0.2;
+            if (weeksToProcess > 0) waitingTime = 0.05;
           }
         } else {
           const fadeSpeed = waitingTime > 0 ? 1.0 : 2.0;

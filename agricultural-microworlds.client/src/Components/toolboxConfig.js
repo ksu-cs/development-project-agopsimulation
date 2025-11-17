@@ -87,7 +87,7 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
     logic_category: { colour: "135" },
     loops_category: { colour: "60" },
     variable_category: { colour: "330" },
-    events_category: { colour: "150" },
+    events_category: { colour: "25" },
   },
   blockStyles: {
     // Movement Blocks
@@ -109,7 +109,7 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
     variable_blocks: { colourPrimary: "330" },
 
     // Style for all blocks in the "Events" category
-    event_blocks: { colourPrimary: "150" },
+    event_blocks: { colourPrimary: "25" },
   },
   componentStyles: {},
 });
