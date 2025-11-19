@@ -113,6 +113,11 @@ class SimulationCanvasContainer extends React.Component {
     this.simulation.resetEverything();
     document.getElementById("weekText").textContent = `Week ${this.simulation.START_WEEK}`;
 
+
+    javascriptGenerator.init(workspace);
+
+    window.loopTrap = 1000;
+
     // --- NEW CODE GENERATION LOGIC ---
     let onRunCode = "";
     const onWeekEvents = {};
@@ -166,6 +171,9 @@ class SimulationCanvasContainer extends React.Component {
     // 3. Run the "on_run" code
     // This code is now SYNCHRONOUS. It just fills the commandQueue.
     if (onRunCode.trim()) {
+      // If a loop runs more than this without finishing, it's likely a bug.
+      window.loopTrap = 1000;
+
       try {
         const run = new Function(
           "simulation", // Pass in our simulation instance
@@ -173,7 +181,10 @@ class SimulationCanvasContainer extends React.Component {
         );
         run(this.simulation); // This executes instantly
       } catch (e) {
-        console.error("ERROR:", e);
+        console.error("Code Execution Error:", e);
+        if (e.toString().includes("Infinite loop")) {
+             alert("Infinite Loop Detected! \n\nRemember: 'While' loops run instantly. They cannot wait for the simulation to update. Use 'On Week X' blocks instead.");
+        }
       }
     }
     

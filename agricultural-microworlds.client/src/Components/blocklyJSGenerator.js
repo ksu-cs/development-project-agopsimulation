@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 import { javascriptGenerator } from "blockly/javascript";
 
-// The 'simulationMethods' variable name comes from `new Function("simulationMethods", ...)`
-// in SimulationCanvasContainer.jsx. Let's rename it "simulation" for clarity.
+// If window.loopTrap hits 0, it throws an error to break the freeze.
+javascriptGenerator.INFINITE_LOOP_TRAP = 'if (--window.loopTrap < 0) throw "Infinite loop.";\n';
 
 javascriptGenerator.forBlock["example"] = function (block) {
   return "// Example block\n";
