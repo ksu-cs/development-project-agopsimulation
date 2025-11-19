@@ -16,11 +16,16 @@ javascriptGenerator.forBlock["turn_right"] = function () {
 
 javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
   let amount =
-    generator.valueToCode(block, "DEGREES", generator.ORDER_ATOMIC) || "1";
+    generator.valueToCode(block, "DEGREES", generator.ORDER_NONE) || "1";
   const direction = block.getFieldValue("DIRECTION");
-  if (direction == 0) amount *= -1;
+  
+  if (direction == 0) {
+    amount = `(-1 * (${amount}))`;
+  }
+
   return `await simulationMethods.turnXDegrees(${amount});\n`;
 };
+
 
 javascriptGenerator.forBlock["toggle_harvesting"] = function (block) {
   const toggle = block.getFieldValue("toggleType");
