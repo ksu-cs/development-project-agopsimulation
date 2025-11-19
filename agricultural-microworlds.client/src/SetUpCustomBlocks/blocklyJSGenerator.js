@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { javascriptGenerator } from "blockly/javascript";
 
 // If window.loopTrap hits 0, it throws an error to break the freeze.
@@ -25,11 +24,12 @@ javascriptGenerator.forBlock["turn_right"] = function (block) {
 
 javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
   let amount =
-    generator.valueToCode(block, "DEGREES", generator.ORDER_ATOMIC) || "1";
+    generator.valueToCode(block, "DEGREES", generator.ORDER_NONE) || "1";
   const direction = block.getFieldValue("DIRECTION");
   if (direction == 0) amount *= -1;
   return `simulation.queueTurn(${amount});\n`;
 };
+
 
 javascriptGenerator.forBlock["toggle_harvesting"] = function (block) {
   const toggle = block.getFieldValue("toggleType");
@@ -100,4 +100,7 @@ javascriptGenerator.forBlock["on_run"] = function (block, generator) {
 javascriptGenerator.forBlock["on_week_x"] = function (block, generator) {
   const statements_code = generator.statementToCode(block, "STACK");
   return statements_code; 
+};
+javascriptGenerator.forBlock["start_program"] = function () {
+  return `\n`;
 };

@@ -1,4 +1,4 @@
-import * as Blockly from "blockly/core";
+import {Blocks} from "blockly/core";
 
 //#region examples
 var example = {
@@ -9,7 +9,7 @@ var example = {
   colour: 210, // color of block
   tooltip: "Turns harvesting on tractor off", // tip that comes up when hovering on block
 };
-Blockly.Blocks["example"] = {
+Blocks["example"] = {
   init: function () {
     this.jsonInit(example);
     this.setStyle("loop_blocks"); // this part optional can set style yourself in the json array like colour: 210 above
@@ -34,7 +34,7 @@ var argsExapmle = {
   output: "Number",
   colour: 230,
 };
-Blockly.Blocks["args_example"] = {
+Blocks["args_example"] = {
   init: function () {
     this.jsonInit(argsExapmle);
     this.setStyle("loop_blocks");
@@ -58,7 +58,7 @@ var moveForward = {
   style: "movement_blocks",
   tooltip: "Move forward for specified seconds",
 };
-Blockly.Blocks["move_forward"] = {
+Blocks["move_forward"] = {
   init: function () {
     this.jsonInit(moveForward);
   },
@@ -72,7 +72,7 @@ var turnLeft = {
   style: "movement_blocks",
   tooltip: "Turn the tractor left",
 };
-Blockly.Blocks["turn_left"] = {
+Blocks["turn_left"] = {
   init: function () {
     this.jsonInit(turnLeft);
   },
@@ -86,7 +86,7 @@ var turnRight = {
   style: "movement_blocks",
   tooltip: "Turn the tractor right",
 };
-Blockly.Blocks["turn_right"] = {
+Blocks["turn_right"] = {
   init: function () {
     this.jsonInit(turnRight);
   },
@@ -115,7 +115,7 @@ var turnXDegrees = {
   style: "movement_blocks",
   tooltip: "Turn the tractor a certain amount of degrees left",
 };
-Blockly.Blocks["turn_x_degrees"] = {
+Blocks["turn_x_degrees"] = {
   init: function () {
     this.jsonInit(turnXDegrees);
   },
@@ -134,7 +134,7 @@ var mathNumber = {
   output: "Number",
   style: "math_blocks",
 };
-Blockly.Blocks["math_number"] = {
+Blocks["math_number"] = {
   init: function () {
     this.jsonInit(mathNumber);
   },
@@ -158,7 +158,7 @@ var toggleHarvesting = {
   style: "control_blocks",
   tooltip: "Turns harvesting on tractor on or off",
 };
-Blockly.Blocks["toggle_harvesting"] = {
+Blocks["toggle_harvesting"] = {
   init: function () {
     this.jsonInit(toggleHarvesting);
   },
@@ -182,7 +182,7 @@ var toggleSeeding = {
   style: "control_blocks",
   tooltip: "Turns seeding on tractor on or off",
 };
-Blockly.Blocks["toggle_seeding"] = {
+Blocks["toggle_seeding"] = {
   init: function () {
     this.jsonInit(toggleSeeding);
   },
@@ -203,7 +203,7 @@ var waitXWeeks = {
   style: "control_blocks",
   tooltip: "Wait for a certain number of weeks",
 };
-Blockly.Blocks["wait_x_weeks"] = {
+Blocks["wait_x_weeks"] = {
   init: function () {
     this.jsonInit(waitXWeeks);
   },
@@ -227,7 +227,7 @@ var isOverTile = {
   style: "logic_blocks",
   tooltip: "Checks if a planted tile is in front of the tractor.",
 };
-Blockly.Blocks["is_over_tile"] = {
+Blocks["is_over_tile"] = {
   init: function () {
     this.jsonInit(isOverTile);
   },
@@ -253,7 +253,7 @@ var customCompare = {
   tooltip: "Comparison block",
   inputsInline: true,
 };
-Blockly.Blocks["custom_compare"] = {
+Blocks["custom_compare"] = {
   init: function () {
     this.jsonInit(customCompare);
   },
@@ -266,7 +266,7 @@ var getCurrentWeek = {
   style: "variable_blocks",
   tooltip: "Gets the current week number from the simulation.",
 };
-Blockly.Blocks["get_current_week"] = {
+Blocks["get_current_week"] = {
   init: function () {
     this.jsonInit(getCurrentWeek);
   },
@@ -304,6 +304,20 @@ var onWeekX = {
 Blockly.Blocks["on_week_x"] = {
   init: function () {
     this.jsonInit(onWeekX);
+  },
+};
+
+
+var onStartProgram = {
+  type: "start_program",
+  message0: "On Begin",
+  nextStatement: null,
+  style: "event_blocks",
+  tooltip: "Is called when the program begins."
+};
+Blocks["start_program"] = {
+  init: function () {
+    this.jsonInit(onStartProgram);
   },
 };
 

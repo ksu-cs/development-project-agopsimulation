@@ -1,74 +1,28 @@
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
-}
-canvas {
-  border: 2px solid #333;
-  background-color: #fff;
-  margin-bottom: 20px;
-  margin-top: 100px;
-}
-
 .container {
   display: flex;
-  flex-direction: row;
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
+  flex-direction: row;
 }
 
-.canvasArea {
-  width: 800px;
-  background: #f0f0f0;
+.alignItemsCenterColumn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.canvasSection {
+  width: 800px;
+  background: #f0f0f0;
   border-left: 3px solid #ccc;
-  padding: 20px;
+}
+
+.canvasArea {
   position: relative;
   box-sizing: border-box;
   overflow-y: auto;
+  width: 800px;
 }
 
 .gameCanvas {
@@ -78,23 +32,12 @@ canvas {
 
 .blocklyContainer {
   flex: 1;
-  flex-grow: 1;
+  min-width: 0;
 }
 
 .runButton {
   padding: 10px 20px;
   background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-
-.resetButton {
-  padding: 10px 20px;
-  background: #f44336;
   color: white;
   border: none;
   border-radius: 5px;
@@ -120,6 +63,7 @@ canvas {
   border: 1px solid #ccc;
   border-radius: 5px;
   width: 100%;
+  min-height: 60px;
   font-family: monospace;
   font-size: 12px;
 }
@@ -128,12 +72,12 @@ canvas {
   left: 20px;
   color: black;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 15px;
   background: rgba(255, 255, 255, 0.7);
   padding: 5px 10px;
   border-radius: 5px;
   z-index: 10;
-  margin-bottom: 0px;
+  margin: 0px;
 }
 
 .statTextContainer {
@@ -162,4 +106,8 @@ canvas {
   color: white;
   border-color: #218838;
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+
+.weatherDataContainer{
+  margin-bottom: 10px;
 }

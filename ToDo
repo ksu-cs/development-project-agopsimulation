@@ -1,14 +1,5 @@
-tmin and t max
-(Tmax + Tmin)/2 - Tbase = (30+0)/2 - 10 = 5 -- this is average
-GLobalcurentday(startnull),reset make null again
+//weeks calc is 1 less
 
+//correct display
 
-delete static end
-have start
-get weeks/default=1
-calc end
-calc gdds*7/week growth ammount each week = sum of each day for 7 days
-start->end
-
-Handle multiple waitxweeks
-reset button resets weeks
+//this.currentWeek; vs this.currentweek -1

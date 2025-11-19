@@ -1,3 +1,6 @@
+import {Component, Fragment} from "react";
+import styles from "../../Styles/index.module.css";
+import simulationMethods from "../../alterSimulationClasses/simulationMethods";
 import { javascriptGenerator } from "blockly/javascript";
 import styles from "../index.module.css";
 import Simulation from "./Simulation";
@@ -13,10 +16,11 @@ const SIMULATION_FPS = 60;
 const FIXED_TIME_STEP_MS = 1000 / SIMULATION_FPS;
 
 
-class SimulationCanvasContainer extends React.Component {
+class SimulationControlsContainer extends Component {
   constructor(props) {
     super(props);
-    this.canvasRef = React.createRef();
+    this.canvasRef = props.canvasRef;
+    this.workspace = props.workspace;
     this.simulation = new Simulation();
     this.renderer = null;
     this.gameLoopId = null;
@@ -35,7 +39,6 @@ class SimulationCanvasContainer extends React.Component {
     this.toggleFastForward = this.toggleFastForward.bind(this);
 
   }
-
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
@@ -97,6 +100,8 @@ class SimulationCanvasContainer extends React.Component {
 
   //#region button OnClick methods
   async runButtonOnClick() {
+//await this.alterCanvasRef.fetchData();
+
     const { workspace } = this.props;
     if (!workspace) {
       console.warn("Workspace not ready yet");
@@ -263,13 +268,13 @@ class SimulationCanvasContainer extends React.Component {
           >
             {`Fast Forward (${simulationSpeed}x)`}
           </button>
-          <div id="debug" className="debug">
+          <div id="debug" className={styles.debug}>
             Drag blocks to workspace, then click Run
           </div>
         </div>
-      </React.Fragment>
+      </Fragment>
     );
   }
 }
 
-export default SimulationCanvasContainer;
+export default SimulationControlsContainer;
