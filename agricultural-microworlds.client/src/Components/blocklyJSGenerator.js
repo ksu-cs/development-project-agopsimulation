@@ -1,28 +1,26 @@
 /* eslint-disable no-unused-vars */
 import { javascriptGenerator } from "blockly/javascript";
 
-/**
- * links the function to run to the custom block being called
- */
+// The 'simulationMethods' variable name comes from `new Function("simulationMethods", ...)`
+// in SimulationCanvasContainer.jsx. Let's rename it "simulation" for clarity.
+
 javascriptGenerator.forBlock["example"] = function (block) {
-  return "exampleFunction()";
+  return "// Example block\n";
 };
-function exampleFunction() {
-  console.log("proof");
-}
 
 javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
   const duration =
     generator.valueToCode(block, "DURATION", generator.ORDER_ATOMIC) || "1";
-  return `await simulationMethods.moveForward(${duration});\n`;
+  // NO await. This just adds to the queue.
+  return `simulation.queueMove(${duration});\n`;
 };
 
 javascriptGenerator.forBlock["turn_left"] = function () {
-  return `await simulationMethods.turnXDegrees(-90);\n`;
+  return `simulation.queueTurn(-90);\n`;
 };
 
 javascriptGenerator.forBlock["turn_right"] = function (block) {
-  return `await simulationMethods.turnXDegrees(90);\n`;
+  return `simulation.queueTurn(90);\n`;
 };
 
 javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
@@ -30,30 +28,34 @@ javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
     generator.valueToCode(block, "DEGREES", generator.ORDER_ATOMIC) || "1";
   const direction = block.getFieldValue("DIRECTION");
   if (direction == 0) amount *= -1;
-  return `await simulationMethods.turnXDegrees(${amount});\n`;
+  return `simulation.queueTurn(${amount});\n`;
 };
 
 javascriptGenerator.forBlock["toggle_harvesting"] = function (block) {
   const toggle = block.getFieldValue("toggleType");
   const inputType = toggle == 0 ? false : true;
-  return `simulationMethods.toggleHarvesting(${inputType});\n`;
+  // This is immediate, not queued
+  return `simulation.queueToggleHarvesting(${inputType});\n`;
 };
 
 javascriptGenerator.forBlock["toggle_seeding"] = function (block) {
   const toggle = block.getFieldValue("toggleType");
   const inputType = toggle == 0 ? false : true;
-  return `simulationMethods.toggleSeeding(${inputType});\n`;
+  return `simulation.queueToggleSeeding(${inputType});\n`;
 };
 
 javascriptGenerator.forBlock["wait_x_weeks"] = function (block, generator) {
   const weeks =
     generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
-  return `await simulationMethods.waitXWeeks(${weeks});\n`;
+  return `simulation.queueWait(${weeks});\n`;
 };
+
+// --- These logic/getter blocks are now slightly different ---
 
 javascriptGenerator.forBlock["is_over_tile"] = function (block, generator) {
   const type = block.getFieldValue("TYPE");
-  let checkResult = `simulationMethods.CheckIfPlantInFront(${type})`;
+  // This needs to check the simulation state *right now*
+  let checkResult = `simulation.CheckIfPlantInFront(${type})`;
   return [checkResult, generator.ORDER_RELATIONAL];
 };
 
@@ -72,5 +74,30 @@ javascriptGenerator.forBlock["custom_compare"] = function (block, generator) {
 };
 
 javascriptGenerator.forBlock["get_current_week"] = function (block, generator) {
-  return ["simulationMethods.currentWeek", generator.ORDER_ATOMIC];
+  // This needs to get the *current* state
+  return ["simulation.getState().currentWeek", generator.ORDER_ATOMIC];
+};
+
+javascriptGenerator.forBlock["variables_get"] = function (block, generator) {
+  // Variable getter.
+  const varName = generator.getVariableName(block.getFieldValue("VAR"));
+  return [varName, generator.ORDER_ATOMIC];
+};
+
+javascriptGenerator.forBlock["variables_set"] = function (block, generator) {
+  // Variable setter.
+  const argument0 =
+    generator.valueToCode(block, "VALUE", generator.ORDER_ASSIGNMENT) || "0";
+  const varName = generator.getVariableName(block.getFieldValue("VAR"));
+  return varName + " = " + argument0 + ";\n";
+};
+
+javascriptGenerator.forBlock["on_run"] = function (block, generator) {
+  const statements_code = generator.statementToCode(block, "STACK");
+  return statements_code;
+};
+
+javascriptGenerator.forBlock["on_week_x"] = function (block, generator) {
+  const statements_code = generator.statementToCode(block, "STACK");
+  return statements_code; 
 };

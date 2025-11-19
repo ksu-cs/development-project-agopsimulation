@@ -3,6 +3,15 @@ export const toolbox = {
   contents: [
     {
       kind: "category",
+      name: "Events",
+      categorystyle: "control_category",
+      contents: [
+        { kind: "block", type: "on_run" },
+        { kind: "block", type: "on_week_x" },
+      ],
+    },
+    {
+      kind: "category",
       name: "Movement",
       categorystyle: "movement_category",
       contents: [
@@ -79,6 +88,7 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
     logic_category: { colour: "135" },
     loops_category: { colour: "60" },
     variable_category: { colour: "330" },
+    event_category: { colour: "20" },
   },
   blockStyles: {
     // Movement Blocks
@@ -101,6 +111,7 @@ export const myTheme = Blockly.Theme.defineTheme("myTheme", {
 
     // Style for all blocks in the "Variables" category
     variable_blocks: { colorPrimary: "330" },
+    event_blocks: { colourPrimary: "20" },
   },
   componentStyles: {},
 });

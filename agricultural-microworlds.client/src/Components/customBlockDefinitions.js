@@ -271,4 +271,40 @@ Blockly.Blocks["get_current_week"] = {
     this.jsonInit(getCurrentWeek);
   },
 };
+
+var onRun = {
+  type: "on_run",
+  message0: "when simulation runs",
+  nextStatement: null,
+  style: "event_blocks",
+  isHat: true,
+  tooltip: "This code runs once when you click the 'Run' button.",
+};
+Blockly.Blocks["on_run"] = {
+  init: function () {
+    this.jsonInit(onRun);
+  },
+};
+
+var onWeekX = {
+  type: "on_week_x",
+  message0: "when week number is %1",
+  args0: [
+    {
+      type: "input_value",
+      name: "WEEKNUM",
+      check: "Number",
+    },
+  ],
+  nextStatement: null,
+  style: "event_blocks",
+  isHat: true,
+  tooltip: "This code runs when the simulation reaches a specific week.",
+};
+Blockly.Blocks["on_week_x"] = {
+  init: function () {
+    this.jsonInit(onWeekX);
+  },
+};
+
 //#endregion

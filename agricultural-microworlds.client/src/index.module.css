@@ -145,3 +145,21 @@ canvas {
   top: 5px;
   position: absolute;
 }
+
+.ffButton {
+  background-color: #ffc107;
+  color: #212529;
+  border-color: #ffac07;
+  font-weight: bold;
+}
+
+.ffButton:hover {
+  background-color: #ffd040;
+}
+
+.ffButtonActive {
+  background-color: #28a745;
+  color: white;
+  border-color: #218838;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
