@@ -1,5 +1,8 @@
-export default class simulationMethods {
-  constructor(canvas) {
+import timeStepData from "./timeStepData";
+
+export default class simulationEngine extends EventTarget {
+    constructor(canvas) {
+        super();
     // Canvas and movement code
     this.canvas = canvas;
     this.ctx = this.canvas.getContext("2d");
@@ -82,6 +85,13 @@ export default class simulationMethods {
     this.imageCount = 4;
     this.isInitialized = false;
   }
+
+    dispatchEventa() {
+        this.dispatchEvent(new CustomEvent('simulationEngineCreated', {
+            bubbles: true,
+            detail: new timeStepData(this.cameraX, this.cameraY, this.angle),
+        }));
+    }
 
   async loadStations() {
     // invalid Dom property 'for' did you mean 'htmlFor' error
@@ -277,11 +287,11 @@ export default class simulationMethods {
         }
 
         if (weeksToProcess > 0 || this.nightFadeProgress < 1.0) {
-          this.drawFieldAndTractor();
+          this.drawFieldAndTractor(); //DRAW LINE
           this.animationId = requestAnimationFrame(UpdateNight);
         } else {
           this.nightFadeProgress = -1;
-          this.drawFieldAndTractor();
+          this.drawFieldAndTractor(); //DRAW LINE
           resolve();
         }
       };
@@ -344,7 +354,7 @@ export default class simulationMethods {
         }
       }
     }
-    this.drawFieldAndTractor();
+      this.drawFieldAndTractor();//DRAW LINE
   }
 
   // --- Draw the tractor sprite based on current direction ---
@@ -429,16 +439,16 @@ export default class simulationMethods {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue; // skip negative indices
 
-        let dirtOrWheat = this.dirtImage;
+        let tileImage = this.dirtImage;
         switch (this.field[i][j].state) {
           case 0:
-            dirtOrWheat = this.dirtImage;
+            tileImage = this.dirtImage;
             break;
           case 1:
-            dirtOrWheat = this.seedImage;
+            tileImage = this.seedImage;
             break;
           case 2:
-            dirtOrWheat = this.wheatImage;
+            tileImage = this.wheatImage;
             break;
         }
         const tileWorldX = j * this.TILE_WIDTH;
@@ -448,7 +458,7 @@ export default class simulationMethods {
         const tileScreenY = tileWorldY - this.cameraY;
 
         this.ctx.drawImage(
-          dirtOrWheat,
+          tileImage,
           0,
           0,
           this.TILE_BASE_SIZE,
@@ -603,10 +613,10 @@ export default class simulationMethods {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     document.getElementById("scoreText").innerHTML =
       "Yield: " + this.yieldScore;
-    this.drawField();
-    this.drawTractor();
+      this.drawField();//DRAW LINE
+      this.drawTractor();//DRAW LINE
 
-    if (this.nightFadeProgress >= 0.0) this.DrawNight();
+    if (this.nightFadeProgress >= 0.0) this.DrawNight(); //DRAW LINE
   }
   // Updates camera position based on tractor position
   updateCamera() {
@@ -655,7 +665,7 @@ export default class simulationMethods {
 
           this.updateCamera();
 
-          this.drawFieldAndTractor();
+            this.drawFieldAndTractor();//DRAW LINE
           this.animationId = requestAnimationFrame(animate);
         } else {
           resolve();
@@ -691,7 +701,7 @@ export default class simulationMethods {
 
           this.updateCamera();
 
-          this.drawFieldAndTractor();
+            this.drawFieldAndTractor();//DRAW LINE
           this.animationId = requestAnimationFrame(turn);
         } else {
           resolve();
@@ -717,7 +727,7 @@ export default class simulationMethods {
     this.yieldScore = 0;
     this.nightFadeProgress = -1.0;
     this.resetField();
-    this.drawFieldAndTractor();
+      this.drawFieldAndTractor();//DRAW LINE
   }
 
   stopMovement() {

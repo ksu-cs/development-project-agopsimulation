@@ -1,6 +1,7 @@
 import {Component, Fragment} from "react";
 import styles from "../../Styles/index.module.css";
-import simulationMethods from "../../alterSimulationClasses/simulationMethods";
+import simulationEngine from "../../alterSimulationClasses/simulationEngine";
+import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 
 class SimulationControlsContainer extends Component {
@@ -8,21 +9,26 @@ class SimulationControlsContainer extends Component {
     super(props);
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
-    this.alterCanvasRef = null;
+    this.simulationEngine = null;
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
-    this.alterCanvasRef = new simulationMethods(canvas);
-    this.alterCanvasRef.setSpriteOnLoadMethods();
-    await this.alterCanvasRef.loadStations();
+    this.simulationEngine = new simulationEngine(canvas);
+      this.drawCanvas = new drawCanvas(canvas);
+
+      this.simulationEngine.addEventListener('simulationEngineCreated', (e) => this.drawCanvas.handleTimeStep(e));
+
+      this.simulationEngine.dispatchEventa();
+    this.simulationEngine.setSpriteOnLoadMethods();
+    await this.simulationEngine.loadStations();
   }
 
   //#region button OnClick methods
   async runButtonOnClick() {
-await this.alterCanvasRef.fetchData();
+await this.simulationEngine.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {
@@ -32,9 +38,9 @@ await this.alterCanvasRef.fetchData();
     const runButton = document.getElementById("runButton");
     runButton.disabled = true;
 
-    this.alterCanvasRef.resetEverything();
+    this.simulationEngine.resetEverything();
     runButton.disabled = false;
-    this.alterCanvasRef.startMoving();
+    this.simulationEngine.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
 
@@ -49,18 +55,18 @@ await this.alterCanvasRef.fetchData();
             `
 return (async () => { ${code} })();`,
           );
-          await run(this.alterCanvasRef);
+          await run(this.simulationEngine);
         } catch (e) {
           console.error("ERROR:", e);
         }
       }
     }
-    this.alterCanvasRef.stopMovement();
+    this.simulationEngine.stopMovement();
     runButton.disabled = false;
   }
 
   stopButtonOnClick() {
-    this.alterCanvasRef.stopMovement();
+    this.simulationEngine.stopMovement();
     document.getElementById("runButton").disabled = false;
   }
   //#endregion
