@@ -20,53 +20,96 @@ class SimulationControlsContainer extends Component {
     await this.alterCanvasRef.loadStations();
   }
 
-  //#region button OnClick methods
-  async runButtonOnClick() {
-    await this.alterCanvasRef.fetchData();
-
-    const { workspace } = this.props;
-    if (!workspace) {
-      console.warn("Workspace not ready yet");
-      return;
-    }
-    const runButton = document.getElementById("runButton");
-    runButton.disabled = true;
-
-    this.alterCanvasRef.resetEverything();
-    runButton.disabled = false;
-    this.alterCanvasRef.startMoving();
-
-    const topBlocks = workspace.getTopBlocks(true);
-    const startBlock = topBlocks.find(block => block.type === "start_program");
-
-    if (!startBlock) {
-        alert("You must use an 'On Begin' block to start the program!");
-        // Re-enable button
-        document.getElementById("runButton").disabled = false;
-        return;
-    }
-
-    javascriptGenerator.init(workspace);
-
-    // Generate code ONLY for the start block and what is attached to it
-    const code = javascriptGenerator.blockToCode(startBlock);
-    console.log(code);
-    
-      if (code.trim()) {
-        try {
-          const run = new Function(
-            "simulationMethods",
-            `
-return (async () => { ${code} })();`,
-          );
-          await run(this.alterCanvasRef);
-        } catch (e) {
-          console.error("ERROR:", e);
+    addBlocksToArray(block) {
+        let nextBlock = block.getNextBlock();
+        if (nextBlock != null) {
+            //console.log(block.nextConnection);
+            return javascriptGenerator.blockToCode(nextBlock);
         }
-      }
-    this.alterCanvasRef.stopMovement();
-    runButton.disabled = false;
-  }
+
+        return "";
+    }
+
+  //#region button OnClick methods
+    async runButtonOnClick() {
+        await this.alterCanvasRef.fetchData();
+
+        const { workspace } = this.props;
+        if (!workspace) {
+            console.warn("Workspace not ready yet");
+            return;
+        }
+        const runButton = document.getElementById("runButton");
+        runButton.disabled = true;
+
+        this.alterCanvasRef.resetEverything();
+        runButton.disabled = false;
+        this.alterCanvasRef.startMoving();
+
+        const allBlocks = workspace.getAllBlocks(false);
+        //console.log(allBlocks);
+
+        let blockChunks = [];
+
+        allBlocks.forEach(block => {
+            if (block.type == "start_program") {
+                let currentChunk = "";
+                currentChunk = this.addBlocksToArray(block);
+                //console.log("Current Chunk:" + currentChunk);
+
+                if (currentChunk != "")
+                    blockChunks.push(currentChunk.split(/\r?\n/).filter(Boolean));
+            }
+        });
+
+        if (blockChunks.length <= 0) {
+            alert("You must use an 'On Begin' block to start the program!");
+        }
+
+        //console.log("Chunks:" + blockChunks);
+        let formattedCode = "";
+        let chunkIdx = 0;
+
+        while (blockChunks.length > 0) {
+            let c = 0;
+            //console.log("Chunk length:" + blockChunks[chunkIdx].length);
+            for (c = 0; c < blockChunks[chunkIdx].length; c++) {
+                formattedCode += blockChunks[chunkIdx][c];
+                if (blockChunks[chunkIdx][c].includes("await")) {
+                    c++;
+                    break;
+                }
+
+                //console.log("Current code:" + formattedCode);
+            }
+
+            blockChunks[chunkIdx].splice(0, c);
+            if (blockChunks[chunkIdx].length <= 0)
+                blockChunks.splice(chunkIdx, 1);
+            if (blockChunks.length > 0)
+                chunkIdx = (chunkIdx + 1) % blockChunks.length;
+        }
+
+        if (formattedCode != "") {
+            console.log(formattedCode);
+
+            if (formattedCode.trim()) {
+                try {
+                    const run = new Function(
+                        "simulationMethods",
+                        `
+              return (async () => { ${formattedCode} })();`,
+                    );
+                    await run(this.alterCanvasRef);
+                } catch (e) {
+                    console.error("ERROR:", e);
+                }
+            }
+        }
+
+        this.alterCanvasRef.stopMovement();
+        runButton.disabled = false;
+    }
 
   stopButtonOnClick() {
     this.alterCanvasRef.stopMovement();
