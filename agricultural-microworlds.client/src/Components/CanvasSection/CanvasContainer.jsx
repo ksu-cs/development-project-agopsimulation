@@ -15,8 +15,8 @@ class CanvasContainer extends Component {
           className={`${styles.canvasArea} ${styles.alignItemsCenterColumn}`}
         >
           <div className={styles.statTextContainer}>
-            <p className={styles.statText} id="weekText">
-              Week 0
+            <p className={styles.statText} id="dateText">
+              Date: --
             </p>
             <p className={styles.statText} id="scoreText">
               Yield: 0

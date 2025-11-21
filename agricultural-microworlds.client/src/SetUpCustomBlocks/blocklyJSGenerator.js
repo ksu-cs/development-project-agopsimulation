@@ -40,9 +40,8 @@ javascriptGenerator.forBlock["toggle_seeding"] = function (block) {
 };
 
 javascriptGenerator.forBlock["wait_x_weeks"] = function (block, generator) {
-  const weeks =
-    generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
-  return `await simulationMethods.waitXWeeks(${weeks});\n`;
+  const weeks = generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
+  return `await simulationMethods.fastForwardWeeks(${weeks});\n`;
 };
 
 javascriptGenerator.forBlock["is_over_tile"] = function (block, generator) {

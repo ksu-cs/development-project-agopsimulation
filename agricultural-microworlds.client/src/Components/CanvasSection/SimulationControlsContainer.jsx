@@ -22,7 +22,7 @@ class SimulationControlsContainer extends Component {
 
   //#region button OnClick methods
   async runButtonOnClick() {
-//await this.alterCanvasRef.fetchData();
+    await this.alterCanvasRef.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {
@@ -36,12 +36,22 @@ class SimulationControlsContainer extends Component {
     runButton.disabled = false;
     this.alterCanvasRef.startMoving();
 
-    const allBlocks = workspace.getAllBlocks(false);
+    const topBlocks = workspace.getTopBlocks(true);
+    const startBlock = topBlocks.find(block => block.type === "start_program");
 
-    if (allBlocks.length > 0) {
-      const code = javascriptGenerator.workspaceToCode(workspace);
-      console.log(code);
+    if (!startBlock) {
+        alert("You must use an 'On Begin' block to start the program!");
+        // Re-enable button
+        document.getElementById("runButton").disabled = false;
+        return;
+    }
 
+    javascriptGenerator.init(workspace);
+
+    // Generate code ONLY for the start block and what is attached to it
+    const code = javascriptGenerator.blockToCode(startBlock);
+    console.log(code);
+    
       if (code.trim()) {
         try {
           const run = new Function(
@@ -54,7 +64,6 @@ return (async () => { ${code} })();`,
           console.error("ERROR:", e);
         }
       }
-    }
     this.alterCanvasRef.stopMovement();
     runButton.disabled = false;
   }
@@ -63,6 +72,15 @@ return (async () => { ${code} })();`,
     this.alterCanvasRef.stopMovement();
     document.getElementById("runButton").disabled = false;
   }
+
+  onSpeedChange = (e) => {
+    const speed = parseInt(e.target.value);
+    document.getElementById("speedDisplay").textContent = `${speed}x`;
+    if (this.alterCanvasRef) {
+      this.alterCanvasRef.setSpeedMultiplier(speed);
+    }
+  };
+
   //#endregion
 
   render() {
@@ -85,6 +103,22 @@ return (async () => { ${code} })();`,
           >
             Stop
           </button>
+
+          <div className={styles.speedControlContainer}>
+          <label htmlFor="speedSlider">Speed:</label>
+          <input
+            type="range"
+            id="speedSlider"
+            min="1"
+            max="5"
+            defaultValue="1"
+            step="1"
+            onChange={this.onSpeedChange}
+            className={styles.speedSlider}
+          />
+          <span id="speedDisplay" className={styles.speedDisplay}>1x</span>
+        </div>
+
           <div id="debug" className={styles.debug}>
             Drag blocks to workspace, then click Run
           </div>

@@ -81,10 +81,18 @@ export default class simulationMethods {
     this.imageLoadCount = 0;
     this.imageCount = 4;
     this.isInitialized = false;
+
+    this.currentDayIndex = 0;
+    this.timeAccumulator = 0;
+
+    this.isWaiting = false;
+
+    // Current Speed Multiplier
+    this.speedMultiplier = 1;
+
   }
 
   async loadStations() {
-    // invalid Dom property 'for' did you mean 'htmlFor' error
     const response = await fetch(
       "https://mesonet.k-state.edu/rest/stationnames/",
     );
@@ -101,10 +109,19 @@ export default class simulationMethods {
         const option = document.createElement("option");
         option.value = ABBR; // for URL
         option.textContent = NAME; // for user display
+
+        if (NAME.includes("Flickner")) {
+          option.selected = true;
+      }
+
         stationSelect.appendChild(option);
       }
     });
   }
+
+setSpeedMultiplier(multiplier) {
+  this.speedMultiplier = multiplier;
+}
 
   calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
     let sum = 0;
@@ -123,16 +140,19 @@ export default class simulationMethods {
  async fetchData() {
     console.log("fetching data")
     const station = document.getElementById("station").value;
-    const startInput = document.getElementById("start").value; // YYYY-MM-DD
-    const startDate = new Date(startInput);
+    const startInputElement = document.getElementById("start");
+    const startDateValue = startInputElement.value;
 
-    // Make sure waitingweeksCount is a number
-    const weeks = Number(this.waitingweeksCount) || 1;
+
+    const [year, month, day] = startDateValue.split('-').map(Number);
+    const startDate = new Date(year, month - 1, day);
+
+    this.startDate = new Date(startDate);
 
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 7 * weeks); // 7 days per week
+    endDate.setDate(startDate.getDate() + 365);
 
-    const start = startInput.replaceAll("-", "");
+    const start = startDateValue.replaceAll("-", "");
     const end = `${endDate.getFullYear()}${(endDate.getMonth() + 1).toString().padStart(2, "0")}${endDate.getDate().toString().padStart(2, "0")}`;
 
     const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG`;
@@ -142,9 +162,14 @@ export default class simulationMethods {
     const data = await response.text();
 
     const lines = data.trim().split("\n");
-    this.csvLines = lines.slice(1).map((line) => line.split(",")); // skip header
+    this.csvLines = lines.slice(1).map((line) => line.split(","));
+
     this.cumulativeGDD = 0;
     this.currentWeek = this.START_WEEK;
+    this.currentDayIndex = 0;
+    this.timeAccumulator = 0;
+
+    this.updateDateDisplay();
   }
 
   // Image loading
@@ -261,8 +286,8 @@ export default class simulationMethods {
             this.growCrops(weekGDD);
 
             // Update HTML displays
-            document.getElementById("weekText").textContent =
-              `Week ${this.currentWeek > 0 ? this.currentWeek - 2 : 0}`;
+            // document.getElementById("weekText").textContent =
+            //   `Week ${this.currentWeek > 0 ? this.currentWeek - 2 : 0}`;
             document.getElementById("gddText").textContent =
               `GDD: ${this.cumulativeGDD.toFixed(2)}`;
 
@@ -289,6 +314,88 @@ export default class simulationMethods {
       UpdateNight();
     });
   }
+
+  formatDisplayDate(dateObj) {
+    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  updateTime(deltaTime) {
+    this.timeAccumulator += deltaTime;
+
+    // If 1 second has passed
+    if (this.timeAccumulator >= 1.0) {
+        this.advanceDay();
+        this.timeAccumulator -= 1.0;
+    }
+  }
+
+  advanceDay() {
+  if (!this.csvLines || this.csvLines.length === 0) {
+    console.warn("No CSV data loaded - cannot advance day");
+    return;
+  }
+
+  if (this.currentDayIndex >= this.csvLines.length) {
+    console.warn("Reached end of CSV data");
+    return;
+  }
+
+  const dayData = this.csvLines[this.currentDayIndex];
+  const temp = parseFloat(dayData[2]);
+
+  // Calculate GDD
+  const dailyGDD = Math.max(0, temp - this.Wheatgdd);
+  this.cumulativeGDD += dailyGDD;
+
+  // Update crops with GDD
+  this.growCrops(dailyGDD);
+
+  // Increment day
+  this.currentDayIndex++;
+
+  // Update date display
+  this.updateDateDisplay();
+
+  // Update GDD display
+  const gddLabel = document.getElementById("gddText");
+  if (gddLabel) {
+    gddLabel.textContent = `GDD: ${this.cumulativeGDD.toFixed(2)}`;
+  }
+}
+
+
+
+  async fastForwardWeeks(weeks) {
+    const totalDays = Number(weeks) * 7;
+    const baseMSperDay = 200;
+    
+    this.isWaiting = true;
+    this.drawFieldAndTractor();
+
+    for (let i = 0; i < totalDays; i++) {
+      // Check if stop was pressed
+      if (!this.isMoving) {
+        break;
+      }
+      
+      // Check if we've reached the end of data
+      if (this.currentDayIndex >= this.csvLines.length) {
+        console.warn("Reached end of CSV data during fast forward");
+        break;
+      }
+
+      // Wait before advancing (makes it visible)
+      const msPerDay = baseMSperDay / this.speedMultiplier;
+    await new Promise(resolve => setTimeout(resolve, msPerDay));
+      
+      // Advance the day
+      this.advanceDay();
+      this.drawFieldAndTractor();
+    }
+
+    this.isWaiting = false;
+    this.drawFieldAndTractor();
+}
 
   CheckIfPlantInFront(type) {
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
@@ -464,10 +571,10 @@ export default class simulationMethods {
   }
 
   DrawNight() {
-    let alpha =
-      0.75 * Math.min(1.2 * Math.sin(this.nightFadeProgress * Math.PI), 1.0);
-    this.ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw the overlay
+    if (this.isWaiting) {
+      this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 
   // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
@@ -636,71 +743,84 @@ export default class simulationMethods {
   }
 
   // moveForward function that moves over time
-  moveForward(duration) {
-    return new Promise((resolve) => {
-      const startTime = Date.now();
-      const endTime = startTime + duration * 1000;
+moveForward(duration) {
+  return new Promise((resolve) => {
+    // Track simulation time
+    let simulationTimeElapsed = 0;
+    const simulationDuration = duration;
+    
+    let lastFrameTime = Date.now();
 
-      const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-      const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+    const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
+    const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
 
-      const animate = () => {
-        const currentTime = Date.now();
+    const animate = () => {
+      const now = Date.now();
+      const realDeltaMs = now - lastFrameTime;
+      lastFrameTime = now;
+      
+      // Convert real time to simulation time using speedMultiplier
+      const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
+      simulationTimeElapsed += simDelta;
 
-        if (currentTime < endTime && this.isMoving) {
-          // Calculate how much to move based on frame time
-          const deltaTime = 1 / 60; // assuming 60fps
+      if (simulationTimeElapsed < simulationDuration && this.isMoving) {
+        // Move based on simulation delta
+        this.tractorWorldX += moveX * simDelta;
+        this.tractorWorldY += moveY * simDelta;
 
-          this.tractorWorldX += moveX * deltaTime;
-          this.tractorWorldY += moveY * deltaTime;
+        // Update time based on simulation delta
+        this.updateTime(simDelta);
 
-          this.updateCamera();
+        this.updateCamera();
+        this.drawFieldAndTractor();
+        this.animationId = requestAnimationFrame(animate);
+      } else {
+        resolve();
+      }
+    };
 
-          this.drawFieldAndTractor();
-          this.animationId = requestAnimationFrame(animate);
-        } else {
-          resolve();
-        }
-      };
-
-      animate();
-    });
-  }
+    animate();
+  });
+}
 
   turnXDegrees(amount) {
     this.goalAngle += amount;
     return this.OnNewGoalRotation();
   }
 
-  OnNewGoalRotation() {
-    return new Promise((resolve) => {
-      const turn = () => {
-        const delta = 1 / 60; // assuming 60fps
+OnNewGoalRotation() {
+  return new Promise((resolve) => {
+    let lastFrameTime = Date.now();
+    
+    const turn = () => {
+      const now = Date.now();
+      const realDeltaMs = now - lastFrameTime;
+      lastFrameTime = now;
+      
+      // Convert real time to simulation time
+      const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
 
-        if (this.angle != this.goalAngle) {
-          // For the actual turning.
-          var difference = this.goalAngle - this.angle;
-          var absDiff = Math.abs(difference);
-          var alpha = Math.min(this.turnSpeed * delta, absDiff) / absDiff;
-          this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
+      if (this.angle != this.goalAngle) {
+        var difference = this.goalAngle - this.angle;
+        var absDiff = Math.abs(difference);
+        var alpha = Math.min(this.turnSpeed * simDelta, absDiff) / absDiff;
+        this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
 
-          // // Move the tractor while turning, to look more natural.
-          const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-          const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
-          this.tractorWorldX += moveX * delta;
-          this.tractorWorldY += moveY * delta;
+        const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
+        const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+        this.tractorWorldX += moveX * simDelta;
+        this.tractorWorldY += moveY * simDelta;
 
-          this.updateCamera();
-
-          this.drawFieldAndTractor();
-          this.animationId = requestAnimationFrame(turn);
-        } else {
-          resolve();
-        }
-      };
-      turn();
-    });
-  }
+        this.updateCamera();
+        this.drawFieldAndTractor();
+        this.animationId = requestAnimationFrame(turn);
+      } else {
+        resolve();
+      }
+    };
+    turn();
+  });
+}
 
   resetPosition() {
     if (!this.isInitialized) return;
@@ -734,11 +854,29 @@ export default class simulationMethods {
     this.resetPosition();
     this.waitingweeksCount = 0;
     this.currentWeek = 0;
-    document.getElementById("weekText").innerHTML = `Week ${this.currentWeek}`;
-    document.getElementById("gddText").textContent = `GDD: ${0.0}`;
+    this.currentDayIndex = 0;
+    this.timeAccumulator = 0;
+    this.updateDateDisplay();
+
+    document.getElementById("gddText").textContent = `GDD: 0.00`;
   }
 
   startMoving() {
     this.isMoving = true;
   }
+
+  // updates date at the top
+  updateDateDisplay() {
+    const dateLabel = document.getElementById("dateText");
+  if (!dateLabel) return;
+  
+  if (this.startDate) {
+    const currentDate = new Date(this.startDate);
+    currentDate.setDate(this.startDate.getDate() + this.currentDayIndex);
+    dateLabel.textContent = `Date: ${this.formatDisplayDate(currentDate)}`;
+  } else {
+    dateLabel.textContent = `Date: --`;
+  }
+  }
+
 }
