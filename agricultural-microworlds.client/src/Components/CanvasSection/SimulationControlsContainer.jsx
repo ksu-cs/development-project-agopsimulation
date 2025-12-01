@@ -16,8 +16,10 @@ class SimulationControlsContainer extends Component {
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
-    this.simulationEngine = new simulationEngine(canvas);
-    this.drawCanvas = new drawCanvas(canvas);
+    const canvasWidth = 500;
+    const canvasHeight = 500;
+    this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
+    this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
 
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),

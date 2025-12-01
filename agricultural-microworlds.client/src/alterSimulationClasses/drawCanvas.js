@@ -1,9 +1,9 @@
 ﻿export default class drawCanvas {
-  constructor(canvas) {
-    this.canvas = canvas;
+  constructor(canvasRef, canvasWidth, canvasHeight) {
+    this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
-    this.canvas.width = 500;
-    this.canvas.height = 500;
+    this.canvas.width = canvasWidth;
+    this.canvas.height = canvasHeight;
 
     // --- Sprite setup ---
     this.tractorSprite = new Image();
@@ -107,8 +107,10 @@
   }
 
   drawTractor() {
-    const screenX = this.simulationState.tractorWorldX - this.simulationState.cameraX;
-    const screenY = this.simulationState.tractorWorldY - this.simulationState.cameraY;
+    const screenX =
+      this.simulationState.tractorWorldX - this.simulationState.cameraX;
+    const screenY =
+      this.simulationState.tractorWorldY - this.simulationState.cameraY;
 
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
@@ -136,7 +138,11 @@
 
   drawNight() {
     let alpha =
-      0.75 * Math.min(1.2 * Math.sin(this.simulationState.nightFadeProgress * Math.PI), 1.0);
+      0.75 *
+      Math.min(
+        1.2 * Math.sin(this.simulationState.nightFadeProgress * Math.PI),
+        1.0,
+      );
     this.ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw the overlay
   }

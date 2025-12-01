@@ -1,21 +1,18 @@
 import timeStepData from "./timeStepData";
 
 export default class simulationEngine extends EventTarget {
-  constructor(canvas) {
+  constructor(canvasWidth, canvasHeight) {
     super();
-    // Canvas and movement code
-    this.canvas = canvas;
-    this.ctx = this.canvas.getContext("2d");
-    this.canvas.width = 500;
-    this.canvas.height = 500;
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
 
     this.waitingweeksCount = 1; // global variable, set elsewhere
     this.cumulativeGDD = 0;
     this.csvLines = []; // parsed CSV data
     this.Wheatgdd = 10;
     // Tractor variables
-    this.tractorWorldX = this.canvas.width / 2; // Tractor's vertical position in the entire world
-    this.tractorWorldY = this.canvas.height / 2; // Tractor's horizontal position in the entire world
+    this.tractorWorldX = this.canvasWidth / 2; // Tractor's vertical position in the entire world
+    this.tractorWorldY = this.canvasHeight / 2; // Tractor's horizontal position in the entire world
 
     this.angle = 0; // 0 degrees = facing right
     this.goalAngle = 0; // Our angle will be set to move towards this.
@@ -28,11 +25,6 @@ export default class simulationEngine extends EventTarget {
     this.animationId = -1; // ID for the animation frame
     this.yieldScore = 0; // score for harvested crops
 
-    // Camera Variables
-    // const tractorScreenX = canvas.width / 2; // Tractor's vertical position on the screen
-    // const tractorScreenY = canvas.height / 2; // Tractor's horizontal position on the screen
-    // let cameraX = tractorWorldX - tractorScreenX; // Top-left corner of the camera in world coordinates
-    // let cameraY = tractorWorldY - tractorScreenY; // Top-left corner of the camera in world coordinates
     this.cameraX = 0;
     this.cameraY = 0;
 
@@ -56,8 +48,8 @@ export default class simulationEngine extends EventTarget {
     // Setting up the array that represents the field
     this.WORLD_WIDTH_IN_SCREENS = 5; // Number of screens wide the world is
     this.WORLD_HEIGHT_IN_SCREENS = 5; // Number of screens high the world is
-    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2; // +2 to cover edges
-    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2; // +2 to cover edges
+    this.SCREEN_ROWS = Math.floor(this.canvasHeight / this.TILE_HEIGHT) + 2; // +2 to cover edges
+    this.SCREEN_COLUMNS = Math.floor(this.canvasWidth / this.TILE_WIDTH) + 2; // +2 to cover edges
 
     this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS; // Total number of rows in the world
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS; // Total number of columns in the world
@@ -550,11 +542,11 @@ export default class simulationEngine extends EventTarget {
     let tractorCenterY = this.tractorWorldY + this.FRAME_HEIGHT / 2;
 
     // Aim the camera so the tractor's center is at the screen's center
-    let targetCameraX = tractorCenterX - this.canvas.width / 2;
-    let targetCameraY = tractorCenterY - this.canvas.height / 2;
+    let targetCameraX = tractorCenterX - this.canvasWidth / 2;
+    let targetCameraY = tractorCenterY - this.canvasHeight / 2;
 
-    const maxCameraX = this.worldPixelWidth - this.canvas.width;
-    const maxCameraY = this.worldPixelHeight - this.canvas.height;
+    const maxCameraX = this.worldPixelWidth - this.canvasWidth;
+    const maxCameraY = this.worldPixelHeight - this.canvasHeight;
 
     this.cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
     this.cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
