@@ -39,6 +39,9 @@ class SimulationControlsContainer extends Component {
             console.warn("Workspace not ready yet");
             return;
         }
+
+        javascriptGenerator.init(workspace);
+
         const runButton = document.getElementById("runButton");
         runButton.disabled = true;
 
@@ -47,16 +50,13 @@ class SimulationControlsContainer extends Component {
         this.alterCanvasRef.startMoving();
 
         const allBlocks = workspace.getAllBlocks(false);
-        //console.log(allBlocks);
-
         let blockChunks = [];
 
         allBlocks.forEach(block => {
             if (block.type == "start_program") {
                 let currentChunk = "";
                 currentChunk = this.addBlocksToArray(block);
-                //console.log("Current Chunk:" + currentChunk);
-
+                
                 if (currentChunk != "")
                     blockChunks.push(currentChunk.split(/\r?\n/).filter(Boolean));
             }
@@ -64,23 +64,25 @@ class SimulationControlsContainer extends Component {
 
         if (blockChunks.length <= 0) {
             alert("You must use an 'On Begin' block to start the program!");
+            this.alterCanvasRef.stopMovement(); // Ensure we stop if no code runs
+            runButton.disabled = false;
+            return; 
         }
 
-        //console.log("Chunks:" + blockChunks);
+        const variablesCode = Object.values(javascriptGenerator.definitions_).join("\n");
+
         let formattedCode = "";
         let chunkIdx = 0;
 
         while (blockChunks.length > 0) {
             let c = 0;
-            //console.log("Chunk length:" + blockChunks[chunkIdx].length);
             for (c = 0; c < blockChunks[chunkIdx].length; c++) {
-                formattedCode += blockChunks[chunkIdx][c];
+                formattedCode += blockChunks[chunkIdx][c] + "\n";
+                
                 if (blockChunks[chunkIdx][c].includes("await")) {
                     c++;
                     break;
                 }
-
-                //console.log("Current code:" + formattedCode);
             }
 
             blockChunks[chunkIdx].splice(0, c);
@@ -90,15 +92,19 @@ class SimulationControlsContainer extends Component {
                 chunkIdx = (chunkIdx + 1) % blockChunks.length;
         }
 
-        if (formattedCode != "") {
-            console.log(formattedCode);
+        // Combine definitions with the logic
+        const finalCode = variablesCode + "\n" + formattedCode;
 
-            if (formattedCode.trim()) {
+        if (finalCode != "") {
+            console.log(finalCode);
+
+            if (finalCode.trim()) {
                 try {
                     const run = new Function(
                         "simulationMethods",
-                        `
-              return (async () => { ${formattedCode} })();`,
+                        `return (async () => { 
+                            ${finalCode} 
+                        })();`
                     );
                     await run(this.alterCanvasRef);
                 } catch (e) {

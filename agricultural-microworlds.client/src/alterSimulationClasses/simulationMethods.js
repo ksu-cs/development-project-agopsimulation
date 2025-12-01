@@ -1,3 +1,4 @@
+import { CropState, CROP_STAGES } from "./CropState";
 export default class simulationMethods {
   constructor(canvas) {
     // Canvas and movement code
@@ -181,13 +182,18 @@ setSpeedMultiplier(multiplier) {
 
       // Initialize the field array
       console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
+      // this.field = Array.from({ length: this.rows }, () =>
+      //   Array.from({ length: this.columns }, () => {
+      //     // eslint-disable-next-line no-unused-labels
+      //     state: 2;
+      //     // eslint-disable-next-line no-unused-labels
+      //     growth: 0.0;
+      //   }),
+      // );
+
+      // Initialize field arrow using new CropStates
       this.field = Array.from({ length: this.rows }, () =>
-        Array.from({ length: this.columns }, () => {
-          // eslint-disable-next-line no-unused-labels
-          state: 2;
-          // eslint-disable-next-line no-unused-labels
-          growth: 0.0;
-        }),
+        Array.from({ length: this.columns }, () => new CropState())
       );
 
       // Set initial position and draw
@@ -437,19 +443,14 @@ setSpeedMultiplier(multiplier) {
   }
 
   growCrops(weeklyGDD) {
-    const daysToAdd = weeklyGDD;
+    const gddToAdd = weeklyGDD;
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        let tile = this.field[i][j];
-        if (tile.state === 1) {
-          // Seeded
-          tile.growth += daysToAdd;
-          if (tile.growth >= this.GROWTH_DAYS) {
-            tile.state = 2; // Fully grown
-            tile.growth = this.GROWTH_DAYS;
-          }
-        }
+        let crop = this.field[i][j];
+        
+        // Pass the crop object to the update method
+        this.updateCrop(crop, gddToAdd);
       }
     }
     this.drawFieldAndTractor();
@@ -538,7 +539,7 @@ setSpeedMultiplier(multiplier) {
         if (i < 0 || j < 0) continue; // skip negative indices
 
         let dirtOrWheat = this.dirtImage;
-        switch (this.field[i][j].state) {
+        switch (this.field[i][j].stage) {
           case 0:
             dirtOrWheat = this.dirtImage;
             break;
@@ -609,7 +610,7 @@ setSpeedMultiplier(multiplier) {
       hasChecked =
         hasChecked ||
         checkTiles < 0 ||
-        (tile != null && tile.state == checkTiles);
+        (tile != null && tile.stage == checkTiles);
     }
 
     return hasChecked;
@@ -647,7 +648,7 @@ setSpeedMultiplier(multiplier) {
       hasChecked =
         hasChecked ||
         checkTiles < 0 ||
-        (tile != null && tile.state == checkTiles);
+        (tile != null && tile.stage == checkTiles);
     }
 
     return hasChecked;
@@ -656,21 +657,19 @@ setSpeedMultiplier(multiplier) {
   // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
   changeTile(x, y) {
     if (x >= 0 && x < this.columns && y >= 0 && y < this.rows) {
-      let tile = this.field[y][x];
+      let crop = this.field[y][x];
 
       if (this.isHarvestingOn) {
-        if (tile.state === 2) {
-          tile.state = 0;
-          tile.growth = 0.0;
+        // Use helper methods
+        if (crop.isMature()) {
+          crop.reset(); // Sets stage to 0
           this.yieldScore++;
-        } else if (tile.state === 1) {
-          tile.state = 0;
-          tile.growth = 0.0;
+        } else if (crop.isGrowing()) {
+          crop.reset(); // Destroy crop if harvesting while growing
         }
       } else if (this.isSeedingOn) {
-        if (tile.state === 0) {
-          tile.state = 1;
-          tile.growth = 0.0;
+        if (crop.isUnplanted()) {
+          crop.plant(); // Sets stage to 1
           this.yieldScore++;
         }
       }
@@ -691,7 +690,7 @@ setSpeedMultiplier(multiplier) {
   resetField() {
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        this.field[i][j] = { state: 2, growth: 0.0 };
+        this.field[i][j] = new CropState();
       }
     }
   }
@@ -877,6 +876,20 @@ OnNewGoalRotation() {
   } else {
     dateLabel.textContent = `Date: --`;
   }
+  }
+
+  // NEW METHOD: Handles logic for a single crop object
+  updateCrop(cropState, dailyGDD) {
+    // Only update if it is currently in the growing stage
+    if (cropState.isGrowing()) {
+      cropState.currentGDD += dailyGDD;
+
+      // Check if it has reached the threshold
+      if (cropState.currentGDD >= cropState.requiredGDD) {
+        cropState.stage = CROP_STAGES.MATURE; // Grows to Wheat
+        cropState.currentGDD = cropState.requiredGDD; // Cap the GDD
+      }
+    }
   }
 
 }
