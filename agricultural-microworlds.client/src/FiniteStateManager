@@ -1,0 +1,28 @@
+class BaseState {
+  constructor(vehicle) { this.vehicle = vehicle; }
+  enter() {}   // called when entering this state
+  execute() {} // called every tick
+  exit() {}    // called when leaving this state
+}
+
+class MovingState extends BaseState {
+  constructor(vehicle, distance) {
+    super(vehicle);
+    this.distance = distance;
+  }
+
+  enter() {
+    this.vehicle.moveForward(this.distance);
+  }
+}
+
+class TurningState extends BaseState {
+  constructor(vehicle, angle) {
+    super(vehicle);
+    this.angle = angle;
+  }
+
+  enter() {
+    this.vehicle.turnXDegrees(this.angle);
+  }
+}
