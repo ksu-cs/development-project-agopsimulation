@@ -1,23 +1,24 @@
-import { CropState } from "./CropState";
+// src/alterSimulationClasses/WorldStateManager.js
 
 export class WorldStateManager {
-  constructor(rows, columns) {
-    this.rows = rows;
-    this.columns = columns;
-    
-    // Initialize the old field storage
-    this.oldField = Array.from({ length: rows }, () =>
-      Array.from({ length: columns }, () => new CropState())
-    );
+  constructor() {
+    // Container for all simulation states
+    // Example: { field: [...], tractor: {...}, weather: {...} }
+    this.states = {};
   }
 
-  // Get the Read-Only version of the world (The Old State)
-  getOldState() {
-    return this.oldField;
+  // Register a new state type
+  initState(key, initialState) {
+    this.states[key] = initialState;
+  }
+
+  // Get the Old State of an object
+  getState(key) {
+    return this.states[key];
   }
 
   // Save the new calculation as the official Old State for the next frame
-  commitNewState(newFieldState) {
-    this.oldField = newFieldState;
+  commitState(key, newState) {
+    this.states[key] = newState;
   }
 }
