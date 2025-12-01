@@ -1,4 +1,6 @@
+import { WorldStateManager } from "./WorldStateManager";
 import { CropState, CROP_STAGES } from "./CropState";
+
 export default class simulationMethods {
   constructor(canvas) {
     // Canvas and movement code
@@ -191,10 +193,8 @@ setSpeedMultiplier(multiplier) {
       //   }),
       // );
 
-      // Initialize field arrow using new CropStates
-      this.field = Array.from({ length: this.rows }, () =>
-        Array.from({ length: this.columns }, () => new CropState())
-      );
+      // Initialize field using WorldStateManager
+      this.stateManager = new WorldStateManager(this.rows, this.columns);
 
       // Set initial position and draw
       this.resetPosition();
@@ -442,18 +442,47 @@ setSpeedMultiplier(multiplier) {
     );
   }
 
-  growCrops(weeklyGDD) {
-    const gddToAdd = weeklyGDD;
+  growCrops(dailyGDD) {
+    const oldField = this.stateManager.getOldState();
+    
+    // creates a blank field that we will fill with updated crops
+    let newField = Array.from({ length: this.rows }, () =>
+        Array.from({ length: this.columns }, () => null)
+    );
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        let crop = this.field[i][j];
         
-        // Pass the crop object to the update method
-        this.updateCrop(crop, gddToAdd);
+        // Get the specific crop from the old state
+        const oldCrop = oldField[i][j];
+        
+        // Create the new crop by cloning the old one
+        const newCrop = oldCrop.clone();
+
+        // Apply Logic to the NEW crop
+        this.updateCrop(newCrop, dailyGDD);
+
+        // Store in the new array
+        newField[i][j] = newCrop;
       }
     }
-    this.drawFieldAndTractor();
+
+    // ass the NEW state to the frontend
+    this.drawFieldAndTractor(newField);
+
+    // Store the New State as the Old State
+    this.stateManager.commitNewState(newField);
+  }
+
+  // Update logic helper
+  updateCrop(crop, dailyGDD) {
+    if (crop.isGrowing()) {
+      crop.currentGDD += dailyGDD;
+      if (crop.currentGDD >= crop.requiredGDD) {
+        crop.stage = CROP_STAGES.MATURE;
+        crop.currentGDD = crop.requiredGDD;
+      }
+    }
   }
 
   // --- Draw the tractor sprite based on current direction ---
@@ -488,7 +517,7 @@ setSpeedMultiplier(multiplier) {
   }
 
   // Draws the field onto the canvas
-  drawField() {
+  drawField(fieldToDraw) {
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
@@ -537,9 +566,10 @@ setSpeedMultiplier(multiplier) {
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue; // skip negative indices
-
+        let crop = fieldToDraw[i][j]
         let dirtOrWheat = this.dirtImage;
-        switch (this.field[i][j].stage) {
+
+        switch (crop.stage) {
           case 0:
             dirtOrWheat = this.dirtImage;
             break;
@@ -594,6 +624,8 @@ setSpeedMultiplier(multiplier) {
     let hasChecked = false;
     let tile = null;
 
+    const field = this.stateManager.getOldState();
+
     for (let x = x0; x < x1; x++) {
       const tileX = Math.floor(x / this.TILE_WIDTH);
       const tileY = Math.floor(y / this.TILE_HEIGHT);
@@ -605,7 +637,7 @@ setSpeedMultiplier(multiplier) {
 
       tile =
         tileX >= 0 && tileX < this.columns && tileY >= 0 && tileY < this.rows
-          ? this.field[tileY][tileX]
+          ? field[tileY][tileX]
           : null;
       hasChecked =
         hasChecked ||
@@ -632,6 +664,8 @@ setSpeedMultiplier(multiplier) {
     let hasChecked = false;
     let tile = null;
 
+    const field = this.stateManager.getOldState();
+
     for (let y = y0; y < y1; y++) {
       const tileX = Math.floor(x / this.TILE_WIDTH);
       const tileY = Math.floor(y / this.TILE_HEIGHT);
@@ -643,7 +677,7 @@ setSpeedMultiplier(multiplier) {
 
       tile =
         tileX >= 0 && tileX < this.columns && tileY >= 0 && tileY < this.rows
-          ? this.field[tileY][tileX]
+          ? field[tileY][tileX]
           : null;
       hasChecked =
         hasChecked ||
@@ -657,7 +691,8 @@ setSpeedMultiplier(multiplier) {
   // Changes the tile at field[y][x] to the apropriate value based on the current mode of the vehicle
   changeTile(x, y) {
     if (x >= 0 && x < this.columns && y >= 0 && y < this.rows) {
-      let crop = this.field[y][x];
+      let field = this.stateManager.getOldState();
+      let crop = field[y][x];
 
       if (this.isHarvestingOn) {
         // Use helper methods
@@ -688,11 +723,13 @@ setSpeedMultiplier(multiplier) {
 
   // Resets the field to be the value of the Wheat tile
   resetField() {
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.columns; j++) {
-        this.field[i][j] = new CropState();
-      }
-    }
+    // Create a fresh grid of new CropStates
+    const newField = Array.from({ length: this.rows }, () =>
+      Array.from({ length: this.columns }, () => new CropState())
+    );
+
+    // Commit this new grid to the State Manager
+    this.stateManager.commitNewState(newField);
   }
 
   // Rotates x and y coordinates to a new location based on the an angle and the center of rotation
@@ -706,15 +743,21 @@ setSpeedMultiplier(multiplier) {
   }
 
   // Draws the field then the tractor
-  drawFieldAndTractor() {
+  drawFieldAndTractor(currentField = null) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    document.getElementById("scoreText").innerHTML =
-      "Yield: " + this.yieldScore;
-    this.drawField();
+    document.getElementById("scoreText").innerHTML = "Yield: " + this.yieldScore;
+    
+    // If no field passed, grab the stored old state
+    if (!currentField) {
+        currentField = this.stateManager.getOldState();
+    }
+
+    this.drawField(currentField);
     this.drawTractor();
 
     if (this.nightFadeProgress >= 0.0) this.DrawNight();
   }
+
   // Updates camera position based on tractor position
   updateCamera() {
     // Calculate the tractor's center point
@@ -876,20 +919,6 @@ OnNewGoalRotation() {
   } else {
     dateLabel.textContent = `Date: --`;
   }
-  }
-
-  // NEW METHOD: Handles logic for a single crop object
-  updateCrop(cropState, dailyGDD) {
-    // Only update if it is currently in the growing stage
-    if (cropState.isGrowing()) {
-      cropState.currentGDD += dailyGDD;
-
-      // Check if it has reached the threshold
-      if (cropState.currentGDD >= cropState.requiredGDD) {
-        cropState.stage = CROP_STAGES.MATURE; // Grows to Wheat
-        cropState.currentGDD = cropState.requiredGDD; // Cap the GDD
-      }
-    }
   }
 
 }
