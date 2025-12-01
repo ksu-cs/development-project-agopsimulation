@@ -1,8 +1,8 @@
 import timeStepData from "./timeStepData";
 
 export default class simulationEngine extends EventTarget {
-    constructor(canvas) {
-        super();
+  constructor(canvas) {
+    super();
     // Canvas and movement code
     this.canvas = canvas;
     this.ctx = this.canvas.getContext("2d");
@@ -86,12 +86,23 @@ export default class simulationEngine extends EventTarget {
     this.isInitialized = false;
   }
 
-    dispatchEventa() {
-        this.dispatchEvent(new CustomEvent('simulationEngineCreated', {
-            bubbles: true,
-            detail: new timeStepData(this.cameraX, this.cameraY, this.angle),
-        }));
-    }
+  dispatchEventa() {
+    this.dispatchEvent(
+      new CustomEvent("simulationEngineCreated", {
+        bubbles: true,
+        detail: new timeStepData(
+          this.cameraX,
+          this.cameraY,
+          this.angle,
+          this.yieldScore,
+          this.tractorWorldX,
+          this.tractorWorldY,
+          this.nightFadeProgress,
+          this.field,
+        ),
+      }),
+    );
+  }
 
   async loadStations() {
     // invalid Dom property 'for' did you mean 'htmlFor' error
@@ -130,8 +141,8 @@ export default class simulationEngine extends EventTarget {
     return sum;
   }
 
- async fetchData() {
-    console.log("fetching data")
+  async fetchData() {
+    console.log("fetching data");
     const station = document.getElementById("station").value;
     const startInput = document.getElementById("start").value; // YYYY-MM-DD
     const startDate = new Date(startInput);
@@ -354,42 +365,11 @@ export default class simulationEngine extends EventTarget {
         }
       }
     }
-      this.drawFieldAndTractor();//DRAW LINE
+    this.drawFieldAndTractor(); //DRAW LINE
   }
 
-  // --- Draw the tractor sprite based on current direction ---
-  drawTractor() {
-    const screenX = this.tractorWorldX - this.cameraX;
-    const screenY = this.tractorWorldY - this.cameraY;
-
-    const normalizedAngle = ((this.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
-
-    // tractorsprite
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      this.tractorSprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.restore();
-
-    document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(this.tractorWorldX)}, ${Math.round(this.tractorWorldY)})<br>` +
-      `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
-      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-      `Angle: ${normalizedAngle}°<br>` +
-      `Direction: ${this.getDirectionName(this.angle)}<br>` +
-      `Moving: ${this.isMoving ? "Yes" : "No"} <br>`;
-  }
-
-  // Draws the field onto the canvas
-  drawField() {
+  // updates all tiles on the field, to see if they should change
+  updateFieldTiles() {
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
@@ -427,56 +407,6 @@ export default class simulationEngine extends EventTarget {
       frontSide[1].y,
       -1,
     );
-
-    // draw the entire field using camera coordinates
-
-    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
-    const endCol = Math.min(this.columns, startCol + this.SCREEN_COLUMNS);
-    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
-    const endRow = Math.min(this.rows, startRow + this.SCREEN_ROWS);
-
-    for (let i = startRow; i < endRow; i++) {
-      for (let j = startCol; j < endCol; j++) {
-        if (i < 0 || j < 0) continue; // skip negative indices
-
-        let tileImage = this.dirtImage;
-        switch (this.field[i][j].state) {
-          case 0:
-            tileImage = this.dirtImage;
-            break;
-          case 1:
-            tileImage = this.seedImage;
-            break;
-          case 2:
-            tileImage = this.wheatImage;
-            break;
-        }
-        const tileWorldX = j * this.TILE_WIDTH;
-        const tileWorldY = i * this.TILE_HEIGHT;
-
-        const tileScreenX = tileWorldX - this.cameraX;
-        const tileScreenY = tileWorldY - this.cameraY;
-
-        this.ctx.drawImage(
-          tileImage,
-          0,
-          0,
-          this.TILE_BASE_SIZE,
-          this.TILE_BASE_SIZE,
-          Math.floor(tileScreenX),
-          Math.floor(tileScreenY),
-          this.TILE_WIDTH,
-          this.TILE_HEIGHT,
-        );
-      }
-    }
-  }
-
-  DrawNight() {
-    let alpha =
-      0.75 * Math.min(1.2 * Math.sin(this.nightFadeProgress * Math.PI), 1.0);
-    this.ctx.fillStyle = `rgba(15, 15, 75, ${alpha})`; // Set fill color to a transparent blue
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw the overlay
   }
 
   // Detects and changes which tiles are in the line from point0, to point1 for a gentle slope
@@ -610,13 +540,8 @@ export default class simulationEngine extends EventTarget {
 
   // Draws the field then the tractor
   drawFieldAndTractor() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    document.getElementById("scoreText").innerHTML =
-      "Yield: " + this.yieldScore;
-      this.drawField();//DRAW LINE
-      this.drawTractor();//DRAW LINE
-
-    if (this.nightFadeProgress >= 0.0) this.DrawNight(); //DRAW LINE
+    this.updateFieldTiles();
+    this.dispatchEventa();
   }
   // Updates camera position based on tractor position
   updateCamera() {
@@ -665,7 +590,7 @@ export default class simulationEngine extends EventTarget {
 
           this.updateCamera();
 
-            this.drawFieldAndTractor();//DRAW LINE
+          this.drawFieldAndTractor(); //DRAW LINE
           this.animationId = requestAnimationFrame(animate);
         } else {
           resolve();
@@ -701,7 +626,7 @@ export default class simulationEngine extends EventTarget {
 
           this.updateCamera();
 
-            this.drawFieldAndTractor();//DRAW LINE
+          this.drawFieldAndTractor(); //DRAW LINE
           this.animationId = requestAnimationFrame(turn);
         } else {
           resolve();
@@ -727,7 +652,7 @@ export default class simulationEngine extends EventTarget {
     this.yieldScore = 0;
     this.nightFadeProgress = -1.0;
     this.resetField();
-      this.drawFieldAndTractor();//DRAW LINE
+    this.drawFieldAndTractor(); //DRAW LINE
   }
 
   stopMovement() {

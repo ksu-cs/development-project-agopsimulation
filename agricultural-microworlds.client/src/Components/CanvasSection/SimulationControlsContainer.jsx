@@ -1,4 +1,4 @@
-import {Component, Fragment} from "react";
+import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
 import simulationEngine from "../../alterSimulationClasses/simulationEngine";
 import drawCanvas from "../../alterSimulationClasses/drawCanvas";
@@ -17,18 +17,20 @@ class SimulationControlsContainer extends Component {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
     this.simulationEngine = new simulationEngine(canvas);
-      this.drawCanvas = new drawCanvas(canvas);
+    this.drawCanvas = new drawCanvas(canvas);
 
-      this.simulationEngine.addEventListener('simulationEngineCreated', (e) => this.drawCanvas.handleTimeStep(e));
+    this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
+      this.drawCanvas.handleTimeStep(e),
+    );
 
-      this.simulationEngine.dispatchEventa();
+    this.simulationEngine.dispatchEventa();
     this.simulationEngine.setSpriteOnLoadMethods();
     await this.simulationEngine.loadStations();
   }
 
   //#region button OnClick methods
   async runButtonOnClick() {
-await this.simulationEngine.fetchData();
+    await this.simulationEngine.fetchData();
 
     const { workspace } = this.props;
     if (!workspace) {
@@ -74,9 +76,7 @@ return (async () => { ${code} })();`,
   render() {
     return (
       <Fragment>
-        <div
-          className={`${styles.alignItemsCenterColumn}`}
-        >
+        <div className={`${styles.alignItemsCenterColumn}`}>
           <button
             onClick={this.runButtonOnClick}
             id="runButton"

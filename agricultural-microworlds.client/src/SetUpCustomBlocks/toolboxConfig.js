@@ -1,4 +1,4 @@
-import {Theme, Themes} from "blockly/core";
+import { Theme, Themes } from "blockly/core";
 
 export const toolbox = {
   kind: "categoryToolbox",
@@ -73,9 +73,7 @@ export const toolbox = {
       kind: "category",
       name: "Events",
       categorystyle: "events_category",
-      contents: [
-        { kind: "block", type: "start_program" },
-      ],
+      contents: [{ kind: "block", type: "start_program" }],
     },
   ],
 };
