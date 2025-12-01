@@ -1,18 +1,19 @@
-import BaseState from "./BaseState.js";
+export default class MovingState {
+  constructor(vehicle, duration) {
+    this.vehicle = vehicle;
+    this.duration = duration;
+  }
 
-export default class MovingState extends BaseState {
-    enter() {
-        console.log("Entering Moving state");
-        this.sim.isMoving = true;
-    }
+  async enter() {
+    console.log("Entering Moving state");
+    await this.vehicle.moveForward(this.duration);
+  }
 
-    async update(dt) {
-        console.log("Moving for", dt, "seconds");
-        await this.sim.moveForward(dt);
-    }
+  async update(dt) {
+     await this.vehicle.moveForward(dt); 
+  }
 
-    exit() {
-        console.log("Exiting Moving state");
-        this.sim.isMoving = false;
-    }
+  async exit() {
+    console.log("Exiting Moving state");
+  }
 }

@@ -1,28 +1,24 @@
-class BaseState {
-  constructor(vehicle) { this.vehicle = vehicle; }
-  enter() {}   // called when entering this state
-  execute() {} // called every tick
-  exit() {}    // called when leaving this state
-}
+export default class FiniteStateManager {
+    constructor(vehicle) {
+        this.vehicle = vehicle;       // The vehicle or simulation object
+        this.currentState = null;     // Currently active state
+    }
 
-class MovingState extends BaseState {
-  constructor(vehicle, distance) {
-    super(vehicle);
-    this.distance = distance;
-  }
+    // Switch to a new state
+    async setState(newState) {
+        if (this.currentState && this.currentState.exit) {
+            await this.currentState.exit();   // call exit of old state
+        }
+        this.currentState = newState;
+        if (this.currentState && this.currentState.enter) {
+            await this.currentState.enter();  // call enter of new state
+        }
+    }
 
-  enter() {
-    this.vehicle.moveForward(this.distance);
-  }
-}
-
-class TurningState extends BaseState {
-  constructor(vehicle, angle) {
-    super(vehicle);
-    this.angle = angle;
-  }
-
-  enter() {
-    this.vehicle.turnXDegrees(this.angle);
-  }
+    // Called every tick to update the current state
+    async update(dt) {
+        if (this.currentState && this.currentState.update) {
+            await this.currentState.update(dt);
+        }
+    }
 }
