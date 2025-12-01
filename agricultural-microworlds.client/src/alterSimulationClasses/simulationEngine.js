@@ -84,7 +84,6 @@ export default class simulationEngine extends EventTarget {
 
     // Current Speed Multiplier
     this.speedMultiplier = 1;
-
   }
 
   dispatchEventa() {
@@ -125,16 +124,16 @@ export default class simulationEngine extends EventTarget {
 
         if (NAME.includes("Flickner")) {
           option.selected = true;
-      }
+        }
 
         stationSelect.appendChild(option);
       }
     });
   }
 
-setSpeedMultiplier(multiplier) {
-  this.speedMultiplier = multiplier;
-}
+  setSpeedMultiplier(multiplier) {
+    this.speedMultiplier = multiplier;
+  }
 
   calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
     let sum = 0;
@@ -156,8 +155,7 @@ setSpeedMultiplier(multiplier) {
     const startInputElement = document.getElementById("start");
     const startDateValue = startInputElement.value;
 
-
-    const [year, month, day] = startDateValue.split('-').map(Number);
+    const [year, month, day] = startDateValue.split("-").map(Number);
     const startDate = new Date(year, month - 1, day);
 
     this.startDate = new Date(startDate);
@@ -252,9 +250,9 @@ setSpeedMultiplier(multiplier) {
   }
 
   // Method for Wait X Weeks Block
- async waitXWeeks(weeks) {
+  async waitXWeeks(weeks) {
     this.waitingweeksCount = weeks; // Fixed variable name
-        await this.fetchData();
+    await this.fetchData();
     return new Promise((resolve) => {
       let weeksToProcess = weeks;
 
@@ -329,7 +327,11 @@ setSpeedMultiplier(multiplier) {
   }
 
   formatDisplayDate(dateObj) {
-    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return dateObj.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   }
 
   updateTime(deltaTime) {
@@ -337,51 +339,49 @@ setSpeedMultiplier(multiplier) {
 
     // If 1 second has passed
     if (this.timeAccumulator >= 1.0) {
-        this.advanceDay();
-        this.timeAccumulator -= 1.0;
+      this.advanceDay();
+      this.timeAccumulator -= 1.0;
     }
   }
 
   advanceDay() {
-  if (!this.csvLines || this.csvLines.length === 0) {
-    console.warn("No CSV data loaded - cannot advance day");
-    return;
+    if (!this.csvLines || this.csvLines.length === 0) {
+      console.warn("No CSV data loaded - cannot advance day");
+      return;
+    }
+
+    if (this.currentDayIndex >= this.csvLines.length) {
+      console.warn("Reached end of CSV data");
+      return;
+    }
+
+    const dayData = this.csvLines[this.currentDayIndex];
+    const temp = parseFloat(dayData[2]);
+
+    // Calculate GDD
+    const dailyGDD = Math.max(0, temp - this.Wheatgdd);
+    this.cumulativeGDD += dailyGDD;
+
+    // Update crops with GDD
+    this.growCrops(dailyGDD);
+
+    // Increment day
+    this.currentDayIndex++;
+
+    // Update date display
+    this.updateDateDisplay();
+
+    // Update GDD display
+    const gddLabel = document.getElementById("gddText");
+    if (gddLabel) {
+      gddLabel.textContent = `GDD: ${this.cumulativeGDD.toFixed(2)}`;
+    }
   }
-
-  if (this.currentDayIndex >= this.csvLines.length) {
-    console.warn("Reached end of CSV data");
-    return;
-  }
-
-  const dayData = this.csvLines[this.currentDayIndex];
-  const temp = parseFloat(dayData[2]);
-
-  // Calculate GDD
-  const dailyGDD = Math.max(0, temp - this.Wheatgdd);
-  this.cumulativeGDD += dailyGDD;
-
-  // Update crops with GDD
-  this.growCrops(dailyGDD);
-
-  // Increment day
-  this.currentDayIndex++;
-
-  // Update date display
-  this.updateDateDisplay();
-
-  // Update GDD display
-  const gddLabel = document.getElementById("gddText");
-  if (gddLabel) {
-    gddLabel.textContent = `GDD: ${this.cumulativeGDD.toFixed(2)}`;
-  }
-}
-
-
 
   async fastForwardWeeks(weeks) {
     const totalDays = Number(weeks) * 7;
     const baseMSperDay = 200;
-    
+
     this.isWaiting = true;
     this.drawFieldAndTractor();
 
@@ -390,7 +390,7 @@ setSpeedMultiplier(multiplier) {
       if (!this.isMoving) {
         break;
       }
-      
+
       // Check if we've reached the end of data
       if (this.currentDayIndex >= this.csvLines.length) {
         console.warn("Reached end of CSV data during fast forward");
@@ -399,8 +399,8 @@ setSpeedMultiplier(multiplier) {
 
       // Wait before advancing (makes it visible)
       const msPerDay = baseMSperDay / this.speedMultiplier;
-    await new Promise(resolve => setTimeout(resolve, msPerDay));
-      
+      await new Promise((resolve) => setTimeout(resolve, msPerDay));
+
       // Advance the day
       this.advanceDay();
       this.drawFieldAndTractor();
@@ -408,7 +408,7 @@ setSpeedMultiplier(multiplier) {
 
     this.isWaiting = false;
     this.drawFieldAndTractor();
-}
+  }
 
   CheckIfPlantInFront(type) {
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
@@ -670,33 +670,33 @@ setSpeedMultiplier(multiplier) {
   }
 
   // moveForward function that moves over time
-moveForward(duration) {
-  return new Promise((resolve) => {
-    // Track simulation time
-    let simulationTimeElapsed = 0;
-    const simulationDuration = duration;
-    
-    let lastFrameTime = Date.now();
+  moveForward(duration) {
+    return new Promise((resolve) => {
+      // Track simulation time
+      let simulationTimeElapsed = 0;
+      const simulationDuration = duration;
 
-    const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-    const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+      let lastFrameTime = Date.now();
 
-    const animate = () => {
-      const now = Date.now();
-      const realDeltaMs = now - lastFrameTime;
-      lastFrameTime = now;
-      
-      // Convert real time to simulation time using speedMultiplier
-      const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
-      simulationTimeElapsed += simDelta;
+      const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
+      const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
 
-      if (simulationTimeElapsed < simulationDuration && this.isMoving) {
-        // Move based on simulation delta
-        this.tractorWorldX += moveX * simDelta;
-        this.tractorWorldY += moveY * simDelta;
+      const animate = () => {
+        const now = Date.now();
+        const realDeltaMs = now - lastFrameTime;
+        lastFrameTime = now;
 
-        // Update time based on simulation delta
-        this.updateTime(simDelta);
+        // Convert real time to simulation time using speedMultiplier
+        const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
+        simulationTimeElapsed += simDelta;
+
+        if (simulationTimeElapsed < simulationDuration && this.isMoving) {
+          // Move based on simulation delta
+          this.tractorWorldX += moveX * simDelta;
+          this.tractorWorldY += moveY * simDelta;
+
+          // Update time based on simulation delta
+          this.updateTime(simDelta);
 
           this.updateCamera();
 
@@ -707,37 +707,37 @@ moveForward(duration) {
         }
       };
 
-    animate();
-  });
-}
+      animate();
+    });
+  }
 
   turnXDegrees(amount) {
     this.goalAngle += amount;
     return this.OnNewGoalRotation();
   }
 
-OnNewGoalRotation() {
-  return new Promise((resolve) => {
-    let lastFrameTime = Date.now();
-    
-    const turn = () => {
-      const now = Date.now();
-      const realDeltaMs = now - lastFrameTime;
-      lastFrameTime = now;
-      
-      // Convert real time to simulation time
-      const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
+  OnNewGoalRotation() {
+    return new Promise((resolve) => {
+      let lastFrameTime = Date.now();
 
-      if (this.angle != this.goalAngle) {
-        var difference = this.goalAngle - this.angle;
-        var absDiff = Math.abs(difference);
-        var alpha = Math.min(this.turnSpeed * simDelta, absDiff) / absDiff;
-        this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
+      const turn = () => {
+        const now = Date.now();
+        const realDeltaMs = now - lastFrameTime;
+        lastFrameTime = now;
 
-        const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-        const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
-        this.tractorWorldX += moveX * simDelta;
-        this.tractorWorldY += moveY * simDelta;
+        // Convert real time to simulation time
+        const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
+
+        if (this.angle != this.goalAngle) {
+          var difference = this.goalAngle - this.angle;
+          var absDiff = Math.abs(difference);
+          var alpha = Math.min(this.turnSpeed * simDelta, absDiff) / absDiff;
+          this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
+
+          const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
+          const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+          this.tractorWorldX += moveX * simDelta;
+          this.tractorWorldY += moveY * simDelta;
 
           this.updateCamera();
 
@@ -797,15 +797,14 @@ OnNewGoalRotation() {
   // updates date at the top
   updateDateDisplay() {
     const dateLabel = document.getElementById("dateText");
-  if (!dateLabel) return;
-  
-  if (this.startDate) {
-    const currentDate = new Date(this.startDate);
-    currentDate.setDate(this.startDate.getDate() + this.currentDayIndex);
-    dateLabel.textContent = `Date: ${this.formatDisplayDate(currentDate)}`;
-  } else {
-    dateLabel.textContent = `Date: --`;
-  }
-  }
+    if (!dateLabel) return;
 
+    if (this.startDate) {
+      const currentDate = new Date(this.startDate);
+      currentDate.setDate(this.startDate.getDate() + this.currentDayIndex);
+      dateLabel.textContent = `Date: ${this.formatDisplayDate(currentDate)}`;
+    } else {
+      dateLabel.textContent = `Date: --`;
+    }
+  }
 }
