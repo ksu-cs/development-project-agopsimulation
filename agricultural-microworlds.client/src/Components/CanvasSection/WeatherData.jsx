@@ -14,7 +14,7 @@ class WeatherData extends Component {
           </select>
 
           <label htmlFor="start">Start date:</label>
-          <input type="date" id="start" />
+          <input type="date" id="start" defaultValue="2024-01-01"/>
         </div>
       </Fragment>
     );

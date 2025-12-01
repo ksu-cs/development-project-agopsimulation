@@ -16,11 +16,16 @@ javascriptGenerator.forBlock["turn_right"] = function () {
 
 javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
   let amount =
-    generator.valueToCode(block, "DEGREES", generator.ORDER_ATOMIC) || "1";
+    generator.valueToCode(block, "DEGREES", generator.ORDER_NONE) || "1";
   const direction = block.getFieldValue("DIRECTION");
-  if (direction == 0) amount *= -1;
+  
+  if (direction == 0) {
+    amount = `(-1 * (${amount}))`;
+  }
+
   return `await simulationMethods.turnXDegrees(${amount});\n`;
 };
+
 
 javascriptGenerator.forBlock["toggle_harvesting"] = function (block) {
   const toggle = block.getFieldValue("toggleType");
@@ -35,9 +40,8 @@ javascriptGenerator.forBlock["toggle_seeding"] = function (block) {
 };
 
 javascriptGenerator.forBlock["wait_x_weeks"] = function (block, generator) {
-  const weeks =
-    generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
-  return `await simulationMethods.waitXWeeks(${weeks});\n`;
+  const weeks = generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
+  return `await simulationMethods.fastForwardWeeks(${weeks});\n`;
 };
 
 javascriptGenerator.forBlock["is_over_tile"] = function (block, generator) {
@@ -60,10 +64,10 @@ javascriptGenerator.forBlock["custom_compare"] = function (block, generator) {
   return [code, generator.ORDER_EQUALITY];
 };
 
-javascriptGenerator.forBlock["get_current_week"] = function (block, generator) {
+javascriptGenerator.forBlock["get_current_week"] = function (generator) {
   return ["simulationMethods.currentWeek", generator.ORDER_ATOMIC];
 };
 
-javascriptGenerator.forBlock["start_program"] = function (block, generator) {
+javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
 };
