@@ -60,23 +60,6 @@ export default class simulationEngine extends EventTarget {
 
     this.field = []; // 2D array representing the field tiles
 
-    // --- Sprite setup ---
-    this.tractorSprite = new Image();
-    this.wheatImage = new Image();
-    this.seedImage = new Image();
-    this.dirtImage = new Image();
-
-    // Paths for the images
-    this.tractorSprite.src = "./src/assets/combine-harvester.png";
-    this.wheatImage.src = "./src/assets/wheat.png";
-    this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
-    this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
-
-    // Variables to aid in image loading
-    this.imageLoadCount = 0;
-    this.imageCount = 4;
-    this.isInitialized = false;
-
     this.currentDayIndex = 0;
     this.timeAccumulator = 0;
 
@@ -86,7 +69,7 @@ export default class simulationEngine extends EventTarget {
     this.speedMultiplier = 1;
   }
 
-  dispatchEventa() {
+  timeStepEvent() {
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
         bubbles: true,
@@ -183,60 +166,6 @@ export default class simulationEngine extends EventTarget {
     this.updateDateDisplay();
   }
 
-  // Image loading
-  onImageLoad() {
-    this.imageLoadCount++;
-    if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
-      console.log("All images loaded!");
-      this.isInitialized = true;
-
-      // Initialize the field array
-      console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
-      this.field = Array.from({ length: this.rows }, () =>
-        Array.from({ length: this.columns }, () => {
-          // eslint-disable-next-line no-unused-labels
-          state: 2;
-          // eslint-disable-next-line no-unused-labels
-          growth: 0.0;
-        }),
-      );
-
-      // Set initial position and draw
-      this.resetPosition();
-    }
-  }
-
-  setSpriteOnLoadMethods() {
-    // Loading methods for images
-    this.tractorSprite.onload = () => {
-      console.log("✅ Tractor sprite loaded!");
-      this.onImageLoad();
-    };
-    this.tractorSprite.onerror = () => {
-      console.error("❌ Failed to load tractor sprite!");
-    };
-    this.dirtImage.onload = () => {
-      console.log("DirtImage loaded!");
-      this.onImageLoad();
-    };
-    this.dirtImage.onerror = () => {
-      console.error("failed to load DirtImage");
-    };
-    this.seedImage.onload = () => {
-      console.log("SeedImage loaded!");
-      this.onImageLoad();
-    };
-    this.seedImage.onerror = () => {
-      console.error("failed to load SeedImage");
-    };
-    this.wheatImage.onload = () => {
-      console.log("WheatImage loaded!");
-      this.onImageLoad();
-    };
-    this.wheatImage.onerror = () => {
-      console.error("failed to load WheatImage");
-    };
-  }
 
   // Methods for Harvesting and Seeding Blocks
   toggleHarvesting(isOn) {
@@ -641,7 +570,7 @@ export default class simulationEngine extends EventTarget {
   // Draws the field then the tractor
   drawFieldAndTractor() {
     this.updateFieldTiles();
-    this.dispatchEventa();
+    this.timeStepEvent();
   }
   // Updates camera position based on tractor position
   updateCamera() {
@@ -752,8 +681,6 @@ export default class simulationEngine extends EventTarget {
   }
 
   resetPosition() {
-    if (!this.isInitialized) return;
-
     this.tractorWorldX = (this.columns * this.TILE_WIDTH) / 2;
     this.tractorWorldY = (this.rows * this.TILE_HEIGHT) / 2;
     this.angle = 0;

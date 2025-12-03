@@ -25,8 +25,8 @@ class SimulationControlsContainer extends Component {
       this.drawCanvas.handleTimeStep(e),
     );
 
-    this.simulationEngine.dispatchEventa();
-    this.simulationEngine.setSpriteOnLoadMethods();
+    this.simulationEngine.timeStepEvent();
+    this.drawCanvas.setSpriteOnLoadMethods();
     await this.simulationEngine.loadStations();
   }
 

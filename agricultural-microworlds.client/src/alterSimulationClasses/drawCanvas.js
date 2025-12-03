@@ -45,11 +45,14 @@
   }
 
   handleTimeStep(simulationData) {
-    console.log(simulationData.detail);
     this.simulationState = simulationData.detail;
-    document.getElementById("scoreText").innerHTML =
-      "Yield: " + this.simulationState.yieldScore;
+    this.setYieldScore(this.simulationState.yieldScore);
     this.drawFieldAndTractor();
+  }
+
+  setYieldScore(score){
+    document.getElementById("scoreText").innerHTML =
+      "Yield: " + score;
   }
 
   drawFieldAndTractor() {
