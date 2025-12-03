@@ -1,6 +1,8 @@
 import { WorldStateManager } from "./WorldStateManager";
 import { CropState, CROP_STAGES } from "./CropState";
 
+//import MovingState from "./vehicleStates/MovingState.js";
+
 export default class simulationMethods {
   constructor(canvas) {
     // Canvas and movement code
@@ -740,7 +742,7 @@ setSpeedMultiplier(multiplier) {
     this.CheckIfPlantInFront(-1);
   }
 
-  // moveForward function that moves over time
+  // moveForward function that moves over time --make into wrapper that calls vehicle.moveforward
 moveForward(duration) {
   return new Promise((resolve) => {
     // Track simulation time
