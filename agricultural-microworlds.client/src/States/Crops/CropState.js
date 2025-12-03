@@ -4,6 +4,7 @@ export const CROP_STAGES = {
   MATURE: 2
 };
 
+// State of crop at a snapshot
 export class CropState {
   constructor() {
     // Default to MATURE

@@ -1,5 +1,5 @@
-import { WorldStateManager } from "./WorldStateManager";
-import { CropState, CROP_STAGES } from "./CropState";
+import { WorldStateManager } from "../States/WorldStateManager";
+import { CropState, CROP_STAGES } from "../States/Crops/CropState";
 
 //import MovingState from "./vehicleStates/MovingState.js";
 
