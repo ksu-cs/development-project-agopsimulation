@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prettier": "prettier --write ."
+    "prettier-check": "prettier --check .",
+    "prettier-fix": "prettier --write ."
   },
   "dependencies": {
     "blockly": "12.3.1",
