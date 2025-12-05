@@ -1,5 +1,12 @@
+export const CROP_STAGES = {
+  UNPLANTED: 0,
+  SEEDED: 1,
+  MATURE: 2
+};
+
 export default class CropState {
     constructor() {
+        this.cropState = CROP_STAGES.MATURE;
         this.cropHealth = 100; //The current health of the crop. Depleting to 0 means destroying the crop.
         this.soilMinerals = 10; //The growth speed should be better, and produce a better crop, with more minerals.
         this.cropWater = 100; //Uses up water at a constant rate. If depleted, the crop won't grow.
@@ -22,6 +29,9 @@ export default class CropState {
     }
 
     getCropYield() {
+        if (this.cropState != CROP_STAGES.MATURE)
+            return 0;
+            
         let currentYield = 5;
         currentYield += 5*(this.soilMinerals / 10.0);
         currentYield *= this.cropHealth / 100.0;
