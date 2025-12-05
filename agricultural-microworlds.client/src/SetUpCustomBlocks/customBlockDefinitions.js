@@ -1,4 +1,4 @@
-import {Blocks} from "blockly/core";
+import { Blocks } from "blockly/core";
 
 //#region examples
 var example = {
@@ -277,7 +277,7 @@ var onStartProgram = {
   message0: "On Begin",
   nextStatement: null,
   style: "event_blocks",
-  tooltip: "Is called when the program begins."
+  tooltip: "Is called when the program begins.",
 };
 Blocks["start_program"] = {
   init: function () {
