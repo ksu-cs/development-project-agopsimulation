@@ -1,4 +1,4 @@
-import { WorldStateManager } from "../States/WorldStateManager";
+import { StateManager } from "../States/StateManager";
 import { CropState, CROP_STAGES } from "../States/Crops/CropState";
 
 //import MovingState from "./vehicleStates/MovingState.js";
@@ -177,7 +177,7 @@ export default class simulationMethods {
 
       // Initialize the State Manager
       console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
-      this.stateManager = new WorldStateManager();
+      this.stateManager = new StateManager();
 
       // Create the Initial Field State
       const initialField = Array.from({ length: this.rows }, () =>
