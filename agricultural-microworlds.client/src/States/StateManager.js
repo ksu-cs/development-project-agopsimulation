@@ -1,4 +1,3 @@
-
 export class StateManager {
   constructor() {
     // Container for all simulation states
