@@ -1,10 +1,10 @@
 export default class SimManager {
-    constructor() {
+  constructor() {}
 
+  update(deltaTime, oldState, newState) {
+    if (deltaTime < 0 || !oldState || !newState) {
+      console.warn("SimManager: Invalid update arguments provided.");
     }
-
-    update(deltaTime, oldState, newState) {
-        throw new Error("Method 'update()' must be implemented.");
-    }
-
+    throw new Error("Method 'update()' must be implemented.");
+  }
 }
