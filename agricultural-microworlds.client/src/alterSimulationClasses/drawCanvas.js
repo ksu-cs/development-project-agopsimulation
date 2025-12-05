@@ -50,9 +50,8 @@
     this.drawFieldAndTractor();
   }
 
-  setYieldScore(score){
-    document.getElementById("scoreText").innerHTML =
-      "Yield: " + score;
+  setYieldScore(score) {
+    document.getElementById("scoreText").innerHTML = "Yield: " + score;
   }
 
   drawFieldAndTractor() {

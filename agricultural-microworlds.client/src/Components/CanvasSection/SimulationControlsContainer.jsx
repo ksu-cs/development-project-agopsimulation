@@ -33,18 +33,9 @@ class SimulationControlsContainer extends Component {
   addBlocksToArray(block) {
     let nextBlock = block.getNextBlock();
     if (nextBlock != null) {
-      //console.log(block.nextConnection);
-      return javascriptGenerator.blockToCode(nextBlock);
-    }
-  addBlocksToArray(block) {
-    let nextBlock = block.getNextBlock();
-    if (nextBlock != null) {
-      //console.log(block.nextConnection);
       return javascriptGenerator.blockToCode(nextBlock);
     }
 
-    return "";
-  }
     return "";
   }
 
@@ -125,7 +116,7 @@ class SimulationControlsContainer extends Component {
                             ${finalCode} 
                         })();`,
           );
-          await run(this.alterCanvasRef);
+          await run(this.simulationEngine);
         } catch (e) {
           console.error("ERROR:", e);
         }
@@ -144,8 +135,8 @@ class SimulationControlsContainer extends Component {
   onSpeedChange = (e) => {
     const speed = parseInt(e.target.value);
     document.getElementById("speedDisplay").textContent = `${speed}x`;
-    if (this.alterCanvasRef) {
-      this.alterCanvasRef.setSpeedMultiplier(speed);
+    if (this.simulationEngine) {
+      this.simulationEngine.setSpeedMultiplier(speed);
     }
   };
 
@@ -154,7 +145,6 @@ class SimulationControlsContainer extends Component {
   render() {
     return (
       <Fragment>
-        <div className={`${styles.alignItemsCenterColumn}`}>
         <div className={`${styles.alignItemsCenterColumn}`}>
           <button
             onClick={this.runButtonOnClick}
