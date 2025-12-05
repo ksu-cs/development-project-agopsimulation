@@ -1,6 +1,5 @@
-// src/alterSimulationClasses/WorldStateManager.js
 
-export class WorldStateManager {
+export class StateManager {
   constructor() {
     // Container for all simulation states
     // Example: { field: [...], tractor: {...}, weather: {...} }
