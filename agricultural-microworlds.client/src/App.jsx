@@ -1,4 +1,4 @@
-import {Component, Fragment, createRef} from "react";
+import { Component, Fragment, createRef } from "react";
 import "./App.css";
 import BlocklyWorkspaceContainer from "./Components/BlocklySection/BlocklyWorkspaceContainer";
 import SimulationCanvasContainer from "./Components/CanvasSection/SimulationCanvasContainer";

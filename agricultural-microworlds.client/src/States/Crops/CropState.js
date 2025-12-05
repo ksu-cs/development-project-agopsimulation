@@ -1,14 +1,14 @@
 export const CROP_STAGES = {
   UNPLANTED: 0,
   SEEDED: 1,
-  MATURE: 2
+  MATURE: 2,
 };
 
 // State of crop at a snapshot
 export class CropState {
   constructor() {
     // Default to MATURE
-    this.stage = CROP_STAGES.MATURE; 
+    this.stage = CROP_STAGES.MATURE;
     this.currentGDD = 0.0;
     this.requiredGDD = 1000.0; // The GDD needed to reach maturity
   }
@@ -43,7 +43,4 @@ export class CropState {
     newCrop.requiredGDD = this.requiredGDD;
     return newCrop;
   }
-
-
-
 }
