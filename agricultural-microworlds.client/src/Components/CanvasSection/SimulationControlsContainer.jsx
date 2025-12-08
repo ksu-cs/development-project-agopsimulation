@@ -75,6 +75,7 @@ class SimulationControlsContainer extends Component {
 
     let formattedCode = "";
     let chunkIdx = 0;
+    console.log(blockChunks);
 
     while (blockChunks.length > 0) {
       let c = 0;
@@ -99,9 +100,11 @@ class SimulationControlsContainer extends Component {
         }
       }
 
+      bracketsOpen = 0;
       blockChunks[chunkIdx].splice(0, c);
-      if (blockChunks[chunkIdx].length <= 0) blockChunks.splice(chunkIdx, 1);
-      if (blockChunks.length > 0)
+      if (blockChunks[chunkIdx].length <= 0)
+        blockChunks.splice(chunkIdx, 1);
+      else if (blockChunks.length > 0)
         chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
 
