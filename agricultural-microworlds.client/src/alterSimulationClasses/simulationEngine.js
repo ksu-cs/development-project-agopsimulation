@@ -93,20 +93,20 @@ export default class simulationEngine extends EventTarget {
     );
   }
 
-  initStateManager(){
-      // Initialize the State Manager
-      console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
-      this.stateManager = new StateManager();
+  initStateManager() {
+    // Initialize the State Manager
+    console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
+    this.stateManager = new StateManager();
   }
 
-  initField(){
-      // Create the Initial Field State
-      const initialField = Array.from({ length: this.rows }, () =>
-        Array.from({ length: this.columns }, () => new CropState()),
-      );
+  initField() {
+    // Create the Initial Field State
+    const initialField = Array.from({ length: this.rows }, () =>
+      Array.from({ length: this.columns }, () => new CropState()),
+    );
 
-      // Register it with the manager under the key "field"
-      this.stateManager.initState("field", initialField);
+    // Register it with the manager under the key "field"
+    this.stateManager.initState("field", initialField);
   }
 
   async loadStations() {
@@ -434,89 +434,6 @@ export default class simulationEngine extends EventTarget {
         crop.stage = CROP_STAGES.MATURE;
         crop.currentGDD = crop.requiredGDD;
       }
-    }
-  }
-
-  // --- Draw the tractor sprite based on current direction ---
-  drawTractor() {
-    const screenX = this.tractorWorldX - this.cameraX;
-    const screenY = this.tractorWorldY - this.cameraY;
-
-    const normalizedAngle = ((this.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
-
-    // tractorsprite
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      this.tractorSprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.restore();
-
-    document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(this.tractorWorldX)}, ${Math.round(this.tractorWorldY)})<br>` +
-      `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
-      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-      `Angle: ${normalizedAngle}°<br>` +
-      `Direction: ${this.getDirectionName(this.angle)}<br>` +
-      `Moving: ${this.isMoving ? "Yes" : "No"} <br>`;
-  }
-
-  // Draws the field onto the canvas
-  drawField(fieldToDraw) {
-    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
-    const endCol = Math.min(this.columns, startCol + this.SCREEN_COLUMNS);
-    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
-    const endRow = Math.min(this.rows, startRow + this.SCREEN_ROWS);
-
-    for (let i = startRow; i < endRow; i++) {
-      for (let j = startCol; j < endCol; j++) {
-        if (i < 0 || j < 0) continue; // skip negative indices
-        let crop = fieldToDraw[i][j];
-        let dirtOrWheat = this.dirtImage;
-
-        switch (crop.stage) {
-          case 0:
-            dirtOrWheat = this.dirtImage;
-            break;
-          case 1:
-            dirtOrWheat = this.seedImage;
-            break;
-          case 2:
-            dirtOrWheat = this.wheatImage;
-            break;
-        }
-        const tileWorldX = j * this.TILE_WIDTH;
-        const tileWorldY = i * this.TILE_HEIGHT;
-
-        const tileScreenX = tileWorldX - this.cameraX;
-        const tileScreenY = tileWorldY - this.cameraY;
-
-        this.ctx.drawImage(
-          dirtOrWheat,
-          0,
-          0,
-          this.TILE_BASE_SIZE,
-          this.TILE_BASE_SIZE,
-          Math.floor(tileScreenX),
-          Math.floor(tileScreenY),
-          this.TILE_WIDTH,
-          this.TILE_HEIGHT,
-        );
-      }
-    }
-  }
-
-  DrawNight() {
-    if (this.isWaiting) {
-      this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
-      this.ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
     }
   }
 
