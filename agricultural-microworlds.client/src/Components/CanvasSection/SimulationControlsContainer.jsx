@@ -73,12 +73,13 @@ class SimulationControlsContainer extends Component {
       "\n",
     );
 
-    let formattedCode = "";
     let chunkIdx = 0;
+    let codeSegments = [];
 
     while (blockChunks.length > 0) {
       let c = 0;
       let bracketsOpen = 0;
+      let formattedCode = "";
 
       for (c = 0; c < blockChunks[chunkIdx].length; c++) {
         formattedCode += blockChunks[chunkIdx][c] + "\n";
@@ -100,30 +101,37 @@ class SimulationControlsContainer extends Component {
       }
 
       bracketsOpen = 0;
+      codeSegments.push(formattedCode);
+
       blockChunks[chunkIdx].splice(0, c);
       if (blockChunks[chunkIdx].length <= 0)
+      {
         blockChunks.splice(chunkIdx, 1);
+        chunkIdx %= blockChunks.length;
+      }
       else if (blockChunks.length > 0)
         chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
 
     // Combine definitions with the logic
-    const finalCode = variablesCode + "\n" + formattedCode;
+    codeSegments.concat([variablesCode + "\n"], blockChunks);
 
-    if (finalCode != "") {
-      console.log(finalCode);
+    if (codeSegments.length > 0) {
+      console.log(codeSegments);
 
-      if (finalCode.trim()) {
-        try {
-          const run = new Function(
-            "simulationMethods",
-            `return (async () => { 
-                            ${finalCode} 
-                        })();`,
-          );
-          await run(this.alterCanvasRef);
-        } catch (e) {
-          console.error("ERROR:", e);
+      for (let i = 0; i < codeSegments.length; i++) {
+        if (codeSegments[i].trim()) {
+          try {
+            const run = new Function(
+              "simulationMethods",
+              `return (async () => { 
+                              ${codeSegments[i]} 
+                          })();`,
+            );
+            await run(this.alterCanvasRef);
+          } catch (e) {
+            console.error("ERROR:", e);
+          }
         }
       }
     }
