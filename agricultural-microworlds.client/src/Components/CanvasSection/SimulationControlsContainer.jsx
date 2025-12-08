@@ -78,10 +78,22 @@ class SimulationControlsContainer extends Component {
 
     while (blockChunks.length > 0) {
       let c = 0;
+      let bracketsOpen = 0;
+
       for (c = 0; c < blockChunks[chunkIdx].length; c++) {
         formattedCode += blockChunks[chunkIdx][c] + "\n";
 
-        if (blockChunks[chunkIdx][c].includes("await")) {
+        // If there's a loop, we want to continue with that loop before switching to the next chunk, for now.
+        if (blockChunks[chunkIdx][c].includes("{")) 
+          bracketsOpen++;
+
+        //Allow proceding to the next chunk once the amount of open brackets drops back down to zero.
+        let hasClosure = blockChunks[chunkIdx][c].includes("}");
+        if (hasClosure)
+          bracketsOpen = Math.max(bracketsOpen - 1, 0);
+
+        // Only switch over once the loop has completed.
+        if (bracketsOpen <= 0 && (hasClosure || blockChunks[chunkIdx][c].includes("await"))) {
           c++;
           break;
         }
