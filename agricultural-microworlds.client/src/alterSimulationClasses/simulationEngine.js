@@ -1,4 +1,8 @@
-import timeStepData from "./timeStepData";
+import { WorldStateManager } from "../States/WorldStateManager";
+import { CropState, CROP_STAGES } from "../States/Crops/CropState";
+import {timeStepData} from "./timeStepData"
+
+//import MovingState from "./vehicleStates/MovingState.js";
 
 export default class simulationEngine extends EventTarget {
   constructor(canvasWidth, canvasHeight) {
@@ -164,6 +168,62 @@ export default class simulationEngine extends EventTarget {
     this.timeAccumulator = 0;
 
     this.updateDateDisplay();
+  }
+
+  // Image loading
+  onImageLoad() {
+    this.imageLoadCount++;
+    if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
+      console.log("All images loaded!");
+      this.isInitialized = true;
+
+      // Initialize the State Manager
+      console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
+      this.stateManager = new WorldStateManager();
+
+      // Create the Initial Field State
+      const initialField = Array.from({ length: this.rows }, () =>
+        Array.from({ length: this.columns }, () => new CropState()),
+      );
+
+      // Register it with the manager under the key "field"
+      this.stateManager.initState("field", initialField);
+
+      // Set initial position and draw
+      this.resetPosition();
+    }
+  }
+
+  setSpriteOnLoadMethods() {
+    // Loading methods for images
+    this.tractorSprite.onload = () => {
+      console.log("✅ Tractor sprite loaded!");
+      this.onImageLoad();
+    };
+    this.tractorSprite.onerror = () => {
+      console.error("❌ Failed to load tractor sprite!");
+    };
+    this.dirtImage.onload = () => {
+      console.log("DirtImage loaded!");
+      this.onImageLoad();
+    };
+    this.dirtImage.onerror = () => {
+      console.error("failed to load DirtImage");
+    };
+    this.seedImage.onload = () => {
+      console.log("SeedImage loaded!");
+      this.onImageLoad();
+    };
+    this.seedImage.onerror = () => {
+      console.error("failed to load SeedImage");
+    };
+    this.wheatImage.onload = () => {
+      console.log("WheatImage loaded!");
+      this.onImageLoad();
+    };
+    this.wheatImage.onerror = () => {
+      console.error("failed to load WheatImage");
+    };
   }
 
   // Methods for Harvesting and Seeding Blocks
