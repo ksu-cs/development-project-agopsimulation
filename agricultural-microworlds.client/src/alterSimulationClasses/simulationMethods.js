@@ -1,7 +1,9 @@
 import { WorldStateManager } from "../States/WorldStateManager";
 import { CropState, CROP_STAGES } from "../States/Crops/CropState";
-
+import Tractor from "../States/Vehicle/Tractor";
 //import MovingState from "./vehicleStates/MovingState.js";
+
+
 
 export default class simulationMethods {
   constructor(canvas) {
