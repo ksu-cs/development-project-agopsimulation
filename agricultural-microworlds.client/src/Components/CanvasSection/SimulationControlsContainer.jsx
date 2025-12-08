@@ -75,7 +75,6 @@ class SimulationControlsContainer extends Component {
 
     let formattedCode = "";
     let chunkIdx = 0;
-    console.log(blockChunks);
 
     while (blockChunks.length > 0) {
       let c = 0;
