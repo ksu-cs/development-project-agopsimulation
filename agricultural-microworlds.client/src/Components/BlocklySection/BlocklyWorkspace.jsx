@@ -1,5 +1,5 @@
-import {Component, Fragment, createRef} from "react";
-import {inject, Variables, utils, Xml} from "blockly";
+import { Component, Fragment, createRef } from "react";
+import { inject, Variables, utils, Xml } from "blockly";
 import "blockly/blocks";
 import styles from "../../Styles/index.module.css";
 
@@ -44,9 +44,7 @@ class BlocklyWorkspace extends Component {
     this.primaryWorkspace.registerButtonCallback(
       "CREATE_VARIABLE",
       function (button) {
-        Variables.createVariableButtonHandler(
-          button.getTargetWorkspace(),
-        );
+        Variables.createVariableButtonHandler(button.getTargetWorkspace());
       },
     );
 

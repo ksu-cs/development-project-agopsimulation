@@ -18,14 +18,15 @@ export default class Tractor {
     this.basespeed = 20;
     this.speed = 0;
     this.fuel = 100;
-    this.implement = ""
+    this.implement = "";
+    this.implementIsOn = false;
     this.basket = 0;
     this.isfull = false;
-   // this.MaxCapacity = 1000;
+    // this.MaxCapacity = 1000;
   }
 
-createTractor(canvas) {
-  return new Tractor(canvas);
+createTractor() {
+  return new Tractor();
 }
 
   setPosition(x, y) {
@@ -33,14 +34,15 @@ createTractor(canvas) {
     this.y = y;
   }
 
-GetTractPosit(tractor){
-  return { x: tractor.x, y: tractor.y };
-}
+  GetTractPosit(tractor) {
+    return { x: tractor.x, y: tractor.y };
+  }
 
   moveForward(delta) {
-    const rad = this.angle * Math.PI / 180;
+    const rad = (this.angle * Math.PI) / 180;
     this.x += Math.cos(rad) * this.speed * delta;
     this.y += Math.sin(rad) * this.speed * delta;
+    this.handleCollisions();
   }
 
     startMoving() {
@@ -69,7 +71,4 @@ GetTractPosit(tractor){
   turn(degrees) {
     this.angle = (this.angle + degrees) % 360;
   }
-
-
-
 }

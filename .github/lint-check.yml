@@ -1,0 +1,32 @@
+name: Push Checks
+
+on: pull_request:
+
+jobs:
+  check-code-style:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./agricultural-microworlds.client
+
+    steps: 
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 'lts/*'
+        cache: 'npm'
+        cache-dependency-path: ./agricultural-microworlds.client/package-lock.json
+
+    - name: Install Dependencies
+      run: npm Install
+
+    - name: run ESLint Check
+      run: npm run lint
+    
+    - name: run Prettier check
+      run: npm run prettier-check

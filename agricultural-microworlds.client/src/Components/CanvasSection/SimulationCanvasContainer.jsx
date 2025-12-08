@@ -1,4 +1,4 @@
-import {Component, Fragment, createRef} from "react";
+import { Component, Fragment, createRef } from "react";
 import "../../SetUpCustomBlocks/blocklyJSGenerator";
 import SimulationControlsContainer from "./SimulationControlsContainer";
 import styles from "../../Styles/index.module.css";
