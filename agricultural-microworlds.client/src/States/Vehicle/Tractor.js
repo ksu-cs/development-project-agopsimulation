@@ -1,10 +1,22 @@
 export default class Tractor {
-  constructor() {
+  constructor(canvas) {
+    this.Sprite = new Image();
+    this.Sprite.src = "./src/assets/combine-harvester.png";
+    this.canvas = canvas;
+    this.x = 250;
+    this.y = 250;
+    this.angle = 0;
+    this.goalAngle = 0;
+    this.turnSpeed = 90;
+    this.weeksToWait = 0;
+    this.nightFadeProgress = -1.0;
+    this.isMoving = false;
+    this.isHarvestingOn = false;
+    this.isSeedingOn = false;
+    this.animationId = -1;
+    this.yieldScore = 0;
     this.basespeed = 20;
     this.speed = 0;
-    this.y = 0;
-    this.x = 0;
-    this.turnspeed = 90;
     this.fuel = 100;
     this.implement = "";
     this.implementIsOn = false;
@@ -33,49 +45,30 @@ export default class Tractor {
     this.handleCollisions();
   }
 
+  startMoving() {
+    this.isMoving = true;
+  }
+
+  stopMovement() {
+    this.isMoving = false;
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = -1;
+    }
+  }
+
+  toggleHarvesting(isOn) {
+    this.isHarvestingOn = isOn;
+    if (isOn) this.isSeedingOn = false;
+    this.isSeedingOn = false;
+  }
+  toggleSeeding(isOn) {
+    this.isSeedingOn = isOn;
+    if (isOn) this.isSeedingOn = true;
+    this.isHarvestingOn = false;
+  }
+
   turn(degrees) {
     this.angle = (this.angle + degrees) % 360;
-  }
-
-  CheckIfPlantInFront(type) {
-    const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
-    const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
-    const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
-    const bottomLeft = { x: -this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
-    const center = {
-      x: this.tractorWorldX + this.FRAME_WIDTH / 2,
-      y: this.tractorWorldY + this.FRAME_HEIGHT / 2,
-    };
-
-    const corners = [
-      this.rotatePoint(topLeft.x, topLeft.y, this.angle, center.x, center.y), //topLeft
-      this.rotatePoint(topRight.x, topRight.y, this.angle, center.x, center.y), //topRight
-      this.rotatePoint(
-        bottomRight.x,
-        bottomRight.y,
-        this.angle,
-        center.x,
-        center.y,
-      ), // bottomRight
-      this.rotatePoint(
-        bottomLeft.x,
-        bottomLeft.y,
-        this.angle,
-        center.x,
-        center.y,
-      ), // bottomLeft
-    ];
-
-    const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
-    return this.detectWhatTilesAreHit(
-      frontSide[0].x,
-      frontSide[0].y,
-      frontSide[1].x,
-      frontSide[1].y,
-      type,
-    );
-  }
-  handleCollisions() {
-    this.CheckIfPlantInFront(-1);
   }
 }
