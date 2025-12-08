@@ -1,15 +1,15 @@
 import { StateManager } from "../States/StateManager";
 import { CropState, CROP_STAGES } from "../States/Crops/CropState";
+import timeStepData from "./timeStepData";
+
 import Tractor from "../States/Vehicle/Tractor";
 //import MovingState from "./vehicleStates/MovingState.js";
 
-export default class simulationMethods {
-  constructor(canvas) {
-    // Canvas and movement code
-    this.canvas = canvas;
-    this.ctx = this.canvas.getContext("2d");
-    this.canvas.width = 500;
-    this.canvas.height = 500;
+export default class simulationEngine extends EventTarget {
+  constructor(canvasWidth, canvasHeight) {
+    super();
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
 
     this.waitingweeksCount = 1; // global variable, set elsewhere
     this.cumulativeGDD = 0;
@@ -17,8 +17,8 @@ export default class simulationMethods {
     this.Wheatgdd = 10;
 
     // Tractor variables
-    this.tractorWorldX = this.canvas.width / 2;
-    this.tractorWorldY = this.canvas.height / 2;
+    this.tractorWorldX = this.canvasWidth / 2;
+    this.tractorWorldY = this.canvasHeight / 2;
 
     this.angle = 0;
     this.goalAngle = 0;
@@ -54,8 +54,8 @@ export default class simulationMethods {
     // Setting up the array that represents the field
     this.WORLD_WIDTH_IN_SCREENS = 5;
     this.WORLD_HEIGHT_IN_SCREENS = 5;
-    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2;
-    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2;
+    this.SCREEN_ROWS = Math.floor(this.canvasHeight / this.TILE_HEIGHT) + 2;
+    this.SCREEN_COLUMNS = Math.floor(this.canvasWidth / this.TILE_WIDTH) + 2;
 
     this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS;
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
@@ -64,22 +64,6 @@ export default class simulationMethods {
     this.worldPixelWidth = this.columns * this.TILE_WIDTH;
     this.worldPixelHeight = this.rows * this.TILE_HEIGHT;
 
-    this.tractorSprite = new Image();
-    this.wheatImage = new Image();
-    this.seedImage = new Image();
-    this.dirtImage = new Image();
-
-    // Paths for the images
-    this.tractorSprite.src = "./src/assets/combine-harvester.png";
-    this.wheatImage.src = "./src/assets/wheat.png";
-    this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
-    this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
-
-    // Variables to aid in image loading
-    this.imageLoadCount = 0;
-    this.imageCount = 4;
-    this.isInitialized = false;
-
     this.currentDayIndex = 0;
     this.timeAccumulator = 0;
 
@@ -87,6 +71,43 @@ export default class simulationMethods {
 
     // Current Speed Multiplier
     this.speedMultiplier = 1;
+
+    this.initStateManager();
+    this.initField();
+  }
+
+  timeStepEvent() {
+    this.dispatchEvent(
+      new CustomEvent("simulationEngineCreated", {
+        bubbles: true,
+        detail: new timeStepData(
+          this.cameraX,
+          this.cameraY,
+          this.angle,
+          this.yieldScore,
+          this.tractorWorldX,
+          this.tractorWorldY,
+          this.nightFadeProgress,
+          this.stateManager.getState("field"),
+        ),
+      }),
+    );
+  }
+
+  initStateManager() {
+    // Initialize the State Manager
+    console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
+    this.stateManager = new StateManager();
+  }
+
+  initField() {
+    // Create the Initial Field State
+    const initialField = Array.from({ length: this.rows }, () =>
+      Array.from({ length: this.columns }, () => new CropState()),
+    );
+
+    // Register it with the manager under the key "field"
+    this.stateManager.initState("field", initialField);
   }
 
   async loadStations() {
@@ -168,62 +189,6 @@ export default class simulationMethods {
     this.updateDateDisplay();
   }
 
-  // Image loading
-  onImageLoad() {
-    this.imageLoadCount++;
-    if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
-      console.log("All images loaded!");
-      this.isInitialized = true;
-
-      // Initialize the State Manager
-      console.log(`Initalizing world: ${this.columns}x${this.rows} tiles`);
-      this.stateManager = new StateManager();
-
-      // Create the Initial Field State
-      const initialField = Array.from({ length: this.rows }, () =>
-        Array.from({ length: this.columns }, () => new CropState()),
-      );
-
-      // Register it with the manager under the key "field"
-      this.stateManager.initState("field", initialField);
-
-      // Set initial position and draw
-      this.resetPosition();
-    }
-  }
-
-  setSpriteOnLoadMethods() {
-    // Loading methods for images
-    this.tractorSprite.onload = () => {
-      console.log("✅ Tractor sprite loaded!");
-      this.onImageLoad();
-    };
-    this.tractorSprite.onerror = () => {
-      console.error("❌ Failed to load tractor sprite!");
-    };
-    this.dirtImage.onload = () => {
-      console.log("DirtImage loaded!");
-      this.onImageLoad();
-    };
-    this.dirtImage.onerror = () => {
-      console.error("failed to load DirtImage");
-    };
-    this.seedImage.onload = () => {
-      console.log("SeedImage loaded!");
-      this.onImageLoad();
-    };
-    this.seedImage.onerror = () => {
-      console.error("failed to load SeedImage");
-    };
-    this.wheatImage.onload = () => {
-      console.log("WheatImage loaded!");
-      this.onImageLoad();
-    };
-    this.wheatImage.onerror = () => {
-      console.error("failed to load WheatImage");
-    };
-  }
-
   // Methods for Harvesting and Seeding Blocks
   toggleHarvesting(isOn) {
     this.isHarvestingOn = isOn;
@@ -297,11 +262,11 @@ export default class simulationMethods {
         }
 
         if (weeksToProcess > 0 || this.nightFadeProgress < 1.0) {
-          this.drawFieldAndTractor();
+          this.sendOutNewTimeStepDataToDraw();
           this.animationId = requestAnimationFrame(UpdateNight);
         } else {
           this.nightFadeProgress = -1;
-          this.drawFieldAndTractor();
+          this.sendOutNewTimeStepDataToDraw();
           resolve();
         }
       };
@@ -366,7 +331,7 @@ export default class simulationMethods {
     const baseMSperDay = 200;
 
     this.isWaiting = true;
-    this.drawFieldAndTractor();
+    this.sendOutNewTimeStepDataToDraw();
 
     for (let i = 0; i < totalDays; i++) {
       // Check if stop was pressed
@@ -386,11 +351,11 @@ export default class simulationMethods {
 
       // Advance the day
       this.advanceDay();
-      this.drawFieldAndTractor();
+      this.sendOutNewTimeStepDataToDraw();
     }
 
     this.isWaiting = false;
-    this.drawFieldAndTractor();
+    this.sendOutNewTimeStepDataToDraw();
   }
 
   CheckIfPlantInFront(type) {
@@ -456,7 +421,7 @@ export default class simulationMethods {
     }
 
     // Pass the NEW state to the frontend
-    this.drawFieldAndTractor(newField);
+    this.sendOutNewTimeStepDataToDraw(newField);
 
     // Store the New State as the Old State in the manager
     this.stateManager.commitState("field", newField);
@@ -470,89 +435,6 @@ export default class simulationMethods {
         crop.stage = CROP_STAGES.MATURE;
         crop.currentGDD = crop.requiredGDD;
       }
-    }
-  }
-
-  // --- Draw the tractor sprite based on current direction ---
-  drawTractor() {
-    const screenX = this.tractorWorldX - this.cameraX;
-    const screenY = this.tractorWorldY - this.cameraY;
-
-    const normalizedAngle = ((this.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
-
-    // tractorsprite
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      this.tractorSprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.restore();
-
-    document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(this.tractorWorldX)}, ${Math.round(this.tractorWorldY)})<br>` +
-      `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
-      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-      `Angle: ${normalizedAngle}°<br>` +
-      `Direction: ${this.getDirectionName(this.angle)}<br>` +
-      `Moving: ${this.isMoving ? "Yes" : "No"} <br>`;
-  }
-
-  // Draws the field onto the canvas
-  drawField(fieldToDraw) {
-    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
-    const endCol = Math.min(this.columns, startCol + this.SCREEN_COLUMNS);
-    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
-    const endRow = Math.min(this.rows, startRow + this.SCREEN_ROWS);
-
-    for (let i = startRow; i < endRow; i++) {
-      for (let j = startCol; j < endCol; j++) {
-        if (i < 0 || j < 0) continue; // skip negative indices
-        let crop = fieldToDraw[i][j];
-        let dirtOrWheat = this.dirtImage;
-
-        switch (crop.stage) {
-          case 0:
-            dirtOrWheat = this.dirtImage;
-            break;
-          case 1:
-            dirtOrWheat = this.seedImage;
-            break;
-          case 2:
-            dirtOrWheat = this.wheatImage;
-            break;
-        }
-        const tileWorldX = j * this.TILE_WIDTH;
-        const tileWorldY = i * this.TILE_HEIGHT;
-
-        const tileScreenX = tileWorldX - this.cameraX;
-        const tileScreenY = tileWorldY - this.cameraY;
-
-        this.ctx.drawImage(
-          dirtOrWheat,
-          0,
-          0,
-          this.TILE_BASE_SIZE,
-          this.TILE_BASE_SIZE,
-          Math.floor(tileScreenX),
-          Math.floor(tileScreenY),
-          this.TILE_WIDTH,
-          this.TILE_HEIGHT,
-        );
-      }
-    }
-  }
-
-  DrawNight() {
-    if (this.isWaiting) {
-      this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }
 
@@ -694,20 +576,8 @@ export default class simulationMethods {
   }
 
   // Draws the field then the tractor
-  drawFieldAndTractor(currentField = null) {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    document.getElementById("scoreText").innerHTML =
-      "Yield: " + this.yieldScore;
-
-    // If no field passed, grab the stored old state from manager
-    if (!currentField) {
-      currentField = this.stateManager.getState("field");
-    }
-
-    this.drawField(currentField);
-    this.drawTractor();
-
-    if (this.nightFadeProgress >= 0.0) this.DrawNight();
+  sendOutNewTimeStepDataToDraw() {
+    this.timeStepEvent();
   }
 
   // Updates camera position based on tractor position
@@ -717,11 +587,11 @@ export default class simulationMethods {
     let tractorCenterY = this.tractorWorldY + this.FRAME_HEIGHT / 2;
 
     // Aim the camera so the tractor's center is at the screen's center
-    let targetCameraX = tractorCenterX - this.canvas.width / 2;
-    let targetCameraY = tractorCenterY - this.canvas.height / 2;
+    let targetCameraX = tractorCenterX - this.canvasWidth / 2;
+    let targetCameraY = tractorCenterY - this.canvasHeight / 2;
 
-    const maxCameraX = this.worldPixelWidth - this.canvas.width;
-    const maxCameraY = this.worldPixelHeight - this.canvas.height;
+    const maxCameraX = this.worldPixelWidth - this.canvasWidth;
+    const maxCameraY = this.worldPixelHeight - this.canvasHeight;
 
     this.cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
     this.cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
@@ -775,7 +645,7 @@ export default class simulationMethods {
 
           // 4. Draw
           this.updateCamera();
-          this.drawFieldAndTractor();
+          this.sendOutNewTimeStepDataToDraw();
           this.animationId = requestAnimationFrame(animate);
         } else {
           resolve();
@@ -818,7 +688,7 @@ export default class simulationMethods {
           this.handleCollisions();
 
           this.updateCamera();
-          this.drawFieldAndTractor();
+          this.sendOutNewTimeStepDataToDraw();
           this.animationId = requestAnimationFrame(turn);
         } else {
           resolve();
@@ -844,7 +714,7 @@ export default class simulationMethods {
     this.yieldScore = 0;
     this.nightFadeProgress = -1.0;
     this.resetField();
-    this.drawFieldAndTractor();
+    this.sendOutNewTimeStepDataToDraw();
   }
 
   stopMovement() {
