@@ -1,7 +1,7 @@
 export default class CropRenderer {
   constructor(ctx, field, tileWidth, tileHeight) {
-    this.ctx = ctx;                     // Canvas 2D context
-    this.field = field;                 // 2D array of Crop objects
+    this.ctx = ctx; // Canvas 2D context
+    this.field = field; // 2D array of Crop objects
     this.tileWidth = tileWidth;
     this.tileHeight = tileHeight;
 
@@ -18,11 +18,15 @@ export default class CropRenderer {
 
   getSpriteForCrop(crop) {
     switch (crop.stage) {
-      case 0: return this.dirtImage;
-      case 1: return this.seedImage;
+      case 0:
+        return this.dirtImage;
+      case 1:
+        return this.seedImage;
       case 2:
-      case 3: return this.wheatImage;
-      default: return this.dirtImage;
+      case 3:
+        return this.wheatImage;
+      default:
+        return this.dirtImage;
     }
   }
 
@@ -34,7 +38,13 @@ export default class CropRenderer {
         const screenY = y * this.tileHeight - cameraY;
         const sprite = this.getSpriteForCrop(crop);
 
-        this.ctx.drawImage(sprite, screenX, screenY, this.tileWidth, this.tileHeight);
+        this.ctx.drawImage(
+          sprite,
+          screenX,
+          screenY,
+          this.tileWidth,
+          this.tileHeight,
+        );
       }
     }
   }

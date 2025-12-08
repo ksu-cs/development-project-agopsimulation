@@ -8,13 +8,13 @@ export default class WeatherManager {
 
   async loadStations() {
     const response = await fetch(
-      "https://mesonet.k-state.edu/rest/stationnames/"
+      "https://mesonet.k-state.edu/rest/stationnames/",
     );
     const text = await response.text();
     const lines = text.split("\n").slice(1);
     const stationSelect = document.getElementById("station");
     stationSelect.innerHTML = "";
-    
+
     lines.forEach((line) => {
       const cols = line.split(",");
       const NAME = cols[0];
@@ -30,7 +30,7 @@ export default class WeatherManager {
   }
 
   async fetchData(station, startDateValue) {
-    const [year, month, day] = startDateValue.split('-').map(Number);
+    const [year, month, day] = startDateValue.split("-").map(Number);
     const startDate = new Date(year, month - 1, day);
     this.startDate = new Date(startDate);
 
@@ -38,13 +38,13 @@ export default class WeatherManager {
     endDate.setDate(startDate.getDate() + 365);
 
     const start = startDateValue.replaceAll("-", "");
-    const end = `${endDate.getFullYear()}${(endDate.getMonth()+1).toString().padStart(2,"0")}${endDate.getDate().toString().padStart(2,"0")}`;
+    const end = `${endDate.getFullYear()}${(endDate.getMonth() + 1).toString().padStart(2, "0")}${endDate.getDate().toString().padStart(2, "0")}`;
 
     const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG`;
     const response = await fetch(url);
     const data = await response.text();
     const lines = data.trim().split("\n");
-    this.csvLines = lines.slice(1).map(line => line.split(","));
+    this.csvLines = lines.slice(1).map((line) => line.split(","));
     this.cumulativeGDD = 0;
     this.currentDayIndex = 0;
   }
@@ -61,7 +61,11 @@ export default class WeatherManager {
   calculateWeeklyGDD(weekIndex, daysPerWeek = 7) {
     let sum = 0;
     const startIdx = weekIndex * daysPerWeek;
-    for (let i = startIdx; i < startIdx + daysPerWeek && i < this.csvLines.length; i++) {
+    for (
+      let i = startIdx;
+      i < startIdx + daysPerWeek && i < this.csvLines.length;
+      i++
+    ) {
       const temp = parseFloat(this.csvLines[i][2]);
       sum += Math.max(0, temp - this.Wheatgdd);
     }
