@@ -1,15 +1,11 @@
 export default class Tractor {
-  constructor(canvas) {
+  constructor() {
     this.Sprite = new Image();
     this.Sprite.src = "./src/assets/combine-harvester.png";
-    this.canvas = canvas;
     this.x = 250;
     this.y = 250;
     this.angle = 0;
-    this.goalAngle = 0;
     this.turnSpeed = 90;
-    this.weeksToWait = 0;
-    this.nightFadeProgress = -1.0;
     this.isMoving = false;
     this.isHarvestingOn = false;
     this.isSeedingOn = false;
