@@ -77,18 +77,21 @@ export default class simulationEngine extends EventTarget {
   }
 
   timeStepEvent() {
+    // TEMPORARY - creating new tractor every time step event just to get the data transfer to the drawCanvas working with new states
+    const tractor = new Tractor();
+    tractor.setPosition(this.tractorWorldX, this.tractorWorldY);
+    tractor.angle = this.angle;
+
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
         bubbles: true,
         detail: new timeStepData(
           this.cameraX,
           this.cameraY,
-          this.angle,
           this.yieldScore,
-          this.tractorWorldX,
-          this.tractorWorldY,
           this.nightFadeProgress,
           this.stateManager.getState("field"),
+          tractor,
         ),
       }),
     );

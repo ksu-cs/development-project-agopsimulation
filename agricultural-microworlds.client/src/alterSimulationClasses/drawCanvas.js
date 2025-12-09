@@ -1,4 +1,6 @@
-﻿export default class drawCanvas {
+﻿import TractorRenderer from "../States/Vehicle/TractorRenderer";
+
+export default class drawCanvas {
   constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
@@ -42,6 +44,13 @@
     this.isInitialized = false;
 
     this.simulationState = null;
+
+    this.tractorRenderer = new TractorRenderer(
+      this.ctx,
+      this.tractorSprite,
+      this.FRAME_WIDTH,
+      this.FRAME_HEIGHT,
+    );
   }
 
   handleTimeStep(simulationData) {
@@ -57,7 +66,12 @@
   drawFieldAndTractor() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawField();
-    this.drawTractor();
+    this.tractorRenderer.draw(
+      this.simulationState.tractor,
+      this.simulationState.cameraX,
+      this.simulationState.cameraY,
+    );
+    // this.drawTractor();
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
   }
 

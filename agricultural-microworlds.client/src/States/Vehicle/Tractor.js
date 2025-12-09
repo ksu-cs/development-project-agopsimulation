@@ -21,16 +21,12 @@ export default class Tractor {
     // this.MaxCapacity = 1000;
   }
 
-  createTractor() {
-    return new Tractor();
-  }
-
   setPosition(x, y) {
     this.x = x;
     this.y = y;
   }
 
-  GetTractPosit(tractor) {
+  GetTractorPosition(tractor) {
     return { x: tractor.x, y: tractor.y };
   }
 

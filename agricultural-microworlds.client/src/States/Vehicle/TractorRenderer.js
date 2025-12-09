@@ -7,23 +7,19 @@ export default class TractorRenderer {
   }
 
   draw(tractor, cameraX, cameraY) {
-    // Convert world → screen
     const screenX = tractor.x - cameraX;
     const screenY = tractor.y - cameraY;
 
-    const angleRad = (tractor.angle * Math.PI) / 180;
+    const normalizedAngle = ((tractor.angle % 360) + 360) % 360;
+    var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
+    // tractorsprite
     this.ctx.save();
-
-    // Move to tractor center before rotating
     this.ctx.translate(
       screenX + this.frameWidth / 2,
       screenY + this.frameHeight / 2,
     );
-
-    // Rotate canvas
-    this.ctx.rotate(angleRad);
-
+    this.ctx.rotate(angleInRadians);
     // Draw the sprite centered
     this.ctx.drawImage(
       this.sprite,
@@ -32,7 +28,12 @@ export default class TractorRenderer {
       this.frameWidth,
       this.frameHeight,
     );
-
     this.ctx.restore();
+
+    document.getElementById("debug").innerHTML = //debugging window
+      `World Position: (${Math.round(tractor.x)}, ${Math.round(tractor.y)})<br>` +
+      `Camera Position: (${Math.round(cameraX)}, ${Math.round(cameraY)})<br>` +
+      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
+      `Angle: ${normalizedAngle}°<br>`;
   }
 }
