@@ -702,8 +702,6 @@ export default class simulationEngine extends EventTarget {
   }
 
   resetPosition() {
-    if (!this.isInitialized) return;
-
     this.tractorWorldX = (this.columns * this.TILE_WIDTH) / 2;
     this.tractorWorldY = (this.rows * this.TILE_HEIGHT) / 2;
     this.angle = 0;
@@ -738,6 +736,7 @@ export default class simulationEngine extends EventTarget {
     this.updateDateDisplay();
 
     document.getElementById("gddText").textContent = `GDD: 0.00`;
+    this.sendOutNewTimeStepDataToDraw();
   }
 
   startMoving() {
