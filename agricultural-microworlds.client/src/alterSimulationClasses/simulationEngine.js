@@ -16,18 +16,10 @@ export default class simulationEngine extends EventTarget {
     this.csvLines = []; // parsed CSV data
     this.Wheatgdd = 10;
 
-    // Tractor variables
-    this.tractorWorldX = this.canvasWidth / 2;
-    this.tractorWorldY = this.canvasHeight / 2;
-
-    this.angle = 0;
     this.goalAngle = 0;
     this.turnSpeed = 90;
     this.weeksToWait = 0;
     this.nightFadeProgress = -1.0;
-    this.isMoving = false;
-    this.isHarvestingOn = false;
-    this.isSeedingOn = false;
     this.animationId = -1;
     this.yieldScore = 0;
 
@@ -72,16 +64,17 @@ export default class simulationEngine extends EventTarget {
     // Current Speed Multiplier
     this.speedMultiplier = 1;
 
+    this.tractor = new Tractor(
+      this.canvasWidth / 2,
+      this.canvasHeight / 2,
+      this.speedMultiplier,
+    );
+
     this.initStateManager();
     this.initField();
   }
 
   timeStepEvent() {
-    // TEMPORARY - creating new tractor every time step event just to get the data transfer to the drawCanvas working with new states
-    const tractor = new Tractor();
-    tractor.setPosition(this.tractorWorldX, this.tractorWorldY);
-    tractor.angle = this.angle;
-
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
         bubbles: true,
@@ -91,7 +84,7 @@ export default class simulationEngine extends EventTarget {
           this.yieldScore,
           this.nightFadeProgress,
           this.stateManager.getState("field"),
-          tractor,
+          this.tractor,
         ),
       }),
     );
@@ -142,6 +135,7 @@ export default class simulationEngine extends EventTarget {
 
   setSpeedMultiplier(multiplier) {
     this.speedMultiplier = multiplier;
+    this.tractor.speedMultiplier = multiplier;
   }
 
   calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
@@ -194,13 +188,11 @@ export default class simulationEngine extends EventTarget {
 
   // Methods for Harvesting and Seeding Blocks
   toggleHarvesting(isOn) {
-    this.isHarvestingOn = isOn;
-    if (isOn) this.isSeedingOn = false;
+    this.tractor.toggleHarvesting(isOn);
   }
 
   toggleSeeding(isOn) {
-    this.isSeedingOn = isOn;
-    if (isOn) this.isHarvestingOn = false;
+    this.tractor.toggleSeeding(isOn);
   }
 
   // Method for Wait X Weeks Block
@@ -338,7 +330,7 @@ export default class simulationEngine extends EventTarget {
 
     for (let i = 0; i < totalDays; i++) {
       // Check if stop was pressed
-      if (!this.isMoving) {
+      if (!this.tractor.isMoving) {
         break;
       }
 
@@ -362,32 +354,22 @@ export default class simulationEngine extends EventTarget {
   }
 
   CheckIfPlantInFront(type) {
+    const angle = this.tractor.angle;
+
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const bottomLeft = { x: -this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const center = {
-      x: this.tractorWorldX + this.FRAME_WIDTH / 2,
-      y: this.tractorWorldY + this.FRAME_HEIGHT / 2,
+      x: this.tractor.x + this.FRAME_WIDTH / 2,
+      y: this.tractor.y + this.FRAME_HEIGHT / 2,
     };
 
     const corners = [
-      this.rotatePoint(topLeft.x, topLeft.y, this.angle, center.x, center.y), //topLeft
-      this.rotatePoint(topRight.x, topRight.y, this.angle, center.x, center.y), //topRight
-      this.rotatePoint(
-        bottomRight.x,
-        bottomRight.y,
-        this.angle,
-        center.x,
-        center.y,
-      ), // bottomRight
-      this.rotatePoint(
-        bottomLeft.x,
-        bottomLeft.y,
-        this.angle,
-        center.x,
-        center.y,
-      ), // bottomLeft
+      this.rotatePoint(topLeft.x, topLeft.y, angle, center.x, center.y), //topLeft
+      this.rotatePoint(topRight.x, topRight.y, angle, center.x, center.y), //topRight
+      this.rotatePoint(bottomRight.x, bottomRight.y, angle, center.x, center.y), // bottomRight
+      this.rotatePoint(bottomLeft.x, bottomLeft.y, angle, center.x, center.y), // bottomLeft
     ];
 
     const frontSide = [corners[1], corners[2]]; // right side of image when angle = 0
@@ -530,7 +512,7 @@ export default class simulationEngine extends EventTarget {
       let field = this.stateManager.getState("field");
       let crop = field[y][x];
 
-      if (this.isHarvestingOn) {
+      if (this.tractor.isHarvestingOn) {
         // Use helper methods
         if (crop.isMature()) {
           crop.reset(); // Sets stage to 0
@@ -538,7 +520,7 @@ export default class simulationEngine extends EventTarget {
         } else if (crop.isGrowing()) {
           crop.reset(); // Destroy crop if harvesting while growing
         }
-      } else if (this.isSeedingOn) {
+      } else if (this.tractor.isSeedingOn) {
         if (crop.isUnplanted()) {
           crop.plant(); // Sets stage to 1
           this.yieldScore++;
@@ -586,8 +568,8 @@ export default class simulationEngine extends EventTarget {
   // Updates camera position based on tractor position
   updateCamera() {
     // Calculate the tractor's center point
-    let tractorCenterX = this.tractorWorldX + this.FRAME_WIDTH / 2;
-    let tractorCenterY = this.tractorWorldY + this.FRAME_HEIGHT / 2;
+    let tractorCenterX = this.tractor.x + this.FRAME_WIDTH / 2;
+    let tractorCenterY = this.tractor.y + this.FRAME_HEIGHT / 2;
 
     // Aim the camera so the tractor's center is at the screen's center
     let targetCameraX = tractorCenterX - this.canvasWidth / 2;
@@ -620,11 +602,12 @@ export default class simulationEngine extends EventTarget {
       // Track simulation time
       let simulationTimeElapsed = 0;
       const simulationDuration = duration;
+      const angle = this.tractor.angle;
 
       let lastFrameTime = Date.now();
 
-      const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-      const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
+      const moveX = this.SPEED * Math.cos((angle * Math.PI) / 180);
+      const moveY = this.SPEED * Math.sin((angle * Math.PI) / 180);
 
       const animate = () => {
         const now = Date.now();
@@ -635,10 +618,13 @@ export default class simulationEngine extends EventTarget {
         const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
         simulationTimeElapsed += simDelta;
 
-        if (simulationTimeElapsed < simulationDuration && this.isMoving) {
+        if (
+          simulationTimeElapsed < simulationDuration &&
+          this.tractor.isMoving
+        ) {
           // 1. Move based on simulation delta
-          this.tractorWorldX += moveX * simDelta;
-          this.tractorWorldY += moveY * simDelta;
+          this.tractor.x += moveX * simDelta;
+          this.tractor.y += moveY * simDelta;
 
           // 2. CHECK COLLISIONS NOW (before Time/Growth happens)
           this.handleCollisions();
@@ -671,21 +657,22 @@ export default class simulationEngine extends EventTarget {
       const turn = () => {
         const now = Date.now();
         const realDeltaMs = now - lastFrameTime;
+        const angle = this.tractor.angle;
         lastFrameTime = now;
 
         // Convert real time to simulation time
         const simDelta = (realDeltaMs / 1000) * this.speedMultiplier;
 
-        if (this.angle != this.goalAngle) {
-          var difference = this.goalAngle - this.angle;
+        if (angle != this.goalAngle) {
+          var difference = this.goalAngle - angle;
           var absDiff = Math.abs(difference);
           var alpha = Math.min(this.turnSpeed * simDelta, absDiff) / absDiff;
-          this.angle = this.angle * (1 - alpha) + this.goalAngle * alpha;
+          this.tractor.angle = angle * (1 - alpha) + this.goalAngle * alpha;
 
-          const moveX = this.SPEED * Math.cos((this.angle * Math.PI) / 180);
-          const moveY = this.SPEED * Math.sin((this.angle * Math.PI) / 180);
-          this.tractorWorldX += moveX * simDelta;
-          this.tractorWorldY += moveY * simDelta;
+          const moveX = this.SPEED * Math.cos((angle * Math.PI) / 180);
+          const moveY = this.SPEED * Math.sin((angle * Math.PI) / 180);
+          this.tractor.x += moveX * simDelta;
+          this.tractor.y += moveY * simDelta;
 
           // Check collisions while turning
           this.handleCollisions();
@@ -702,32 +689,24 @@ export default class simulationEngine extends EventTarget {
   }
 
   resetPosition() {
-    this.tractorWorldX = (this.columns * this.TILE_WIDTH) / 2;
-    this.tractorWorldY = (this.rows * this.TILE_HEIGHT) / 2;
-    this.angle = 0;
+    const x = (this.columns * this.TILE_WIDTH) / 2;
+    const y = (this.rows * this.TILE_HEIGHT) / 2;
+    this.tractor.setPosition(x, y);
+    this.tractor.angle = 0;
 
     this.updateCamera();
 
     this.goalAngle = 0;
-    this.isHarvestingOn = false;
-    this.isSeedingOn = false;
-    this.isTractorOn = false;
+    this.tractor.toggleHarvesting(false);
+    this.tractor.toggleSeeding(true);
     this.yieldScore = 0;
     this.nightFadeProgress = -1.0;
     this.resetField();
     this.sendOutNewTimeStepDataToDraw();
   }
 
-  stopMovement() {
-    this.isMoving = false;
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = -1;
-    }
-  }
-
   resetEverything() {
-    this.stopMovement();
+    this.tractor.stopMovement();
     this.resetPosition();
     this.waitingweeksCount = 0;
     this.currentWeek = 0;
@@ -740,7 +719,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   startMoving() {
-    this.isMoving = true;
+    this.tractor.startMoving();
   }
 
   // updates date at the top
