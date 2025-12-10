@@ -135,7 +135,7 @@ export default class simulationEngine extends EventTarget {
 
   setSpeedMultiplier(multiplier) {
     this.speedMultiplier = multiplier;
-    this.tractor.speedMultiplier = multiplier;
+    this.tractor.setSpeedMultiplyer(multiplier);
   }
 
   calculateGDDForWeek(weekIndex, daysPerWeek = 7) {
@@ -330,7 +330,7 @@ export default class simulationEngine extends EventTarget {
 
     for (let i = 0; i < totalDays; i++) {
       // Check if stop was pressed
-      if (!this.tractor.isMoving) {
+      if (!this.tractor.getTractorMovementState()) {
         break;
       }
 
@@ -354,15 +354,16 @@ export default class simulationEngine extends EventTarget {
   }
 
   CheckIfPlantInFront(type) {
-    const angle = this.tractor.angle;
+    const angle = this.tractor.getTractorAngle();
+    const tractorPosition = this.tractor.getTractorPosition();
 
     const topLeft = { x: -this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const topRight = { x: this.FRAME_WIDTH / 2, y: -this.FRAME_HEIGHT / 2 };
     const bottomRight = { x: this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const bottomLeft = { x: -this.FRAME_WIDTH / 2, y: this.FRAME_HEIGHT / 2 };
     const center = {
-      x: this.tractor.x + this.FRAME_WIDTH / 2,
-      y: this.tractor.y + this.FRAME_HEIGHT / 2,
+      x: tractorPosition.x + this.FRAME_WIDTH / 2,
+      y: tractorPosition.y + this.FRAME_HEIGHT / 2,
     };
 
     const corners = [
@@ -512,7 +513,7 @@ export default class simulationEngine extends EventTarget {
       let field = this.stateManager.getState("field");
       let crop = field[y][x];
 
-      if (this.tractor.isHarvestingOn) {
+      if (this.tractor.getTractorHarvestingState()) {
         // Use helper methods
         if (crop.isMature()) {
           crop.reset(); // Sets stage to 0
@@ -520,7 +521,7 @@ export default class simulationEngine extends EventTarget {
         } else if (crop.isGrowing()) {
           crop.reset(); // Destroy crop if harvesting while growing
         }
-      } else if (this.tractor.isSeedingOn) {
+      } else if (this.tractor.getTractorSeedingState()) {
         if (crop.isUnplanted()) {
           crop.plant(); // Sets stage to 1
           this.yieldScore++;
@@ -568,8 +569,9 @@ export default class simulationEngine extends EventTarget {
   // Updates camera position based on tractor position
   updateCamera() {
     // Calculate the tractor's center point
-    let tractorCenterX = this.tractor.x + this.FRAME_WIDTH / 2;
-    let tractorCenterY = this.tractor.y + this.FRAME_HEIGHT / 2;
+    const tractorPosition = this.tractor.getTractorPosition();
+    let tractorCenterX = tractorPosition.x + this.FRAME_WIDTH / 2;
+    let tractorCenterY = tractorPosition.y + this.FRAME_HEIGHT / 2;
 
     // Aim the camera so the tractor's center is at the screen's center
     let targetCameraX = tractorCenterX - this.canvasWidth / 2;
@@ -602,7 +604,7 @@ export default class simulationEngine extends EventTarget {
       // Track simulation time
       let simulationTimeElapsed = 0;
       const simulationDuration = duration;
-      const angle = this.tractor.angle;
+      const angle = this.tractor.getTractorAngle();
 
       let lastFrameTime = Date.now();
 
@@ -620,11 +622,10 @@ export default class simulationEngine extends EventTarget {
 
         if (
           simulationTimeElapsed < simulationDuration &&
-          this.tractor.isMoving
+          this.tractor.getTractorMovementState()
         ) {
           // 1. Move based on simulation delta
-          this.tractor.x += moveX * simDelta;
-          this.tractor.y += moveY * simDelta;
+          this.tractor.addToPosition(moveX * simDelta, moveY * simDelta);
 
           // 2. CHECK COLLISIONS NOW (before Time/Growth happens)
           this.handleCollisions();
@@ -657,7 +658,7 @@ export default class simulationEngine extends EventTarget {
       const turn = () => {
         const now = Date.now();
         const realDeltaMs = now - lastFrameTime;
-        const angle = this.tractor.angle;
+        const angle = this.tractor.getTractorAngle();
         lastFrameTime = now;
 
         // Convert real time to simulation time
@@ -667,12 +668,13 @@ export default class simulationEngine extends EventTarget {
           var difference = this.goalAngle - angle;
           var absDiff = Math.abs(difference);
           var alpha = Math.min(this.turnSpeed * simDelta, absDiff) / absDiff;
-          this.tractor.angle = angle * (1 - alpha) + this.goalAngle * alpha;
+          this.tractor.setTractorAngle(
+            angle * (1 - alpha) + this.goalAngle * alpha,
+          );
 
           const moveX = this.SPEED * Math.cos((angle * Math.PI) / 180);
           const moveY = this.SPEED * Math.sin((angle * Math.PI) / 180);
-          this.tractor.x += moveX * simDelta;
-          this.tractor.y += moveY * simDelta;
+          this.tractor.addToPosition(moveX * simDelta, moveY * simDelta);
 
           // Check collisions while turning
           this.handleCollisions();
@@ -692,7 +694,7 @@ export default class simulationEngine extends EventTarget {
     const x = (this.columns * this.TILE_WIDTH) / 2;
     const y = (this.rows * this.TILE_HEIGHT) / 2;
     this.tractor.setPosition(x, y);
-    this.tractor.angle = 0;
+    this.tractor.setTractorAngle(0);
 
     this.updateCamera();
 
@@ -706,7 +708,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   resetEverything() {
-    this.tractor.stopMovement();
+    this.stopMovement();
     this.resetPosition();
     this.waitingweeksCount = 0;
     this.currentWeek = 0;
@@ -716,6 +718,14 @@ export default class simulationEngine extends EventTarget {
 
     document.getElementById("gddText").textContent = `GDD: 0.00`;
     this.sendOutNewTimeStepDataToDraw();
+  }
+
+  stopMovement() {
+    this.tractor.stopMovement();
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = -1;
+    }
   }
 
   startMoving() {

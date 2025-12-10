@@ -20,13 +20,38 @@ export default class Tractor {
     // this.MaxCapacity = 1000;
   }
 
+  addToPosition(dX, dY) {
+    this.x += dX;
+    this.y += dY;
+  }
+
+  getTractorPosition() {
+    return { x: this.x, y: this.y };
+  }
+
   setPosition(x, y) {
     this.x = x;
     this.y = y;
   }
 
-  GetTractorPosition(tractor) {
-    return { x: tractor.x, y: tractor.y };
+  getTractorAngle() {
+    return this.angle;
+  }
+
+  setTractorAngle(angle) {
+    this.angle = angle;
+  }
+
+  setSpeedMultiplyer(mult) {
+    this.speedMultiplier = mult;
+  }
+
+  getTractorMovementState() {
+    return this.isMoving;
+  }
+
+  setTractorMovementState(isMoving) {
+    this.isMoving = isMoving;
   }
 
   startMoving() {
@@ -35,16 +60,21 @@ export default class Tractor {
 
   stopMovement() {
     this.isMoving = false;
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = -1;
-    }
+  }
+
+  getTractorHarvestingState() {
+    return this.isHarvestingOn;
   }
 
   toggleHarvesting(isOn) {
     this.isHarvestingOn = isOn;
     if (isOn) this.isSeedingOn = false;
   }
+
+  getTractorSeedingState() {
+    return this.isSeedingOn;
+  }
+
   toggleSeeding(isOn) {
     this.isSeedingOn = isOn;
     if (isOn) this.isHarvestingOn = false;
