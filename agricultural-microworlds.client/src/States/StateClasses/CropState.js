@@ -1,3 +1,5 @@
+import State from "../State";
+
 export const CROP_STAGES = {
   UNPLANTED: 0,
   SEEDED: 1,
@@ -5,8 +7,9 @@ export const CROP_STAGES = {
 };
 
 // State of crop at a snapshot
-export class CropState {
+export class CropState extends State {
   constructor() {
+    super();
     // Default to MATURE
     this.stage = CROP_STAGES.MATURE;
     this.currentGDD = 0.0;
