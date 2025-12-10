@@ -121,36 +121,6 @@ export default class drawCanvas {
     }
   }
 
-  drawTractor() {
-    const screenX =
-      this.simulationState.tractorWorldX - this.simulationState.cameraX;
-    const screenY =
-      this.simulationState.tractorWorldY - this.simulationState.cameraY;
-
-    const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
-
-    // tractorsprite
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      this.tractorSprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.restore();
-
-    document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
-      `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
-      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-      `Angle: ${normalizedAngle}°<br>`;
-  }
-
   DrawNight() {
     if (this.isWaiting) {
       this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;

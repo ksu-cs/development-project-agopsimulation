@@ -7,10 +7,12 @@ export default class TractorRenderer {
   }
 
   draw(tractor, cameraX, cameraY) {
-    const screenX = tractor.x - cameraX;
-    const screenY = tractor.y - cameraY;
+    const tractorPosition = tractor.getTractorPosition();
+    const tractorAngle = tractor.getTractorAngle();
+    const screenX = tractorPosition.x - cameraX;
+    const screenY = tractorPosition.y - cameraY;
 
-    const normalizedAngle = ((tractor.angle % 360) + 360) % 360;
+    const normalizedAngle = ((tractorAngle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
     // tractorsprite
@@ -31,7 +33,7 @@ export default class TractorRenderer {
     this.ctx.restore();
 
     document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(tractor.x)}, ${Math.round(tractor.y)})<br>` +
+      `World Position: (${Math.round(tractorPosition.x)}, ${Math.round(tractorPosition.y)})<br>` +
       `Camera Position: (${Math.round(cameraX)}, ${Math.round(cameraY)})<br>` +
       `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
       `Angle: ${normalizedAngle}°<br>`;
