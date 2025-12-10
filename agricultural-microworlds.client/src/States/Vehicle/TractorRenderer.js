@@ -36,3 +36,5 @@ export default class TractorRenderer {
     this.ctx.restore();
   }
 }
+//Performance tip: If rendering many tractors, consider precomputing the rotated image in an offscreen canvas
+//(optional, only if you notice lag).
