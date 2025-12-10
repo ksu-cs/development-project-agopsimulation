@@ -1,14 +1,16 @@
 import { Component, Fragment } from "react";
+import styles from "../../Styles/index.module.css";
+import simulationEngine from "../../alterSimulationClasses/simulationEngine";
+import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import Simulation from "../../Simulation/Simulation";
 import { javascriptGenerator } from "blockly/javascript";
-import styles from "../../Styles/index.module.css"; // Ensure you have your styles imported
 
 class SimulationControlsContainer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
-    this.alterCanvasRef = null;
+    this.simulationEngine = null;
 
     // These binds failed because the functions didn't exist in your file
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
@@ -18,6 +20,18 @@ class SimulationControlsContainer extends Component {
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
+    const canvasWidth = 500;
+    const canvasHeight = 500;
+    this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
+    this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
+
+    this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
+      this.drawCanvas.handleTimeStep(e),
+    );
+    this.simulationEngine.updateCamera();
+    this.simulationEngine.timeStepEvent();
+    this.drawCanvas.setSpriteOnLoadMethods();
+    await this.simulationEngine.loadStations();
 
     // Instantiate new Simulation
     this.alterCanvasRef = new Simulation(canvas);
@@ -35,6 +49,8 @@ class SimulationControlsContainer extends Component {
   }
 
   async runButtonOnClick() {
+    await this.simulationEngine.fetchData();
+
     const { workspace } = this.props;
     if (!workspace) return;
 
@@ -44,8 +60,8 @@ class SimulationControlsContainer extends Component {
 
     // Call Simulation Methods
     await this.alterCanvasRef.fetchData();
-    this.alterCanvasRef.resetEverything();
-    this.alterCanvasRef.startMoving();
+    this.simulationEngine.resetEverything();
+    this.simulationEngine.startMoving();
 
     // Generate Code
     const allBlocks = workspace.getAllBlocks(false);
@@ -61,6 +77,7 @@ class SimulationControlsContainer extends Component {
 
     if (blockChunks.length <= 0) {
       alert("You must use an 'On Begin' block to start the program!");
+      this.simulationEngine.stopMovement();
       this.alterCanvasRef.stopMovement();
       if (runButton) runButton.disabled = false;
       return;
@@ -97,21 +114,29 @@ class SimulationControlsContainer extends Component {
             "simulationMethods",
             `return (async () => { ${finalCode} })();`,
           );
-          await run(this.alterCanvasRef);
+          await run(this.simulationEngine);
         } catch (e) {
           console.error("ERROR executing blockly code:", e);
         }
       }
     }
 
+    this.simulationEngine.stopMovement();
     this.alterCanvasRef.stopMovement();
     if (runButton) runButton.disabled = false;
   }
 
   // --- RESTORED MISSING METHOD ---
   stopButtonOnClick() {
-    if (this.alterCanvasRef) {
-      this.alterCanvasRef.stopMovement();
+    this.simulationEngine.stopMovement();
+    document.getElementById("runButton").disabled = false;
+  }
+
+  onSpeedChange = (e) => {
+    const speed = parseInt(e.target.value);
+    document.getElementById("speedDisplay").textContent = `${speed}x`;
+    if (this.simulationEngine) {
+      this.simulationEngine.setSpeedMultiplier(speed);
     }
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = false;
