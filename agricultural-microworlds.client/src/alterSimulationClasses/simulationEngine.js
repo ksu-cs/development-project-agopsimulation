@@ -1,9 +1,7 @@
 import { StateManager } from "../States/StateManager";
 import { CropState, CROP_STAGES } from "../States/Crops/CropState";
 import timeStepData from "./timeStepData";
-
 import Tractor from "../States/Vehicle/Tractor";
-//import MovingState from "./vehicleStates/MovingState.js";
 
 export default class simulationEngine extends EventTarget {
   constructor(canvasWidth, canvasHeight) {
@@ -383,6 +381,7 @@ export default class simulationEngine extends EventTarget {
     );
   }
 
+  //this to be rewritten soon
   growCrops(dailyGDD) {
     const oldField = this.stateManager.getState("field");
 

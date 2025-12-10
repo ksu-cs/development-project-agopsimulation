@@ -39,3 +39,5 @@ export default class TractorRenderer {
       `Angle: ${normalizedAngle}°<br>`;
   }
 }
+//Performance tip: If rendering many tractors, consider precomputing the rotated image in an offscreen canvas
+//(optional, only if you notice lag).
