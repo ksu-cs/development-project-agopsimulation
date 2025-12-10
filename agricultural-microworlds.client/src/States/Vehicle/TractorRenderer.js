@@ -18,7 +18,7 @@ export default class TractorRenderer {
     // Move to tractor center before rotating
     this.ctx.translate(
       screenX + this.frameWidth / 2,
-      screenY + this.frameHeight / 2
+      screenY + this.frameHeight / 2,
     );
 
     // Rotate canvas
@@ -30,7 +30,7 @@ export default class TractorRenderer {
       -this.frameWidth / 2,
       -this.frameHeight / 2,
       this.frameWidth,
-      this.frameHeight
+      this.frameHeight,
     );
 
     this.ctx.restore();

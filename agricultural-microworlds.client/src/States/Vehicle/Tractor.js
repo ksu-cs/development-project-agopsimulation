@@ -3,6 +3,22 @@ export default class Tractor {
     this.Sprite = new Image();
     this.Sprite.src = "./src/assets/combine-harvester.png";
     this.canvas = canvas;
+    this.x = 250;
+    this.y = 250;
+    this.angle = 0;
+    this.goalAngle = 0;
+    this.turnSpeed = 90;
+    this.weeksToWait = 0;
+    this.nightFadeProgress = -1.0;
+    this.isMoving = false;
+    this.isHarvestingOn = false;
+    this.isSeedingOn = false;
+    this.animationId = -1;
+    this.yieldScore = 0;
+  constructor(canvas) {
+    this.Sprite = new Image();
+    this.Sprite.src = "./src/assets/combine-harvester.png";
+    this.canvas = canvas;
     this.x = 250; 
     this.y = 250; 
     this.angle = 0; 
@@ -45,6 +61,29 @@ createTractor() {
     this.handleCollisions();
   }
 
+  startMoving() {
+    this.isMoving = true;
+  }
+
+  stopMovement() {
+    this.isMoving = false;
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = -1;
+    }
+  }
+
+  toggleHarvesting(isOn) {
+    this.isHarvestingOn = isOn;
+    if (isOn) this.isSeedingOn = false;
+    this.isSeedingOn = false;
+  }
+  toggleSeeding(isOn) {
+    this.isSeedingOn = isOn;
+    if (isOn) this.isSeedingOn = true;
+    this.isHarvestingOn = false;
+  }
+
     startMoving() {
     this.isMoving = true;
   }
@@ -71,4 +110,5 @@ createTractor() {
   turn(degrees) {
     this.angle = (this.angle + degrees) % 360;
   }
+}
 }
