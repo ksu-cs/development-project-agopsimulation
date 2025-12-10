@@ -13,6 +13,19 @@ export class CropState {
     this.requiredGDD = 1000.0; // The GDD needed to reach maturity
   }
 
+  updateGrowth(deltaGDD) {
+    if (this.stage !== CROP_STAGES.SEEDED) return;
+
+    // Add the delta
+    this.currentGDD += deltaGDD;
+
+    // Cap at required GDD
+    if (this.currentGDD >= this.requiredGDD) {
+      this.currentGDD = this.requiredGDD;
+      this.stage = CROP_STAGES.MATURE;
+    }
+  }
+
   isGrowing() {
     return this.stage === CROP_STAGES.SEEDED;
   }
