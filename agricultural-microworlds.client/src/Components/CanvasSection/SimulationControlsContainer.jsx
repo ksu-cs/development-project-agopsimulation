@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
-import simulationEngine from "../../alterSimulationClasses/simulationEngine"; 
-import drawCanvas from "../../alterSimulationClasses/drawCanvas"; 
+import simulationEngine from "../../alterSimulationClasses/simulationEngine";
+import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 
 class SimulationControlsContainer extends Component {
@@ -10,7 +10,7 @@ class SimulationControlsContainer extends Component {
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
     this.simulationEngine = null;
-    this.drawCanvas = null; 
+    this.drawCanvas = null;
 
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
@@ -26,8 +26,8 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
-    
-    this.simulationEngine.timeStepEvent(); 
+
+    this.simulationEngine.timeStepEvent();
     this.drawCanvas.setSpriteOnLoadMethods();
 
     await this.simulationEngine.loadStations();
@@ -53,11 +53,11 @@ class SimulationControlsContainer extends Component {
     if (runButton) runButton.disabled = true;
 
     this.simulationEngine.resetEverything();
-    
+
     // FIX: Apply the speed slider value immediately on Run
     const speedSlider = document.getElementById("speedSlider");
     if (speedSlider) {
-        this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
+      this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
     }
 
     this.simulationEngine.startMoving();
@@ -80,7 +80,9 @@ class SimulationControlsContainer extends Component {
       return;
     }
 
-    const variablesCode = Object.values(javascriptGenerator.definitions_).join("\n");
+    const variablesCode = Object.values(javascriptGenerator.definitions_).join(
+      "\n",
+    );
     let formattedCode = "";
     let chunkIdx = 0;
 
@@ -140,20 +142,33 @@ class SimulationControlsContainer extends Component {
     return (
       <Fragment>
         <div className={styles.controlsContainer}>
-          <div className={styles.controlGroup} style={{width: "100%", marginBottom: "10px"}}>
-            <div style={{display: "flex", justifyContent: "space-between", marginBottom: "5px"}}>
-                <label htmlFor="speedSlider" style={{fontWeight: "bold"}}>Sim Speed:</label>
-                <span id="speedLabel" style={{fontWeight: "bold"}}>1x</span>
+          <div
+            className={styles.controlGroup}
+            style={{ width: "100%", marginBottom: "10px" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <label htmlFor="speedSlider" style={{ fontWeight: "bold" }}>
+                Sim Speed:
+              </label>
+              <span id="speedLabel" style={{ fontWeight: "bold" }}>
+                1x
+              </span>
             </div>
-            <input 
-                type="range" 
-                id="speedSlider" 
-                min="1" 
-                max="5" 
-                defaultValue="1" 
-                step="1"
-                onChange={this.onSpeedChange}
-                style={{width: "100%"}}
+            <input
+              type="range"
+              id="speedSlider"
+              min="1"
+              max="5"
+              defaultValue="1"
+              step="1"
+              onChange={this.onSpeedChange}
+              style={{ width: "100%" }}
             />
           </div>
 

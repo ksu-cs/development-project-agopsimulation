@@ -9,7 +9,6 @@ import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 
 //const Tractor1 = new Tractor();
 
-
 /*
 simulationEngine.js
 
@@ -27,11 +26,11 @@ export default class simulationEngine extends EventTarget {
 
     // Constants
     this.TILE_SIZE = 8;
-    this.ROWS = 300; 
+    this.ROWS = 300;
     this.COLS = 300;
-    this.TILE_WIDTH = this.TILE_SIZE; 
+    this.TILE_WIDTH = this.TILE_SIZE;
     this.TILE_HEIGHT = this.TILE_SIZE;
-    this.FRAME_WIDTH = 64; 
+    this.FRAME_WIDTH = 64;
     this.FRAME_HEIGHT = 64;
 
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
@@ -55,12 +54,12 @@ export default class simulationEngine extends EventTarget {
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
-    this.activeTask = null; 
+    this.activeTask = null;
   }
 
   // Helper: Get manager instance
   getManager(type) {
-    return this.managers.find(m => m instanceof type);
+    return this.managers.find((m) => m instanceof type);
   }
 
   // Sets up initial state for grid
@@ -69,10 +68,10 @@ export default class simulationEngine extends EventTarget {
     const weatherState = new WeatherState();
 
     if (this.managers) {
-        const weatherMgr = this.managers.find(m => m instanceof WeatherManager);
-        if (weatherMgr && typeof weatherMgr.applyCacheToState === 'function') {
-            weatherMgr.applyCacheToState(weatherState);
-        }
+      const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
+      if (weatherMgr && typeof weatherMgr.applyCacheToState === "function") {
+        weatherMgr.applyCacheToState(weatherState);
+      }
     }
     this.stateManager.initState("weather", weatherState);
 
@@ -84,7 +83,7 @@ export default class simulationEngine extends EventTarget {
 
     //3. Setup field
     const field = Array.from({ length: this.ROWS }, () =>
-      Array.from({ length: this.COLS }, () => new CropState())
+      Array.from({ length: this.COLS }, () => new CropState()),
     );
     this.stateManager.initState("field", field);
   }
@@ -100,7 +99,7 @@ export default class simulationEngine extends EventTarget {
 
   stopMovement() {
     this.isRunning = false;
-    this.simulationSessionId++; 
+    this.simulationSessionId++;
     this.activeTask = null;
     this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
@@ -121,7 +120,7 @@ export default class simulationEngine extends EventTarget {
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
     const speedMult = weather ? weather.speedMultiplier : 1;
-    const safeRealDelta = Math.min(realDeltaTime, 0.1); 
+    const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult;
 
     // 2. Clone States
@@ -129,7 +128,9 @@ export default class simulationEngine extends EventTarget {
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
       } else if (key === "field") {
-        nextStates[key] = oldStates[key].map((row) => row.map((c) => c.clone()));
+        nextStates[key] = oldStates[key].map((row) =>
+          row.map((c) => c.clone()),
+        );
       }
     }
 
@@ -140,25 +141,25 @@ export default class simulationEngine extends EventTarget {
 
     // 4. Handle Active Tasks
     if (this.activeTask) {
-        if (this.activeTask.sessionId !== this.simulationSessionId) {
-            this.activeTask = null;
-        } else {
-            if (this.activeTask.type === 'TIMER') {
-                this.activeTask.timeLeft -= simDeltaTime; 
-                if (this.activeTask.timeLeft <= 0) {
-                    if (nextStates.tractor) nextStates.tractor.isMoving = false;
-                    
-                    this.resolveActiveTask();
-                }
-            } else if (this.activeTask.type === 'TURN') {
-                const t = nextStates.tractor;
-                const diff = Math.abs(t.goalAngle - t.angle);
-                if (diff < 0.5) { 
-                    t.angle = t.goalAngle; 
-                    this.resolveActiveTask();
-                }
-            }
+      if (this.activeTask.sessionId !== this.simulationSessionId) {
+        this.activeTask = null;
+      } else {
+        if (this.activeTask.type === "TIMER") {
+          this.activeTask.timeLeft -= simDeltaTime;
+          if (this.activeTask.timeLeft <= 0) {
+            if (nextStates.tractor) nextStates.tractor.isMoving = false;
+
+            this.resolveActiveTask();
+          }
+        } else if (this.activeTask.type === "TURN") {
+          const t = nextStates.tractor;
+          const diff = Math.abs(t.goalAngle - t.angle);
+          if (diff < 0.5) {
+            t.angle = t.goalAngle;
+            this.resolveActiveTask();
+          }
         }
+      }
     }
 
     // 5. Commit States
@@ -167,25 +168,25 @@ export default class simulationEngine extends EventTarget {
     }
 
     // 6. Update Visuals
-    this.timeStepEvent(); 
+    this.timeStepEvent();
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
   }
 
   resolveActiveTask() {
-      if (this.activeTask && this.activeTask.resolve) {
-          const resolve = this.activeTask.resolve;
-          const type = this.activeTask.type;
-          this.activeTask = null; 
+    if (this.activeTask && this.activeTask.resolve) {
+      const resolve = this.activeTask.resolve;
+      const type = this.activeTask.type;
+      this.activeTask = null;
 
-          if (type === 'TIMER') {
-             const t = this.stateManager.getState("tractor");
-             if (t) t.isMoving = false;
-             this.nightFadeProgress = -1.0; 
-          }
-
-          resolve();
+      if (type === "TIMER") {
+        const t = this.stateManager.getState("tractor");
+        if (t) t.isMoving = false;
+        this.nightFadeProgress = -1.0;
       }
+
+      resolve();
+    }
   }
 
   // Gives snapshot of required data to visualization
@@ -193,15 +194,15 @@ export default class simulationEngine extends EventTarget {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
     const weather = this.stateManager.getState("weather");
-    
-    if(!tractor || !field || !weather) return;
+
+    if (!tractor || !field || !weather) return;
 
     // Handle case where startDate is null (initial load before Fetch)
     let dateString = "Not Started";
     if (weather.startDate) {
-        const dateObj = new Date(weather.startDate);
-        dateObj.setDate(weather.startDate.getDate() + weather.currentDayIndex);
-        dateString = dateObj.toLocaleDateString();
+      const dateObj = new Date(weather.startDate);
+      dateObj.setDate(weather.startDate.getDate() + weather.currentDayIndex);
+      dateString = dateObj.toLocaleDateString();
     }
 
     // Calculate GDD String
@@ -213,14 +214,14 @@ export default class simulationEngine extends EventTarget {
         detail: new timeStepData(
           tractor.angle,
           tractor.yieldScore,
-          tractor.x, 
-          tractor.y, 
+          tractor.x,
+          tractor.y,
           this.nightFadeProgress,
           field,
           dateString,
-          gddString
+          gddString,
         ),
-      })
+      }),
     );
   }
 
@@ -231,12 +232,12 @@ export default class simulationEngine extends EventTarget {
     const tractor = this.stateManager.getState("tractor");
     if (tractor) tractor.isMoving = true;
     return new Promise((resolve) => {
-        this.activeTask = {
-            type: 'TIMER',
-            timeLeft: Number(durationInSeconds), 
-            resolve: resolve,
-            sessionId: mySessionId
-        };
+      this.activeTask = {
+        type: "TIMER",
+        timeLeft: Number(durationInSeconds),
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
     });
   }
 
@@ -244,55 +245,55 @@ export default class simulationEngine extends EventTarget {
     const mySessionId = this.simulationSessionId;
     const tractor = this.stateManager.getState("tractor");
     if (tractor) {
-        tractor.goalAngle += Number(angle);
+      tractor.goalAngle += Number(angle);
     }
     return new Promise((resolve) => {
-        this.activeTask = {
-            type: 'TURN',
-            resolve: resolve,
-            sessionId: mySessionId
-        };
+      this.activeTask = {
+        type: "TURN",
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
     });
   }
 
   async waitXWeeks(weeks) {
-      const mySessionId = this.simulationSessionId;
-      const durationInSeconds = Number(weeks) * 7.0; 
-      
-      // FIX: Stop the tractor so it doesn't drive while waiting
-      const tractor = this.stateManager.getState("tractor");
-      if (tractor) tractor.isMoving = false;
+    const mySessionId = this.simulationSessionId;
+    const durationInSeconds = Number(weeks) * 7.0;
 
-      this.nightFadeProgress = 0.5; 
-      return new Promise((resolve) => {
-          this.activeTask = {
-              type: 'TIMER',
-              timeLeft: durationInSeconds,
-              resolve: resolve,
-              sessionId: mySessionId
-          };
-      });
+    // FIX: Stop the tractor so it doesn't drive while waiting
+    const tractor = this.stateManager.getState("tractor");
+    if (tractor) tractor.isMoving = false;
+
+    this.nightFadeProgress = 0.5;
+    return new Promise((resolve) => {
+      this.activeTask = {
+        type: "TIMER",
+        timeLeft: durationInSeconds,
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
+    });
   }
 
   toggleHarvesting(isOn) {
     const tractor = this.stateManager.getState("tractor");
     if (tractor) tractor.isHarvestingOn = isOn;
   }
-  
+
   toggleSeeding(isOn) {
-      const tractor = this.stateManager.getState("tractor");
-      if(tractor) tractor.isSeedingOn = isOn;
+    const tractor = this.stateManager.getState("tractor");
+    if (tractor) tractor.isSeedingOn = isOn;
   }
 
   setSpeedMultiplier(speed) {
-      const weather = this.stateManager.getState("weather");
-      if(weather) weather.speedMultiplier = speed;
+    const weather = this.stateManager.getState("weather");
+    if (weather) weather.speedMultiplier = speed;
   }
 
   CheckIfPlantInFront(type) {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
-    if(!tractor || !field) return false;
+    if (!tractor || !field) return false;
 
     const centerX = tractor.x + this.FRAME_WIDTH / 2;
     const centerY = tractor.y + this.FRAME_HEIGHT / 2;
@@ -306,12 +307,12 @@ export default class simulationEngine extends EventTarget {
     const topRightY = -this.FRAME_HEIGHT / 2;
 
     const p1 = {
-        x: centerX + (topLeftX * cos - topLeftY * sin),
-        y: centerY + (topLeftX * sin + topLeftY * cos)
+      x: centerX + (topLeftX * cos - topLeftY * sin),
+      y: centerY + (topLeftX * sin + topLeftY * cos),
     };
     const p2 = {
-        x: centerX + (topRightX * cos - topRightY * sin),
-        y: centerY + (topRightX * sin + topRightY * cos)
+      x: centerX + (topRightX * cos - topRightY * sin),
+      y: centerY + (topRightX * sin + topRightY * cos),
     };
 
     return this.detectWhatTilesAreHit(p1.x, p1.y, p2.x, p2.y, type, field);
@@ -323,41 +324,46 @@ export default class simulationEngine extends EventTarget {
     const tileX = Math.floor(midX / this.TILE_WIDTH);
     const tileY = Math.floor(midY / this.TILE_HEIGHT);
 
-    if(tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
-        const crop = field[tileY][tileX];
-        return crop.stage == checkTiles;
+    if (tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
+      const crop = field[tileY][tileX];
+      return crop.stage == checkTiles;
     }
     return false;
   }
 
   async loadStations() {
     try {
-        const response = await fetch("https://mesonet.k-state.edu/rest/stationnames/");
-        const text = await response.text();
-        const lines = text.split("\n").slice(1);
-        const stationSelect = document.getElementById("station");
-        if (!stationSelect) return;
-        stationSelect.innerHTML = "";
-        lines.forEach((line) => {
-          const cols = line.split(",");
-          const NAME = cols[0];
-          const ABBR = cols[0];
-          if (NAME && ABBR) {
-            const option = document.createElement("option");
-            option.value = ABBR;
-            option.textContent = NAME;
-            if (NAME.includes("Flickner")) option.selected = true;
-            stationSelect.appendChild(option);
-          }
-        });
-      } catch (e) { console.error("Error loading stations:", e); }
+      const response = await fetch(
+        "https://mesonet.k-state.edu/rest/stationnames/",
+      );
+      const text = await response.text();
+      const lines = text.split("\n").slice(1);
+      const stationSelect = document.getElementById("station");
+      if (!stationSelect) return;
+      stationSelect.innerHTML = "";
+      lines.forEach((line) => {
+        const cols = line.split(",");
+        const NAME = cols[0];
+        const ABBR = cols[0];
+        if (NAME && ABBR) {
+          const option = document.createElement("option");
+          option.value = ABBR;
+          option.textContent = NAME;
+          if (NAME.includes("Flickner")) option.selected = true;
+          stationSelect.appendChild(option);
+        }
+      });
+    } catch (e) {
+      console.error("Error loading stations:", e);
+    }
   }
 
   async fetchData() {
     const station = document.getElementById("station")?.value || "Flickner";
     const start = document.getElementById("start")?.value || "2021-01-01";
-    const weatherMgr = this.managers.find(m => m instanceof WeatherManager);
-    if(weatherMgr) await weatherMgr.loadWeatherData(this.stateManager, station, start);
+    const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
+    if (weatherMgr)
+      await weatherMgr.loadWeatherData(this.stateManager, station, start);
   }
 
   resetEverything() {
@@ -366,7 +372,7 @@ export default class simulationEngine extends EventTarget {
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
-    
+
     // Explicitly update display on reset so Date resets instantly on screen
   }
 }

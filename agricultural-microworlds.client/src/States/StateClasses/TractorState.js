@@ -4,7 +4,7 @@ export default class TractorState extends State {
   constructor() {
     super();
 
-    this.basespeed = 20; 
+    this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
 
     this.x = 0;
@@ -32,7 +32,7 @@ export default class TractorState extends State {
 
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
-    
+
     // FIXED: This was missing, causing seeding to stop after 1 frame
     newState.isSeedingOn = this.isSeedingOn;
 

@@ -45,13 +45,13 @@ export default class WeatherManager extends SimManager {
 
     weatherState.csvLines = this.weatherDataCache.csvLines;
     weatherState.startDate = new Date(this.weatherDataCache.startDate);
-    
+
     weatherState.currentDayIndex = 0;
     weatherState.cumulativeGDD = 0;
     weatherState.gddToApplyThisFrame = 0;
-    
+
     weatherState.timeAccumulator = 0.0;
-    
+
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
   }
 
@@ -67,7 +67,7 @@ export default class WeatherManager extends SimManager {
     newWeather.timeAccumulator += deltaTime;
 
     if (newWeather.timeAccumulator >= 1.0) {
-      newWeather.timeAccumulator -= 1.0; 
+      newWeather.timeAccumulator -= 1.0;
       this.advanceDay(oldWeather, newWeather);
     }
   }

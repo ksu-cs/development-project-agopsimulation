@@ -18,29 +18,29 @@ export default class drawCanvas {
     this.cameraX = 0;
     this.cameraY = 0;
 
-    // Sprite setup 
+    // Sprite setup
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
     // Game asset constants
-    this.FRAME_WIDTH = 64; 
-    this.FRAME_HEIGHT = 64; 
-    this.TILE_BASE_SIZE = 64; 
-    this.FIELD_SCALE = 8; 
+    this.FRAME_WIDTH = 64;
+    this.FRAME_HEIGHT = 64;
+    this.TILE_BASE_SIZE = 64;
+    this.FIELD_SCALE = 8;
 
     // Field variables
-    this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE; 
-    this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE; 
+    this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE;
+    this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE;
 
-    this.WORLD_WIDTH_IN_SCREENS = 5; 
-    this.WORLD_HEIGHT_IN_SCREENS = 5; 
-    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2; 
-    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2; 
+    this.WORLD_WIDTH_IN_SCREENS = 5;
+    this.WORLD_HEIGHT_IN_SCREENS = 5;
+    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2;
+    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2;
 
-    this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS; 
-    this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS; 
+    this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS;
+    this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
@@ -58,10 +58,10 @@ export default class drawCanvas {
   // called by event listener in SimulationControlsContainer
   handleTimeStep(simulationData) {
     this.simulationState = simulationData.detail;
-    
+
     // 1. Update UI Elements
     this.updateUI();
-    
+
     // 2. Calculate Camera
     this.calculateCamera();
 
@@ -71,7 +71,8 @@ export default class drawCanvas {
 
   updateUI() {
     const yieldEl = document.getElementById("scoreText");
-    if (yieldEl) yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
+    if (yieldEl)
+      yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
@@ -84,10 +85,10 @@ export default class drawCanvas {
   calculateCamera() {
     const tractorX = this.simulationState.tractorWorldX + 32;
     const tractorY = this.simulationState.tractorWorldY + 32;
-    
+
     let targetX = tractorX - this.canvas.width / 2;
     let targetY = tractorY - this.canvas.height / 2;
-    
+
     // Clamp so it does not show edge of field
     this.cameraX = Math.max(0, targetX);
     this.cameraY = Math.max(0, targetY);
@@ -96,7 +97,7 @@ export default class drawCanvas {
   setYieldScore(score) {
     const scoreEl = document.getElementById("scoreText");
     if (scoreEl) {
-        scoreEl.innerHTML = "Yield: " + score;
+      scoreEl.innerHTML = "Yield: " + score;
     }
   }
 
@@ -114,19 +115,17 @@ export default class drawCanvas {
     const fieldCols = this.simulationState.field[0].length;
 
     const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
-    const startRow = Math.floor(
-      this.cameraY / this.TILE_HEIGHT,
-    );
+    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
 
     const endRow = Math.min(fieldRows, startRow + this.SCREEN_ROWS);
     const endCol = Math.min(fieldCols, startCol + this.SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
-        if (i < 0 || j < 0) continue; 
-        
-        let crop = this.simulationState.field[i][j];   
-        if (!crop) continue; 
+        if (i < 0 || j < 0) continue;
+
+        let crop = this.simulationState.field[i][j];
+        if (!crop) continue;
 
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;
@@ -163,10 +162,8 @@ export default class drawCanvas {
   }
 
   drawTractor() {
-    const screenX =
-      this.simulationState.tractorWorldX - this.cameraX;
-    const screenY =
-      this.simulationState.tractorWorldY - this.cameraY;
+    const screenX = this.simulationState.tractorWorldX - this.cameraX;
+    const screenY = this.simulationState.tractorWorldY - this.cameraY;
 
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
@@ -184,11 +181,11 @@ export default class drawCanvas {
     );
     this.ctx.restore();
 
-    // Debug info is allowed to fail silently if element is missing, 
+    // Debug info is allowed to fail silently if element is missing,
     // but usually debug is in a separate panel not removed here.
     const debugEl = document.getElementById("debug");
     if (debugEl) {
-        debugEl.innerHTML = 
+      debugEl.innerHTML =
         `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
         `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
         `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
@@ -200,7 +197,6 @@ export default class drawCanvas {
     this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
-
 
   // Image loading helpers
 

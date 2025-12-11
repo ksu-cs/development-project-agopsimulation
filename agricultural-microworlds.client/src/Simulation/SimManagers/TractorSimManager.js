@@ -25,7 +25,8 @@ export default class TractorSimManager extends SimManager {
       const absDiff = Math.abs(diff);
       const turnStep = newTractor.turnSpeed * deltaTime;
       const alpha = Math.min(turnStep, absDiff) / absDiff;
-      newTractor.angle = newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
+      newTractor.angle =
+        newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
       moveDistance = newTractor.basespeed * deltaTime;
     } else if (oldTractor.isMoving) {
       moveDistance = newTractor.basespeed * deltaTime;
@@ -38,12 +39,11 @@ export default class TractorSimManager extends SimManager {
     }
 
     // Interaction Logic
-    
+
     // Check Harvesting
     if (oldTractor.isHarvestingOn) {
       this.handleHarvesting(newTractor, newField);
-    } 
-    else if (oldTractor.isSeedingOn) {
+    } else if (oldTractor.isSeedingOn) {
       this.handleSeeding(newTractor, newField);
     }
   }
@@ -94,10 +94,11 @@ export default class TractorSimManager extends SimManager {
     const tileY = Math.floor(y / this.TILE_HEIGHT);
 
     if (
-      tileY >= 0 && tileY < field.length &&
-      tileX >= 0 && tileX < field[0].length
-    )
-    {
+      tileY >= 0 &&
+      tileY < field.length &&
+      tileX >= 0 &&
+      tileX < field[0].length
+    ) {
       const targetCrop = field[tileY][tileX];
       actionCallback(targetCrop);
     }
