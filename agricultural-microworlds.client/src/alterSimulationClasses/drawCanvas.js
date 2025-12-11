@@ -1,11 +1,24 @@
-﻿export default class drawCanvas {
+﻿/* 
+drawCanvas.js
+
+1. Receives 'timeStepData' from engine
+2. Calculates camera position for tractor
+3. Draws field and tractor
+4. Updates UI text
+
+*/
+export default class drawCanvas {
   constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;
 
-    // --- Sprite setup ---
+    // Camera State
+    this.cameraX = 0;
+    this.cameraY = 0;
+
+    // Sprite setup 
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.seedImage = new Image();
@@ -42,14 +55,45 @@
     this.simulationState = null;
   }
 
+  // called by event listener in SimulationControlsContainer
   handleTimeStep(simulationData) {
     this.simulationState = simulationData.detail;
-    this.setYieldScore(this.simulationState.yieldScore);
+    
+    // 1. Update UI Elements
+    this.updateUI();
+    
+    // 2. Calculate Camera
+    this.calculateCamera();
+
+    // 3. Draw
     this.drawFieldAndTractor();
   }
 
+  updateUI() {
+    const yieldEl = document.getElementById("scoreText");
+    if (yieldEl) yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
+
+    const dateEl = document.getElementById("dateText");
+    if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
+
+    const gddEl = document.getElementById("gddText");
+    if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
+  }
+
+  // Keeps tractor at the center of field
+  calculateCamera() {
+    const tractorX = this.simulationState.tractorWorldX + 32;
+    const tractorY = this.simulationState.tractorWorldY + 32;
+    
+    let targetX = tractorX - this.canvas.width / 2;
+    let targetY = tractorY - this.canvas.height / 2;
+    
+    // Clamp so it does not show edge of field
+    this.cameraX = Math.max(0, targetX);
+    this.cameraY = Math.max(0, targetY);
+  }
+
   setYieldScore(score) {
-    // FIX: Check if element exists before setting (since we removed it from UI)
     const scoreEl = document.getElementById("scoreText");
     if (scoreEl) {
         scoreEl.innerHTML = "Yield: " + score;
@@ -60,21 +104,31 @@
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawField();
     this.drawTractor();
+
+    // Draw Night overlay if waiting
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
   }
 
   drawField() {
-    const startCol = Math.floor(this.simulationState.cameraX / this.TILE_WIDTH);
-    const endCol = Math.min(this.columns, startCol + this.SCREEN_COLUMNS);
+    const fieldRows = this.simulationState.field.length;
+    const fieldCols = this.simulationState.field[0].length;
+
+    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
     const startRow = Math.floor(
-      this.simulationState.cameraY / this.TILE_HEIGHT,
+      this.cameraY / this.TILE_HEIGHT,
     );
-    const endRow = Math.min(this.rows, startRow + this.SCREEN_ROWS);
+
+    const endRow = Math.min(fieldRows, startRow + this.SCREEN_ROWS);
+    const endCol = Math.min(fieldCols, startCol + this.SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue; 
-        let crop = this.simulationState.field[i][j];
+        
+        let crop = this.simulationState.field[i][j];   
+        if (!crop) continue; 
+
+        // Determine tile image based on crop image
         let tileImage = this.dirtImage;
         switch (crop.stage) {
           case 0:
@@ -90,8 +144,8 @@
         const tileWorldX = j * this.TILE_WIDTH;
         const tileWorldY = i * this.TILE_HEIGHT;
 
-        const tileScreenX = tileWorldX - this.simulationState.cameraX;
-        const tileScreenY = tileWorldY - this.simulationState.cameraY;
+        const tileScreenX = tileWorldX - this.cameraX;
+        const tileScreenY = tileWorldY - this.cameraY;
 
         this.ctx.drawImage(
           tileImage,
@@ -110,9 +164,9 @@
 
   drawTractor() {
     const screenX =
-      this.simulationState.tractorWorldX - this.simulationState.cameraX;
+      this.simulationState.tractorWorldX - this.cameraX;
     const screenY =
-      this.simulationState.tractorWorldY - this.simulationState.cameraY;
+      this.simulationState.tractorWorldY - this.cameraY;
 
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
@@ -142,12 +196,13 @@
     }
   }
 
-  DrawNight() {
-    if (this.isWaiting) {
-      this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+  drawNight() {
+    this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
+
+
+  // Image loading helpers
 
   onImageLoad() {
     this.imageLoadCount++;

@@ -26,10 +26,12 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
-    this.simulationEngine.updateCamera();
+    
     this.simulationEngine.timeStepEvent(); 
     this.drawCanvas.setSpriteOnLoadMethods();
+
     await this.simulationEngine.loadStations();
+    await this.simulationEngine.fetchData();
   }
 
   addBlocksToArray(block) {

@@ -50,7 +50,6 @@ export default class WeatherManager extends SimManager {
     weatherState.cumulativeGDD = 0;
     weatherState.gddToApplyThisFrame = 0;
     
-    // FIX: Ensure time accumulator is reset
     weatherState.timeAccumulator = 0.0;
     
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;

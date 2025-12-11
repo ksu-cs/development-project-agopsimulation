@@ -7,13 +7,21 @@ import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 
-const Tractor1 = new Tractor();
+//const Tractor1 = new Tractor();
 
+
+/*
+simulationEngine.js
+
+1. Maintains the official Simulation State
+2. Runs Game Loop
+3. Coordinates Simulation Managers
+4. Connects aync Blockly commands with loop
+
+*/
 export default class simulationEngine extends EventTarget {
-  constructor(canvasWidth, canvasHeight) {
+  constructor() {
     super();
-    this.canvasWidth = canvasWidth;
-    this.canvasHeight = canvasHeight;
 
     this.stateManager = new StateManager();
 
@@ -29,27 +37,35 @@ export default class simulationEngine extends EventTarget {
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
 
+    // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
       new WeatherManager(),
       new CropManager(),
       new TractorManager(),
     ];
 
+    // initialize default state of world
     this.initializeStates();
 
+    // Loop variables
     this.lastFrameTime = 0;
     this.animationId = -1;
     this.isRunning = false;
-    this.cameraX = 0;
-    this.cameraY = 0;
-    this.nightFadeProgress = -1.0;
+    this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
     this.activeTask = null; 
   }
 
+  // Helper: Get manager instance
+  getManager(type) {
+    return this.managers.find(m => m instanceof type);
+  }
+
+  // Sets up initial state for grid
   initializeStates() {
+    // 1. Setup weather
     const weatherState = new WeatherState();
 
     if (this.managers) {
@@ -58,20 +74,22 @@ export default class simulationEngine extends EventTarget {
             weatherMgr.applyCacheToState(weatherState);
         }
     }
-
     this.stateManager.initState("weather", weatherState);
 
+    // 2. Setup tractor
     const tractor = new TractorState();
     tractor.x = (this.COLS * this.TILE_SIZE) / 2;
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
+    //3. Setup field
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState())
     );
     this.stateManager.initState("field", field);
   }
 
+  // Loop Control
   startMoving() {
     if (!this.isRunning) {
       this.isRunning = true;
@@ -83,10 +101,13 @@ export default class simulationEngine extends EventTarget {
   stopMovement() {
     this.isRunning = false;
     this.simulationSessionId++; 
-    this.activeTask = null; 
+    this.activeTask = null;
+    this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
+    this.timeStepEvent();
   }
 
+  // Main game loop
   loop(timestamp) {
     if (!this.isRunning) return;
 
@@ -125,6 +146,8 @@ export default class simulationEngine extends EventTarget {
             if (this.activeTask.type === 'TIMER') {
                 this.activeTask.timeLeft -= simDeltaTime; 
                 if (this.activeTask.timeLeft <= 0) {
+                    if (nextStates.tractor) nextStates.tractor.isMoving = false;
+                    
                     this.resolveActiveTask();
                 }
             } else if (this.activeTask.type === 'TURN') {
@@ -144,8 +167,6 @@ export default class simulationEngine extends EventTarget {
     }
 
     // 6. Update Visuals
-    this.updateCamera();
-    this.updateDateDisplay(); 
     this.timeStepEvent(); 
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
@@ -167,39 +188,40 @@ export default class simulationEngine extends EventTarget {
       }
   }
 
+  // Gives snapshot of required data to visualization
   timeStepEvent() {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
-    if(!tractor || !field) return;
+    const weather = this.stateManager.getState("weather");
+    
+    if(!tractor || !field || !weather) return;
+
+    // Handle case where startDate is null (initial load before Fetch)
+    let dateString = "Not Started";
+    if (weather.startDate) {
+        const dateObj = new Date(weather.startDate);
+        dateObj.setDate(weather.startDate.getDate() + weather.currentDayIndex);
+        dateString = dateObj.toLocaleDateString();
+    }
+
+    // Calculate GDD String
+    const gddString = weather.cumulativeGDD.toFixed(2);
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
         bubbles: true,
         detail: new timeStepData(
-          this.cameraX,
-          this.cameraY,
           tractor.angle,
           tractor.yieldScore,
           tractor.x, 
           tractor.y, 
           this.nightFadeProgress,
-          field
+          field,
+          dateString,
+          gddString
         ),
       })
     );
-  }
-
-  updateCamera() {
-    const tractor = this.stateManager.getState("tractor");
-    if (!tractor) return;
-    const tractorCenterX = tractor.x + 32;
-    const tractorCenterY = tractor.y + 32;
-    let targetCameraX = tractorCenterX - this.canvasWidth / 2;
-    let targetCameraY = tractorCenterY - this.canvasHeight / 2;
-    const maxCameraX = this.worldPixelWidth - this.canvasWidth;
-    const maxCameraY = this.worldPixelHeight - this.canvasHeight;
-    this.cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
-    this.cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
   }
 
   // --- ASYNC COMMANDS ---
@@ -236,6 +258,11 @@ export default class simulationEngine extends EventTarget {
   async waitXWeeks(weeks) {
       const mySessionId = this.simulationSessionId;
       const durationInSeconds = Number(weeks) * 7.0; 
+      
+      // FIX: Stop the tractor so it doesn't drive while waiting
+      const tractor = this.stateManager.getState("tractor");
+      if (tractor) tractor.isMoving = false;
+
       this.nightFadeProgress = 0.5; 
       return new Promise((resolve) => {
           this.activeTask = {
@@ -246,8 +273,6 @@ export default class simulationEngine extends EventTarget {
           };
       });
   }
-
-  // --- UTILS ---
 
   toggleHarvesting(isOn) {
     const tractor = this.stateManager.getState("tractor");
@@ -333,26 +358,6 @@ export default class simulationEngine extends EventTarget {
     const start = document.getElementById("start")?.value || "2021-01-01";
     const weatherMgr = this.managers.find(m => m instanceof WeatherManager);
     if(weatherMgr) await weatherMgr.loadWeatherData(this.stateManager, station, start);
-    this.updateDateDisplay();
-  }
-
-  updateDateDisplay() {
-     const weather = this.stateManager.getState("weather");
-     if(!weather || !weather.startDate) return;
-     
-     const currentDate = new Date(weather.startDate);
-     currentDate.setDate(weather.startDate.getDate() + weather.currentDayIndex);
-     
-     // FIX: Restored DOM updates safely
-     const dateLabel = document.getElementById("dateText");
-     if(dateLabel) {
-         dateLabel.textContent = `Date: ${currentDate.toLocaleDateString()}`;
-     }
-     
-     const gddLabel = document.getElementById("gddText");
-     if(gddLabel) {
-         gddLabel.textContent = `GDD: ${weather.cumulativeGDD.toFixed(2)}`;
-     }
   }
 
   resetEverything() {
@@ -360,10 +365,8 @@ export default class simulationEngine extends EventTarget {
     this.activeTask = null;
     this.stopMovement();
     this.initializeStates();
-    this.updateCamera();
     this.timeStepEvent();
     
     // Explicitly update display on reset so Date resets instantly on screen
-    this.updateDateDisplay();
   }
 }

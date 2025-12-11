@@ -16,7 +16,7 @@ export default class TractorSimManager extends SimManager {
 
     if (!oldTractor || !newTractor || !newField) return;
 
-    // --- 1. HANDLE TURNING & MOVEMENT ---
+    // Turning and Movement Logic
     const diff = newTractor.goalAngle - newTractor.angle;
     const isTurning = Math.abs(diff) > 0.1;
     let moveDistance = 0;
@@ -37,13 +37,12 @@ export default class TractorSimManager extends SimManager {
       newTractor.y += Math.sin(rad) * moveDistance;
     }
 
-    // --- 2. INTERACTION LOGIC ---
+    // Interaction Logic
     
     // Check Harvesting
     if (oldTractor.isHarvestingOn) {
       this.handleHarvesting(newTractor, newField);
     } 
-    // Check Seeding (FIXED: Added this block)
     else if (oldTractor.isSeedingOn) {
       this.handleSeeding(newTractor, newField);
     }
@@ -60,7 +59,6 @@ export default class TractorSimManager extends SimManager {
     });
   }
 
-  // FIXED: Added Seeding Logic
   handleSeeding(tractor, field) {
     this.applyToolAction(tractor, field, (crop) => {
       if (crop.isUnplanted()) {
