@@ -1,34 +1,46 @@
-﻿export default class drawCanvas {
+﻿/* 
+drawCanvas.js
+
+1. Receives 'timeStepData' from engine
+2. Calculates camera position for tractor
+3. Draws field and tractor
+4. Updates UI text
+
+*/
+export default class drawCanvas {
   constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;
 
-    // --- Sprite setup ---
+    // Camera State
+    this.cameraX = 0;
+    this.cameraY = 0;
+
+    // Sprite setup
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
     // Game asset constants
-    this.FRAME_WIDTH = 64; // change to sprite’s frame width
-    this.FRAME_HEIGHT = 64; // change to sprite’s frame height
-    this.TILE_BASE_SIZE = 64; // The original size of the field tiles
-    this.FIELD_SCALE = 8; // The amount the field tiles will be scaled down by
+    this.FRAME_WIDTH = 64;
+    this.FRAME_HEIGHT = 64;
+    this.TILE_BASE_SIZE = 64;
+    this.FIELD_SCALE = 8;
 
     // Field variables
-    this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE; // Scaled width of each tile
-    this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE; // Scaled height of each tile
+    this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE;
+    this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE;
 
-    // Setting up the array that represents the field
-    this.WORLD_WIDTH_IN_SCREENS = 5; // Number of screens wide the world is
-    this.WORLD_HEIGHT_IN_SCREENS = 5; // Number of screens high the world is
-    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2; // +2 to cover edges
-    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2; // +2 to cover edges
+    this.WORLD_WIDTH_IN_SCREENS = 5;
+    this.WORLD_HEIGHT_IN_SCREENS = 5;
+    this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2;
+    this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2;
 
-    this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS; // Total number of rows in the world
-    this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS; // Total number of columns in the world
+    this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS;
+    this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
@@ -36,7 +48,6 @@
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
-    // Variables to aid in image loading
     this.imageLoadCount = 0;
     this.imageCount = 4;
     this.isInitialized = false;
@@ -44,36 +55,79 @@
     this.simulationState = null;
   }
 
+  // called by event listener in SimulationControlsContainer
   handleTimeStep(simulationData) {
     this.simulationState = simulationData.detail;
-    this.setYieldScore(this.simulationState.yieldScore);
+
+    // 1. Update UI Elements
+    this.updateUI();
+
+    // 2. Calculate Camera
+    this.calculateCamera();
+
+    // 3. Draw
     this.drawFieldAndTractor();
   }
 
+  updateUI() {
+    const yieldEl = document.getElementById("scoreText");
+    if (yieldEl)
+      yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
+
+    const dateEl = document.getElementById("dateText");
+    if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
+
+    const gddEl = document.getElementById("gddText");
+    if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
+  }
+
+  // Keeps tractor at the center of field
+  calculateCamera() {
+    const tractorX = this.simulationState.tractorWorldX + 32;
+    const tractorY = this.simulationState.tractorWorldY + 32;
+
+    let targetX = tractorX - this.canvas.width / 2;
+    let targetY = tractorY - this.canvas.height / 2;
+
+    // Clamp so it does not show edge of field
+    this.cameraX = Math.max(0, targetX);
+    this.cameraY = Math.max(0, targetY);
+  }
+
   setYieldScore(score) {
-    document.getElementById("scoreText").innerHTML = "Yield: " + score;
+    const scoreEl = document.getElementById("scoreText");
+    if (scoreEl) {
+      scoreEl.innerHTML = "Yield: " + score;
+    }
   }
 
   drawFieldAndTractor() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawField();
     this.drawTractor();
+
+    // Draw Night overlay if waiting
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
   }
 
   drawField() {
-    // draw the entire field using camera coordinates
-    const startCol = Math.floor(this.simulationState.cameraX / this.TILE_WIDTH);
-    const endCol = Math.min(this.columns, startCol + this.SCREEN_COLUMNS);
-    const startRow = Math.floor(
-      this.simulationState.cameraY / this.TILE_HEIGHT,
-    );
-    const endRow = Math.min(this.rows, startRow + this.SCREEN_ROWS);
+    const fieldRows = this.simulationState.field.length;
+    const fieldCols = this.simulationState.field[0].length;
+
+    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
+    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
+
+    const endRow = Math.min(fieldRows, startRow + this.SCREEN_ROWS);
+    const endCol = Math.min(fieldCols, startCol + this.SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
-        if (i < 0 || j < 0) continue; // skip negative indices
+        if (i < 0 || j < 0) continue;
+
         let crop = this.simulationState.field[i][j];
+        if (!crop) continue;
+
+        // Determine tile image based on crop image
         let tileImage = this.dirtImage;
         switch (crop.stage) {
           case 0:
@@ -89,8 +143,8 @@
         const tileWorldX = j * this.TILE_WIDTH;
         const tileWorldY = i * this.TILE_HEIGHT;
 
-        const tileScreenX = tileWorldX - this.simulationState.cameraX;
-        const tileScreenY = tileWorldY - this.simulationState.cameraY;
+        const tileScreenX = tileWorldX - this.cameraX;
+        const tileScreenY = tileWorldY - this.cameraY;
 
         this.ctx.drawImage(
           tileImage,
@@ -108,15 +162,12 @@
   }
 
   drawTractor() {
-    const screenX =
-      this.simulationState.tractorWorldX - this.simulationState.cameraX;
-    const screenY =
-      this.simulationState.tractorWorldY - this.simulationState.cameraY;
+    const screenX = this.simulationState.tractorWorldX - this.cameraX;
+    const screenY = this.simulationState.tractorWorldY - this.cameraY;
 
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-    // tractorsprite
     this.ctx.save();
     this.ctx.translate(
       screenX + this.FRAME_WIDTH / 2,
@@ -130,21 +181,25 @@
     );
     this.ctx.restore();
 
-    document.getElementById("debug").innerHTML = //debugging window
-      `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
-      `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
-      `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-      `Angle: ${normalizedAngle}°<br>`;
-  }
-
-  DrawNight() {
-    if (this.isWaiting) {
-      this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    // Debug info is allowed to fail silently if element is missing,
+    // but usually debug is in a separate panel not removed here.
+    const debugEl = document.getElementById("debug");
+    if (debugEl) {
+      debugEl.innerHTML =
+        `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
+        `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
+        `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
+        `Angle: ${normalizedAngle}°<br>`;
     }
   }
 
-  // Image loading
+  drawNight() {
+    this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  // Image loading helpers
+
   onImageLoad() {
     this.imageLoadCount++;
     if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
@@ -155,7 +210,6 @@
   }
 
   setSpriteOnLoadMethods() {
-    // Loading methods for images
     this.tractorSprite.onload = () => {
       console.log("✅ Tractor sprite loaded!");
       this.onImageLoad();
