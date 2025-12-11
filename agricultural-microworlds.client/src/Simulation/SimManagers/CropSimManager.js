@@ -1,7 +1,7 @@
 import SimManager from "../SimManager";
 import { CROP_STAGES } from "../../States/StateClasses/CropState";
 
-export default class CropGrowth extends SimManager {
+export default class CropManager extends SimManager {
   update(deltaTime, oldState, newState) {
     if (deltaTime <= 0) return;
 

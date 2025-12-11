@@ -1,6 +1,6 @@
 import { StateManager } from "../States/StateManager";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
-import CropGrowth from "../Simulation/SimManagers/CropSimManager";
+import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
@@ -27,7 +27,7 @@ export default class Simulation {
 
     this.managers = [
       new WeatherManager(),
-      new CropGrowth(),
+      new CropManager(),
       new TractorManager(),
     ];
 

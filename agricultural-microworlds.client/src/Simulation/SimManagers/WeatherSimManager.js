@@ -4,14 +4,10 @@ export default class WeatherManager extends SimManager {
   constructor() {
     super();
     this.WHEAT_BASE_TEMP = 10;
+    this.weatherDataCache = null;
   }
 
-  /**
-   * Helper to load data (Call this from your UI "Run" button before starting Sim)
-   * This modifies the Initial State directly.
-   */
   async loadWeatherData(stateManager, stationId, startDateString) {
-    // Logic adapted from fetchData()
     const [year, month, day] = startDateString.split("-").map(Number);
     const startDate = new Date(year, month - 1, day);
     const endDate = new Date(startDate);
@@ -28,12 +24,15 @@ export default class WeatherManager extends SimManager {
       const lines = data.trim().split("\n");
       const parsedCsv = lines.slice(1).map((line) => line.split(","));
 
-      // Update the State
+      this.weatherDataCache = {
+        csvLines: parsedCsv,
+        startDate: startDate,
+      };
+
       const weatherState = stateManager.getState("weather");
-      weatherState.csvLines = parsedCsv;
-      weatherState.startDate = startDate;
-      weatherState.currentDayIndex = 0;
-      weatherState.cumulativeGDD = 0;
+      if (weatherState) {
+        this.applyCacheToState(weatherState);
+      }
 
       console.log(`Weather Loaded: ${parsedCsv.length} days.`);
     } catch (e) {
@@ -41,43 +40,48 @@ export default class WeatherManager extends SimManager {
     }
   }
 
+  applyCacheToState(weatherState) {
+    if (!this.weatherDataCache) return;
+
+    weatherState.csvLines = this.weatherDataCache.csvLines;
+    weatherState.startDate = new Date(this.weatherDataCache.startDate);
+    
+    weatherState.currentDayIndex = 0;
+    weatherState.cumulativeGDD = 0;
+    weatherState.gddToApplyThisFrame = 0;
+    
+    // FIX: Ensure time accumulator is reset
+    weatherState.timeAccumulator = 0.0;
+    
+    if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
+  }
+
   update(deltaTime, oldState, newState) {
-    // Get State
     const oldWeather = oldState.weather;
     const newWeather = newState.weather;
 
-    // Reset GDD trigger
     newWeather.gddToApplyThisFrame = 0;
 
     if (!oldWeather.csvLines || oldWeather.csvLines.length === 0) return;
 
-    // Advance Time
-    // Add time based on speed multiplier
-    newWeather.timeAccumulator += deltaTime * oldWeather.speedMultiplier;
+    // deltaTime is already simulated time (scaled by speed)
+    newWeather.timeAccumulator += deltaTime;
 
-    // Check for Day Switch (Every 1.0 accumulated units = 1 Day)
     if (newWeather.timeAccumulator >= 1.0) {
-      newWeather.timeAccumulator -= 1.0; // Keep the remainder
+      newWeather.timeAccumulator -= 1.0; 
       this.advanceDay(oldWeather, newWeather);
     }
   }
 
   advanceDay(oldWeather, newWeather) {
-    // Bounds check
     if (oldWeather.currentDayIndex >= oldWeather.csvLines.length) return;
 
-    // Get Temp from CSV
     const dayData = oldWeather.csvLines[oldWeather.currentDayIndex];
     const temp = parseFloat(dayData[2]);
-
-    // Calculate GDD
     const dailyGDD = Math.max(0, temp - this.WHEAT_BASE_TEMP);
 
-    // Update New State
     newWeather.cumulativeGDD = oldWeather.cumulativeGDD + dailyGDD;
     newWeather.currentDayIndex = oldWeather.currentDayIndex + 1;
-
-    // Signal CropManager to grow this frame
     newWeather.gddToApplyThisFrame = dailyGDD;
   }
 }

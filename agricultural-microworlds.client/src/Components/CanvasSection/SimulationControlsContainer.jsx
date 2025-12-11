@@ -1,8 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
-import simulationEngine from "../../alterSimulationClasses/simulationEngine";
-import drawCanvas from "../../alterSimulationClasses/drawCanvas";
-import Simulation from "../../Simulation/Simulation";
+import simulationEngine from "../../alterSimulationClasses/simulationEngine"; 
+import drawCanvas from "../../alterSimulationClasses/drawCanvas"; 
 import { javascriptGenerator } from "blockly/javascript";
 
 class SimulationControlsContainer extends Component {
@@ -11,8 +10,8 @@ class SimulationControlsContainer extends Component {
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
     this.simulationEngine = null;
+    this.drawCanvas = null; 
 
-    // These binds failed because the functions didn't exist in your file
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
@@ -24,22 +23,15 @@ class SimulationControlsContainer extends Component {
     const canvasHeight = 500;
     this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
     this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
-
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
     this.simulationEngine.updateCamera();
-    this.simulationEngine.timeStepEvent();
+    this.simulationEngine.timeStepEvent(); 
     this.drawCanvas.setSpriteOnLoadMethods();
     await this.simulationEngine.loadStations();
-
-    // Instantiate new Simulation
-    this.alterCanvasRef = new Simulation(canvas);
-    this.alterCanvasRef.setSpriteOnLoadMethods();
-    await this.alterCanvasRef.loadStations();
   }
 
-  // Helper to extract code from blocks
   addBlocksToArray(block) {
     let nextBlock = block.getNextBlock();
     if (nextBlock != null) {
@@ -58,12 +50,16 @@ class SimulationControlsContainer extends Component {
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = true;
 
-    // Call Simulation Methods
-    await this.alterCanvasRef.fetchData();
     this.simulationEngine.resetEverything();
+    
+    // FIX: Apply the speed slider value immediately on Run
+    const speedSlider = document.getElementById("speedSlider");
+    if (speedSlider) {
+        this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
+    }
+
     this.simulationEngine.startMoving();
 
-    // Generate Code
     const allBlocks = workspace.getAllBlocks(false);
     let blockChunks = [];
 
@@ -78,15 +74,11 @@ class SimulationControlsContainer extends Component {
     if (blockChunks.length <= 0) {
       alert("You must use an 'On Begin' block to start the program!");
       this.simulationEngine.stopMovement();
-      this.alterCanvasRef.stopMovement();
       if (runButton) runButton.disabled = false;
       return;
     }
 
-    // Process Chunks
-    const variablesCode = Object.values(javascriptGenerator.definitions_).join(
-      "\n",
-    );
+    const variablesCode = Object.values(javascriptGenerator.definitions_).join("\n");
     let formattedCode = "";
     let chunkIdx = 0;
 
@@ -122,40 +114,47 @@ class SimulationControlsContainer extends Component {
     }
 
     this.simulationEngine.stopMovement();
-    this.alterCanvasRef.stopMovement();
     if (runButton) runButton.disabled = false;
   }
 
-  // --- RESTORED MISSING METHOD ---
   stopButtonOnClick() {
-    this.simulationEngine.stopMovement();
-    document.getElementById("runButton").disabled = false;
-  }
-
-  onSpeedChange = (e) => {
-    const speed = parseInt(e.target.value);
-    document.getElementById("speedDisplay").textContent = `${speed}x`;
     if (this.simulationEngine) {
-      this.simulationEngine.setSpeedMultiplier(speed);
+      this.simulationEngine.stopMovement();
     }
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = false;
   }
 
-  // --- RESTORED MISSING RENDER ---
+  onSpeedChange = (e) => {
+    const speed = parseInt(e.target.value);
+    const label = document.getElementById("speedLabel");
+    if (label) label.textContent = `${speed}x`;
+    if (this.simulationEngine) {
+      this.simulationEngine.setSpeedMultiplier(speed);
+    }
+  };
+
   render() {
     return (
       <Fragment>
-        {/* Controls Section */}
         <div className={styles.controlsContainer}>
-          <div className={styles.controlGroup}>
-            <label>Station:</label>
-            <select id="station" className={styles.dropdown}></select>
+          <div className={styles.controlGroup} style={{width: "100%", marginBottom: "10px"}}>
+            <div style={{display: "flex", justifyContent: "space-between", marginBottom: "5px"}}>
+                <label htmlFor="speedSlider" style={{fontWeight: "bold"}}>Sim Speed:</label>
+                <span id="speedLabel" style={{fontWeight: "bold"}}>1x</span>
+            </div>
+            <input 
+                type="range" 
+                id="speedSlider" 
+                min="1" 
+                max="5" 
+                defaultValue="1" 
+                step="1"
+                onChange={this.onSpeedChange}
+                style={{width: "100%"}}
+            />
           </div>
-          <div className={styles.controlGroup}>
-            <label>Start Date:</label>
-            <input type="date" id="start" defaultValue="2021-01-01" />
-          </div>
+
           <div className={styles.buttonGroup}>
             <button
               id="runButton"
@@ -171,11 +170,6 @@ class SimulationControlsContainer extends Component {
             >
               Stop
             </button>
-          </div>
-          <div className={styles.infoGroup}>
-            <span id="dateText">Date: --</span>
-            <span id="gddText">GDD: 0.00</span>
-            <span id="scoreText">Yield: 0</span>
           </div>
         </div>
       </Fragment>
