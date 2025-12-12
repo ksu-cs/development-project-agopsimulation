@@ -1,13 +1,13 @@
-﻿/* 
-drawCanvas.js
-
-1. Receives 'timeStepData' from engine
-2. Calculates camera position for tractor
-3. Draws field and tractor
-4. Updates UI text
-
-*/
+﻿/**
+ * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
+ */
 export default class drawCanvas {
+  /**
+   * @constructor Assigns parameters to varibles for the class and defines all constants
+   * @param {RefObject} canvasRef A canvas html component ref to know where this class should draw to
+   * @param {int} canvasWidth The width to set the canvas to
+   * @param {int} canvasHeight The height to set the canvas to
+   */
   constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
@@ -55,7 +55,12 @@ export default class drawCanvas {
     this.simulationState = null;
   }
 
-  // called by event listener in SimulationControlsContainer
+  /**
+   * Receives and handles the event sent out by simulationEngine
+   * Updates the UI elements then draws what is needed onto the canvas
+   *
+   * @param {timeStepData} simulationData Data needed to update what the simulation should look like
+   */
   handleTimeStep(simulationData) {
     this.simulationState = simulationData.detail;
 
@@ -69,6 +74,9 @@ export default class drawCanvas {
     this.drawFieldAndTractor();
   }
 
+  /**
+   * Updates the UI elements that are affected by actions in the simulation world
+   */
   updateUI() {
     const yieldEl = document.getElementById("scoreText");
     if (yieldEl)
@@ -81,7 +89,9 @@ export default class drawCanvas {
     if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
   }
 
-  // Keeps tractor at the center of field
+  /**
+   * Keeps the camera centered on the vehicle while it is moving
+   */
   calculateCamera() {
     const tractorX = this.simulationState.tractorWorldX + 32;
     const tractorY = this.simulationState.tractorWorldY + 32;
@@ -94,13 +104,9 @@ export default class drawCanvas {
     this.cameraY = Math.max(0, targetY);
   }
 
-  setYieldScore(score) {
-    const scoreEl = document.getElementById("scoreText");
-    if (scoreEl) {
-      scoreEl.innerHTML = "Yield: " + score;
-    }
-  }
-
+  /**
+   * Calls the necessary draw methods in the correct order
+   */
   drawFieldAndTractor() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawField();
@@ -110,6 +116,9 @@ export default class drawCanvas {
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
   }
 
+  /**
+   * Draws the field on the canvas based on the information received from the timeStep event
+   */
   drawField() {
     const fieldRows = this.simulationState.field.length;
     const fieldCols = this.simulationState.field[0].length;
@@ -161,6 +170,9 @@ export default class drawCanvas {
     }
   }
 
+  /**
+   * Draws the on the canvas based on the information received from the timeStep event
+   */
   drawTractor() {
     const screenX = this.simulationState.tractorWorldX - this.cameraX;
     const screenY = this.simulationState.tractorWorldY - this.cameraY;
@@ -193,13 +205,18 @@ export default class drawCanvas {
     }
   }
 
+  /**
+   * Draws a representation of Night time on the canvas
+   */
   drawNight() {
     this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  // Image loading helpers
-
+  /**
+   * Called everytime a necessary starting image loads,
+   * after all images are loaded makes the initial draw on the canvas
+   */
   onImageLoad() {
     this.imageLoadCount++;
     if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
@@ -209,6 +226,9 @@ export default class drawCanvas {
     }
   }
 
+  /**
+   * Sets all the sprite onload methods
+   */
   setSpriteOnLoadMethods() {
     this.tractorSprite.onload = () => {
       console.log("✅ Tractor sprite loaded!");
