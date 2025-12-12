@@ -1,6 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
-import simulationMethods from "../../alterSimulationClasses/simulationMethods";
+import simulationEngine from "../../alterSimulationClasses/simulationEngine";
+import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 
 class SimulationControlsContainer extends Component {
@@ -8,64 +9,74 @@ class SimulationControlsContainer extends Component {
     super(props);
     this.canvasRef = props.canvasRef;
     this.workspace = props.workspace;
-    this.alterCanvasRef = null;
+    this.simulationEngine = null;
+    this.drawCanvas = null;
+
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
+
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
-    this.alterCanvasRef = new simulationMethods(canvas);
-    this.alterCanvasRef.setSpriteOnLoadMethods();
-    await this.alterCanvasRef.loadStations();
+    const canvasWidth = 500;
+    const canvasHeight = 500;
+    this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
+    this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
+    this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
+      this.drawCanvas.handleTimeStep(e),
+    );
+
+    this.simulationEngine.timeStepEvent();
+    this.drawCanvas.setSpriteOnLoadMethods();
+
+    await this.simulationEngine.loadStations();
+    await this.simulationEngine.fetchData();
   }
 
   addBlocksToArray(block) {
     let nextBlock = block.getNextBlock();
     if (nextBlock != null) {
-      //console.log(block.nextConnection);
       return javascriptGenerator.blockToCode(nextBlock);
     }
-
     return "";
   }
 
-  //#region button OnClick methods
   async runButtonOnClick() {
-    await this.alterCanvasRef.fetchData();
+    await this.simulationEngine.fetchData();
 
     const { workspace } = this.props;
-    if (!workspace) {
-      console.warn("Workspace not ready yet");
-      return;
-    }
+    if (!workspace) return;
 
     javascriptGenerator.init(workspace);
-
     const runButton = document.getElementById("runButton");
-    runButton.disabled = true;
+    if (runButton) runButton.disabled = true;
 
-    this.alterCanvasRef.resetEverything();
-    runButton.disabled = false;
-    this.alterCanvasRef.startMoving();
+    this.simulationEngine.resetEverything();
+
+    // FIX: Apply the speed slider value immediately on Run
+    const speedSlider = document.getElementById("speedSlider");
+    if (speedSlider) {
+      this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
+    }
+
+    this.simulationEngine.startMoving();
 
     const allBlocks = workspace.getAllBlocks(false);
     let blockChunks = [];
 
     allBlocks.forEach((block) => {
-      if (block.type == "start_program") {
-        let currentChunk = "";
-        currentChunk = this.addBlocksToArray(block);
-
-        if (currentChunk != "")
+      if (block.type === "start_program") {
+        let currentChunk = this.addBlocksToArray(block);
+        if (currentChunk !== "")
           blockChunks.push(currentChunk.split(/\r?\n/).filter(Boolean));
       }
     });
 
     if (blockChunks.length <= 0) {
       alert("You must use an 'On Begin' block to start the program!");
-      this.alterCanvasRef.stopMovement(); // Ensure we stop if no code runs
-      runButton.disabled = false;
+      this.simulationEngine.stopMovement();
+      if (runButton) runButton.disabled = false;
       return;
     }
 
@@ -135,46 +146,49 @@ class SimulationControlsContainer extends Component {
       }
     }
 
-    this.alterCanvasRef.stopMovement();
-    runButton.disabled = false;
+    this.simulationEngine.stopMovement();
+    if (runButton) runButton.disabled = false;
   }
 
   stopButtonOnClick() {
-    this.alterCanvasRef.stopMovement();
-    document.getElementById("runButton").disabled = false;
+    if (this.simulationEngine) {
+      this.simulationEngine.stopMovement();
+    }
+    const runButton = document.getElementById("runButton");
+    if (runButton) runButton.disabled = false;
   }
 
   onSpeedChange = (e) => {
     const speed = parseInt(e.target.value);
-    document.getElementById("speedDisplay").textContent = `${speed}x`;
-    if (this.alterCanvasRef) {
-      this.alterCanvasRef.setSpeedMultiplier(speed);
+    const label = document.getElementById("speedLabel");
+    if (label) label.textContent = `${speed}x`;
+    if (this.simulationEngine) {
+      this.simulationEngine.setSpeedMultiplier(speed);
     }
   };
-
-  //#endregion
 
   render() {
     return (
       <Fragment>
-        <div className={`${styles.alignItemsCenterColumn}`}>
-          <button
-            onClick={this.runButtonOnClick}
-            id="runButton"
-            className={styles.runButton}
+        <div className={styles.controlsContainer}>
+          <div
+            className={styles.controlGroup}
+            style={{ width: "100%", marginBottom: "10px" }}
           >
-            Run Code
-          </button>
-          <button
-            onClick={this.stopButtonOnClick}
-            id="stopButton"
-            className={styles.stopButton}
-          >
-            Stop
-          </button>
-
-          <div className={styles.speedControlContainer}>
-            <label htmlFor="speedSlider">Speed:</label>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "5px",
+              }}
+            >
+              <label htmlFor="speedSlider" style={{ fontWeight: "bold" }}>
+                Sim Speed:
+              </label>
+              <span id="speedLabel" style={{ fontWeight: "bold" }}>
+                1x
+              </span>
+            </div>
             <input
               type="range"
               id="speedSlider"
@@ -183,15 +197,25 @@ class SimulationControlsContainer extends Component {
               defaultValue="1"
               step="1"
               onChange={this.onSpeedChange}
-              className={styles.speedSlider}
+              style={{ width: "100%" }}
             />
-            <span id="speedDisplay" className={styles.speedDisplay}>
-              1x
-            </span>
           </div>
 
-          <div id="debug" className={styles.debug}>
-            Drag blocks to workspace, then click Run
+          <div className={styles.buttonGroup}>
+            <button
+              id="runButton"
+              className={styles.runButton}
+              onClick={this.runButtonOnClick}
+            >
+              Run
+            </button>
+            <button
+              id="stopButton"
+              className={styles.stopButton}
+              onClick={this.stopButtonOnClick}
+            >
+              Stop
+            </button>
           </div>
         </div>
       </Fragment>

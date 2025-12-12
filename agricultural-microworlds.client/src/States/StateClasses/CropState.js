@@ -1,3 +1,5 @@
+import State from "../State";
+
 export const CROP_STAGES = {
   UNPLANTED: 0,
   SEEDED: 1,
@@ -5,12 +7,26 @@ export const CROP_STAGES = {
 };
 
 // State of crop at a snapshot
-export class CropState {
+export class CropState extends State {
   constructor() {
+    super();
     // Default to MATURE
     this.stage = CROP_STAGES.MATURE;
     this.currentGDD = 0.0;
     this.requiredGDD = 1000.0; // The GDD needed to reach maturity
+  }
+
+  updateGrowth(deltaGDD) {
+    if (this.stage !== CROP_STAGES.SEEDED) return;
+
+    // Add the delta
+    this.currentGDD += deltaGDD;
+
+    // Cap at required GDD
+    if (this.currentGDD >= this.requiredGDD) {
+      this.currentGDD = this.requiredGDD;
+      this.stage = CROP_STAGES.MATURE;
+    }
   }
 
   isGrowing() {
