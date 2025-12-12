@@ -85,16 +85,17 @@ class SimulationControlsContainer extends Component {
         formattedCode += blockChunks[chunkIdx][c] + "\n";
 
         // If there's a loop, we want to continue with that loop before switching to the next chunk, for now.
-        if (blockChunks[chunkIdx][c].includes("{")) 
-          bracketsOpen++;
+        if (blockChunks[chunkIdx][c].includes("{")) bracketsOpen++;
 
         //Allow proceding to the next chunk once the amount of open brackets drops back down to zero.
         let hasClosure = blockChunks[chunkIdx][c].includes("}");
-        if (hasClosure)
-          bracketsOpen = Math.max(bracketsOpen - 1, 0);
+        if (hasClosure) bracketsOpen = Math.max(bracketsOpen - 1, 0);
 
         // Only switch over once the loop has completed.
-        if (bracketsOpen <= 0 && (hasClosure || blockChunks[chunkIdx][c].includes("await"))) {
+        if (
+          bracketsOpen <= 0 &&
+          (hasClosure || blockChunks[chunkIdx][c].includes("await"))
+        ) {
           c++;
           break;
         }
@@ -104,12 +105,10 @@ class SimulationControlsContainer extends Component {
       codeSegments.push(formattedCode);
 
       blockChunks[chunkIdx].splice(0, c);
-      if (blockChunks[chunkIdx].length <= 0)
-      {
+      if (blockChunks[chunkIdx].length <= 0) {
         blockChunks.splice(chunkIdx, 1);
         chunkIdx %= blockChunks.length;
-      }
-      else if (blockChunks.length > 0)
+      } else if (blockChunks.length > 0)
         chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
 
