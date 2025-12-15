@@ -1,6 +1,9 @@
 import styles from "../../Styles/index.module.css";
 import { Component, Fragment } from "react";
 
+/**
+ * @classdesc Creates the UI to alter the weather data that is used
+ */
 class WeatherData extends Component {
   render() {
     return (

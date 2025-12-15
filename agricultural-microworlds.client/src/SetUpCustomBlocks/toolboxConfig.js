@@ -1,5 +1,9 @@
 import { Theme, Themes } from "blockly/core";
 
+/**
+ * The toolbox of blocks that the blockly section will show
+ * @type {JSON}
+ */
 export const toolbox = {
   kind: "categoryToolbox",
   contents: [
@@ -78,6 +82,9 @@ export const toolbox = {
   ],
 };
 
+/**
+ * The themeing for the blocks to follow
+ */
 export const myTheme = Theme.defineTheme("myTheme", {
   base: Themes.Classic,
   categoryStyles: {
