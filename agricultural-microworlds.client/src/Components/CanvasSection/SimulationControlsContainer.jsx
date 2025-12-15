@@ -11,7 +11,7 @@ import { javascriptGenerator } from "blockly/javascript";
 class SimulationControlsContainer extends Component {
   /**
    * Constructs the SimulationControlsContainer
-   * @param {*} props 
+   * @param {*} props
    */
   constructor(props) {
     super(props);
@@ -24,8 +24,8 @@ class SimulationControlsContainer extends Component {
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
 
-  /** 
-   * Initializes objects that need information only available after mounting 
+  /**
+   * Initializes objects that need information only available after mounting
    */
   async componentDidMount() {
     const canvas = this.canvasRef.current;
@@ -180,7 +180,7 @@ class SimulationControlsContainer extends Component {
     if (runButton) runButton.disabled = false;
   }
 
-  /** 
+  /**
    * Changes what needs it when the speed of the simulation changes
    */
   onSpeedChange = (e) => {
