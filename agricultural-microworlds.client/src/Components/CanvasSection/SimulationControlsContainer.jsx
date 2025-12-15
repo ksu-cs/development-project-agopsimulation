@@ -102,36 +102,65 @@ class SimulationControlsContainer extends Component {
     const variablesCode = Object.values(javascriptGenerator.definitions_).join(
       "\n",
     );
-    let formattedCode = "";
+
     let chunkIdx = 0;
+    let codeSegments = [];
 
     while (blockChunks.length > 0) {
       let c = 0;
+      let bracketsOpen = 0;
+      let formattedCode = "";
+
       for (c = 0; c < blockChunks[chunkIdx].length; c++) {
         formattedCode += blockChunks[chunkIdx][c] + "\n";
-        if (blockChunks[chunkIdx][c].includes("await")) {
+
+        // If there's a loop, we want to continue with that loop before switching to the next chunk, for now.
+        if (blockChunks[chunkIdx][c].includes("{")) bracketsOpen++;
+
+        //Allow proceding to the next chunk once the amount of open brackets drops back down to zero.
+        let hasClosure = blockChunks[chunkIdx][c].includes("}");
+        if (hasClosure) bracketsOpen = Math.max(bracketsOpen - 1, 0);
+
+        // Only switch over once the loop has completed.
+        if (
+          bracketsOpen <= 0 &&
+          (hasClosure || blockChunks[chunkIdx][c].includes("await"))
+        ) {
           c++;
           break;
         }
       }
+
+      bracketsOpen = 0;
+      codeSegments.push(formattedCode);
+
       blockChunks[chunkIdx].splice(0, c);
-      if (blockChunks[chunkIdx].length <= 0) blockChunks.splice(chunkIdx, 1);
-      if (blockChunks.length > 0)
+      if (blockChunks[chunkIdx].length <= 0) {
+        blockChunks.splice(chunkIdx, 1);
+        chunkIdx %= blockChunks.length;
+      } else if (blockChunks.length > 0)
         chunkIdx = (chunkIdx + 1) % blockChunks.length;
     }
 
-    const finalCode = variablesCode + "\n" + formattedCode;
+    // Combine definitions with the logic
+    codeSegments.concat([variablesCode + "\n"], blockChunks);
 
-    if (finalCode !== "") {
-      if (finalCode.trim()) {
-        try {
-          const run = new Function(
-            "simulationMethods",
-            `return (async () => { ${finalCode} })();`,
-          );
-          await run(this.simulationEngine);
-        } catch (e) {
-          console.error("ERROR executing blockly code:", e);
+    if (codeSegments.length > 0) {
+      console.log(codeSegments);
+
+      for (let i = 0; i < codeSegments.length; i++) {
+        if (codeSegments[i].trim()) {
+          try {
+            const run = new Function(
+              "simulationMethods",
+              `return (async () => { 
+                              ${codeSegments[i]} 
+                          })();`,
+            );
+            await run(this.alterCanvasRef);
+          } catch (e) {
+            console.error("ERROR:", e);
+          }
         }
       }
     }
