@@ -3,13 +3,20 @@ import { inject, Variables, utils, Xml } from "blockly";
 import "blockly/blocks";
 import styles from "../../Styles/index.module.css";
 
+/**
+ * @classdesc Creates the Blockly area
+ */
 class BlocklyWorkspace extends Component {
+  /**
+   * Creates the ref for the blocklyDiv that's needed for the blockly init and the toolbox ref
+   * @param {*} props 
+   */
   constructor(props) {
     super(props);
     this.blocklyDiv = createRef();
     this.toolbox = createRef();
   }
-
+  
   componentDidMount() {
     this.initBlockly();
     this.props.onWorkspaceReady(this.primaryWorkspace);
@@ -26,6 +33,9 @@ class BlocklyWorkspace extends Component {
     this.disposeWorkspace();
   }
 
+  /**
+   * Initializes the things needed for blockly to work correctly
+   */
   initBlockly() {
     if (this.primaryWorkspace) return;
 
@@ -64,6 +74,10 @@ class BlocklyWorkspace extends Component {
     return this.primaryWorkspace;
   }
 
+  /**
+   * 
+   * @param {string} xml Sets the xml for the blockly div
+   */
   setXml(xml) {
     const xmlDom = utils.xml.textToDom(xml);
     Xml.domToWorkspace(xmlDom, this.primaryWorkspace);
