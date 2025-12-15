@@ -4,7 +4,15 @@ import simulationEngine from "../../alterSimulationClasses/simulationEngine";
 import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 
+/**
+ * @classdesc Creates the buttons and other UI components that can control the simulation, aside from the blocks.
+ * Creates the simulationEngine and the canvas renderer
+ */
 class SimulationControlsContainer extends Component {
+  /**
+   * Constructs the SimulationControlsContainer
+   * @param {*} props 
+   */
   constructor(props) {
     super(props);
     this.canvasRef = props.canvasRef;
@@ -16,6 +24,9 @@ class SimulationControlsContainer extends Component {
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
 
+  /** 
+   * Initializes objects that need information only available after mounting 
+   */
   async componentDidMount() {
     const canvas = this.canvasRef.current;
     if (!canvas) return;
@@ -34,6 +45,11 @@ class SimulationControlsContainer extends Component {
     await this.simulationEngine.fetchData();
   }
 
+  /**
+   * Gets the code converstion for the next block
+   * @param {*} block The last block that was added to the list
+   * @returns The code representation of the block or an empty string if null
+   */
   addBlocksToArray(block) {
     let nextBlock = block.getNextBlock();
     if (nextBlock != null) {
@@ -42,6 +58,9 @@ class SimulationControlsContainer extends Component {
     return "";
   }
 
+  /**
+   * The onClick method for the Run Button
+   */
   async runButtonOnClick() {
     await this.simulationEngine.fetchData();
 
@@ -121,6 +140,9 @@ class SimulationControlsContainer extends Component {
     if (runButton) runButton.disabled = false;
   }
 
+  /**
+   * The onClick Method for the stop button
+   */
   stopButtonOnClick() {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
@@ -129,6 +151,9 @@ class SimulationControlsContainer extends Component {
     if (runButton) runButton.disabled = false;
   }
 
+  /** 
+   * Changes what needs it when the speed of the simulation changes
+   */
   onSpeedChange = (e) => {
     const speed = parseInt(e.target.value);
     const label = document.getElementById("speedLabel");

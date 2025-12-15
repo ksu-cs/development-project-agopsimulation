@@ -10,6 +10,7 @@ export default class drawCanvas {
    */
   constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
+    /** @type {Context} */
     this.ctx = this.canvas.getContext("2d");
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;
@@ -34,11 +35,11 @@ export default class drawCanvas {
     this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE;
     this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE;
 
+    // SCreen variables
     this.WORLD_WIDTH_IN_SCREENS = 5;
     this.WORLD_HEIGHT_IN_SCREENS = 5;
     this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2;
     this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2;
-
     this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS;
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
@@ -48,10 +49,12 @@ export default class drawCanvas {
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
+    // Image initialization
     this.imageLoadCount = 0;
     this.imageCount = 4;
     this.isInitialized = false;
 
+    /** @type {CustomEvent} Holds the timeStepData to draw */
     this.simulationState = null;
   }
 
