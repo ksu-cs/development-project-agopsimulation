@@ -9,14 +9,14 @@ import styles from "../../Styles/index.module.css";
 class BlocklyWorkspace extends Component {
   /**
    * Creates the ref for the blocklyDiv that's needed for the blockly init and the toolbox ref
-   * @param {*} props 
+   * @param {*} props
    */
   constructor(props) {
     super(props);
     this.blocklyDiv = createRef();
     this.toolbox = createRef();
   }
-  
+
   componentDidMount() {
     this.initBlockly();
     this.props.onWorkspaceReady(this.primaryWorkspace);
@@ -75,7 +75,7 @@ class BlocklyWorkspace extends Component {
   }
 
   /**
-   * 
+   *
    * @param {string} xml Sets the xml for the blockly div
    */
   setXml(xml) {

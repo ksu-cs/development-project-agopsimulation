@@ -21,7 +21,7 @@ class BlocklyWorkspaceContainer extends Component {
     );
     console.log(code);
   };
-  
+
   render() {
     return (
       <Fragment>

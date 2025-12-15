@@ -10,7 +10,7 @@ import CanvasContainer from "./CanvasContainer";
 class SimulationCanvasContainer extends Component {
   /**
    * Creates a ref to pass down the both the canvas and the simulation controls
-   * @param {*} props 
+   * @param {*} props
    */
   constructor(props) {
     super(props);
