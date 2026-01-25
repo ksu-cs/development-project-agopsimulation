@@ -225,13 +225,4 @@ Modern agriculture is increasingly reliant on computerized systems, such as auto
   * Education software integration  
   * Database setup  
   * Block Conditions with live simulation data  
-    
-
-### Appendix A  {#appendix-a}
-
-<img width="1971" height="1644" alt="FrontendSimulationDiagram" src="https://github.com/user-attachments/assets/e09d6514-e2b9-4d9b-9ac5-05bd47f4d899" />
-
-### Appendix B {#appendix-b}
-
-<img width="1562" height="942" alt="DatabaseDiagram" src="https://github.com/user-attachments/assets/280cd779-1360-42e0-ab42-38866fc0ec92" />
 
