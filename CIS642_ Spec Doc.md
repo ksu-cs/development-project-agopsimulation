@@ -7,8 +7,10 @@ Currently there are many children in rural areas of Kansas and other states that
 The Agricultural Microworlds will be used by all grades K-12 as a software learning system with a focus in controlling an agricultural simulation to complete tasks. Lessons will be created, altered and assigned by teachers to students. The application is meant for all students, no matter the location, to be able to use. Many schools have different devices and internet capabilities and so the application must be extremely efficient. Alongside the technological differences, there is a wide variety of students with different capabilities. Therefore the application must be extremely adaptive and easy to use for those with disabilities.   
 Modern agriculture is increasingly reliant on computerized systems, such as autonomous driving, navigation pathing for harvesting, and precision agriculture utilizing sensors and actuators. The Agricultural Microworlds application will have students autonomously control an agricultural simulation in order to complete a task. The simulation is controlled by code created by the student using Blockly coding blocks.
 
-[**Appendix A \- Frontend Simulation Diagram**](./Diagrams/FrontendSimulationDiagram.png)
-[**Appendix B \- Planned Database Diagram**](./Diagrams/DatabaseDiagram.png)
+**Appendices**
+* [Appendix A \- Frontend Simulation Diagram](./Diagrams/FrontendSimulationDiagram.png)
+
+* [Appendix B \- Planned Database Diagram](./Diagrams/DatabaseDiagram.png)
 
 **Technical Requirements**
 
