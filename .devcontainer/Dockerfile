@@ -1,1 +1,1 @@
-FROM mcr.microsoft.com/devcontainers/universal
+FROM mcr.microsoft.com/devcontainers/universal:2-focal
