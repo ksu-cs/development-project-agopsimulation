@@ -27,7 +27,7 @@ Now that you have the Dev Container up and running we can proceed to run the app
 
 If the terminal is not already open, open it by doing ```CTRL + SHIFT + J```
 
-Next in the terminal run ```cd client directory here```
+Next in the terminal run ```cd agricultural-microworlds.client```
 
 Now you can run ```npm run build```
 
