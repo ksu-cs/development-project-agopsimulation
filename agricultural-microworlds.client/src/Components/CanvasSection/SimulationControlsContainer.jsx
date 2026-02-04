@@ -157,7 +157,7 @@ class SimulationControlsContainer extends Component {
                               ${codeSegments[i]} 
                           })();`,
             );
-            await run(this.alterCanvasRef);
+            await run(this.simulationEngine);
           } catch (e) {
             console.error("ERROR:", e);
           }
