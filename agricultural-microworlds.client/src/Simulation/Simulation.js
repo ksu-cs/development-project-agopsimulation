@@ -66,7 +66,9 @@ export default class Simulation {
 
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState()),
-    );
+    );// change to be byte wise
+
+
     this.stateManager.initState("field", field);
   }
 
