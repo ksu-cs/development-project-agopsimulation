@@ -62,7 +62,7 @@ export function InitializeField(field, initalCropState){
  * @param {int} width The width of the field
  */
 export function ChangeFieldTile(field, cropState, x, y, width){
-    let i = y * (width-1) + x;
+    let i = GetTileIndex(x, y, width);
 
     // Edits first byte of tile
     field[i] = (GetBitsForCropStage(cropState.stage) << 2) | GetBitsForCropType(cropState.type);
@@ -91,7 +91,7 @@ export function ChangeFieldTile(field, cropState, x, y, width){
  * @returns A new Crop state object with all the information in the tile
  */
 export function GetCropState(field, x, y, width){
-    let i = y * (width-1) + x;
+    let i = GetTileIndex(x, y, width);
 
     let tile = new CropState();
 
@@ -160,4 +160,15 @@ export function ConvertFloatToUint24(floatToConvert){
  */
 export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3){
     return ((u8_1 << 16) | (u8_2 << 8) | u8_3)/100;
+}
+
+/**
+ * Calculates the index in the 1D array from 2D array coordinates
+ * @param {*} x the x value where it should be in the array
+ * @param {*} y The y value where it should be in the array
+ * @param {*} width The width of the field
+ * @returns The corresponding index for the given coordinates
+ */
+export function GetTileIndex(x, y, width){
+    return y * (width-1) + x;
 }
