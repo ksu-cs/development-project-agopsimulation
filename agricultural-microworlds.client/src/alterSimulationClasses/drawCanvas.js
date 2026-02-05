@@ -1,6 +1,6 @@
 ﻿import { CreateBlankField, InitializeField, ChangeFieldTile, GetCropState } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import { CropState } from "../States/StateClasses/CropState";
-import { StateManager } from "../States/StateManager";
+
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
  */
@@ -60,19 +60,17 @@ export default class drawCanvas {
     /** @type {CustomEvent} Holds the timeStepData to draw */
     this.simulationState = null;
 
-    const testfield = CreateBlankField(this.rows, this.columns);
+    // const testfield = CreateBlankField(this.rows, this.columns);
 
-    InitializeField(testfield, new CropState());
+    // InitializeField(testfield, new CropState());
 
-    let crop = new CropState();
-    let stateManager = new StateManager();
-    stateManager.initState("field", testfield);
-    crop.stage = 0;
-    crop.currentGDD = 20;
-    ChangeFieldTile(stateManager,crop, 1, 0, this.rows);
-    console.log(testfield);
+    // let crop = new CropState();
+    // crop.stage = 0;
+    // crop.currentGDD = 20;
+    // ChangeFieldTile(testfield ,crop, 1, 0, this.rows);
+    // console.log(testfield);
 
-    console.log(GetCropState(stateManager, 1, 0, this.rows));
+    // console.log(GetCropState(testfield, 1, 0, this.rows));
   }
 
   /**

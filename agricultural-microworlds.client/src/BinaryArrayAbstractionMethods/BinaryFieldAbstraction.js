@@ -55,14 +55,13 @@ export function InitializeField(field, initalCropState){
 
 /**
  * Changes a crop tile on the field to be different values
- * @param {StateManager} stateManager The state manager instance for the simulation
+ * @param {Uint8Array} field The memory array where the field is
  * @param {CropState} cropState The crop stage to change the tile to
  * @param {int} x The x value for where the tile is located at on the field
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
  */
-export function ChangeFieldTile(stateManager, cropState, x, y, width){
-    let field = stateManager.getState("field");
+export function ChangeFieldTile(field, cropState, x, y, width){
     let i = y * (width-1) + x;
 
     // Edits first byte of tile
@@ -85,14 +84,13 @@ export function ChangeFieldTile(stateManager, cropState, x, y, width){
 
 /**
  * Gets a readable form of the Crop state at the specified x and y coordinate
- * @param {StateManager} stateManger State manager to grab the field
+ * @param {Uint8Array} field The memory array where the field is
  * @param {int} x The x value for where the tile is located at on the field
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
  * @returns A new Crop state object with all the information in the tile
  */
-export function GetCropState(stateManger, x, y, width){
-    let field = stateManger.getState("field");
+export function GetCropState(field, x, y, width){
     let i = y * (width-1) + x;
 
     let tile = new CropState();
@@ -113,7 +111,7 @@ export function GetCropState(stateManger, x, y, width){
  * @param {CROP_TYPES} cropType What crop type the tile should be
  * @returns A bit flag representing the crop type
  */
-function GetBitsForCropType(cropType){
+export function GetBitsForCropType(cropType){
     switch(cropType){
         case CROP_TYPES.WHEAT:
             return 0x00;
@@ -126,7 +124,7 @@ function GetBitsForCropType(cropType){
  * @param {CROP_STAGES} cropStage What stage the crop is at 
  * @returns A bit flag representing the crop stage
  */
-function GetBitsForCropStage(cropStage){
+export function GetBitsForCropStage(cropStage){
     switch(cropStage){
         case CROP_STAGES.UNPLANTED:
             return 0x00 << 2;
@@ -144,7 +142,7 @@ function GetBitsForCropStage(cropStage){
  * @param {float} floatToConvert A float between 0 and 167772.154 inclusive
  * @returns A bit flag representing the passed float in Uint24 form
  */
-function ConvertFloatToUint24(floatToConvert){
+export function ConvertFloatToUint24(floatToConvert){
     if (floatToConvert > 167772.154 || floatToConvert < 0) return 0x000000;
 
     let intForConversion = Math.round(floatToConvert*100);
@@ -160,6 +158,6 @@ function ConvertFloatToUint24(floatToConvert){
  * @param {Uint8} u8_3 Least significant byte
  * @returns A Float that is the combination of the three Uint8's
  */
-function Convert3Uint8ToFloat(u8_1, u8_2, u8_3){
+export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3){
     return ((u8_1 << 16) | (u8_2 << 8) | u8_3)/100;
 }
