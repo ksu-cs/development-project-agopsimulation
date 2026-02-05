@@ -63,7 +63,7 @@ export function InitializeField(field, initalCropState){
  */
 export function ChangeFieldTile(stateManager, cropState, x, y, width){
     let field = stateManager.getState("field");
-    let i = y * width + x;
+    let i = y * (width-1) + x;
 
     // Edits first byte of tile
     field[i] = (GetBitsForCropStage(cropState.stage) << 2) | GetBitsForCropType(cropState.type);
@@ -93,7 +93,7 @@ export function ChangeFieldTile(stateManager, cropState, x, y, width){
  */
 export function GetCropState(stateManger, x, y, width){
     let field = stateManger.getState("field");
-    let i = y * width + x;
+    let i = y * (width-1) + x;
 
     let tile = new CropState();
 
@@ -101,7 +101,9 @@ export function GetCropState(stateManger, x, y, width){
     tile.stage = (field[i] >> 2) & 0xFF;
 
     tile.currentGDD = Convert3Uint8ToFloat(field[i+1], field[i+2], field[i+3]);
-    tile.currentGDD = Convert3Uint8ToFloat(field[i+4], field[i+5], field[i+6]);
+    tile.requiredGDD = Convert3Uint8ToFloat(field[i+4], field[i+5], field[i+6]);
+
+    
 
     return tile;
 }

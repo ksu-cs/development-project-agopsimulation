@@ -5,7 +5,6 @@ import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import { CropState } from "../States/StateClasses/CropState";
-import { CreateBlankField, InitializeField, ChangeFieldTile, GetCropState } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 export default class Simulation {
   constructor(canvas) {
@@ -68,21 +67,6 @@ export default class Simulation {
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState()),
     );
-
-    const testfield = CreateBlankField(this.ROWS, this.COLS);
-    console.log(testfield);
-
-    InitializeField(testfield, new CropState());
-    console.log(testfield);
-
-    let crop = new CropState();
-    crop.stage = 0;
-    crop.currentGDD = 20;
-    ChangeFieldTile(this.stateManager, 1, 1, this.ROWS);
-    console.log(testfield);
-
-    console.log(GetCropState(this.stateManager, 1, 1, this.ROWS));
-
 
     this.stateManager.initState("field", field);
   }
