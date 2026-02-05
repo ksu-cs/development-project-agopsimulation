@@ -1,4 +1,9 @@
-﻿import { CreateBlankField, InitializeField, ChangeFieldTile, GetCropState } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+﻿import {
+  CreateBlankField,
+  InitializeField,
+  ChangeFieldTile,
+  GetCropState,
+} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import { CropState } from "../States/StateClasses/CropState";
 
 /**

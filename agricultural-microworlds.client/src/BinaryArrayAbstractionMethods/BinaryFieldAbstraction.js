@@ -1,7 +1,11 @@
-import {CROP_STAGES, CROP_TYPES, CropState} from '../States/StateClasses/CropState';
+import {
+  CROP_STAGES,
+  CROP_TYPES,
+  CropState,
+} from "../States/StateClasses/CropState";
 import { StateManager } from "../States/StateManager";
 
-const TILE_BYTE_SIZE = 7;
+export const TILE_BYTE_SIZE = 7;
 /**
  * Field tile bit setup (current)
  * Crop type 4 types supported (2 bits)
@@ -14,15 +18,15 @@ const TILE_BYTE_SIZE = 7;
  * Allocates a space in memory for the field to be placed
  * @param {int} rows the amount of rows for the field
  * @param {int} columns the amount of columns for the field
- * @returns A Uint16Array with the memory allocated and set to 0's
+ * @returns A Uint8Array with the memory allocated and set to 0's
  */
-export function CreateBlankField(rows, columns){
-    const totalArraySize = TILE_BYTE_SIZE * rows * columns;
+export function CreateBlankField(rows, columns) {
+  const totalArraySize = TILE_BYTE_SIZE * rows * columns;
 
-    const buffer = new ArrayBuffer(totalArraySize);
-    const field = new Uint8Array(buffer);
+  const buffer = new ArrayBuffer(totalArraySize);
+  const field = new Uint8Array(buffer);
 
-    return field;
+  return field;
 }
 
 /**
@@ -30,27 +34,27 @@ export function CreateBlankField(rows, columns){
  * @param {Uint8Array} field The memory array where the field is
  * @param {CropState} initalCropState The crop state values to intialize the field to
  */
-export function InitializeField(field, initalCropState){
-    
-    for(let i = 0; i < field.length; i+=TILE_BYTE_SIZE){
-        // Edits first byte of tile
-        field[i] = (GetBitsForCropStage(initalCropState.stage) << 2) | GetBitsForCropType(initalCropState.type);
+export function InitializeField(field, initalCropState) {
+  for (let i = 0; i < field.length; i += TILE_BYTE_SIZE) {
+    // Edits first byte of tile
+    field[i] =
+      GetBitsForCropStage(initalCropState.stage) |
+      GetBitsForCropType(initalCropState.type);
 
-        // Edits bytes 2-4 (Current GDD) of tile
-        let currentGDDFlag = ConvertFloatToUint24(initalCropState.currentGDD);
+    // Edits bytes 2-4 (Current GDD) of tile
+    let currentGDDFlag = ConvertFloatToUint24(initalCropState.currentGDD);
 
-        field[i+1] = (currentGDDFlag >> 16) & 0xFF;
-        field[i+2] = (currentGDDFlag >> 8) & 0xFF;
-        field[i+3] = (currentGDDFlag) & 0xFF;
+    field[i + 1] = (currentGDDFlag >> 16) & 0xff;
+    field[i + 2] = (currentGDDFlag >> 8) & 0xff;
+    field[i + 3] = currentGDDFlag & 0xff;
 
-        // Edits bytes 5-7 (required GDD) of tile
-        let requiredGDDFlag = ConvertFloatToUint24(initalCropState.requiredGDD);
+    // Edits bytes 5-7 (required GDD) of tile
+    let requiredGDDFlag = ConvertFloatToUint24(initalCropState.requiredGDD);
 
-        field[i+4] = (requiredGDDFlag >> 16) & 0xFF;
-        field[i+5] = (requiredGDDFlag >> 8) & 0xFF;
-        field[i+6] = (requiredGDDFlag) & 0xFF;
-
-    }
+    field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
+    field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
+    field[i + 6] = requiredGDDFlag & 0xff;
+  }
 }
 
 /**
@@ -61,25 +65,26 @@ export function InitializeField(field, initalCropState){
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
  */
-export function ChangeFieldTile(field, cropState, x, y, width){
-    let i = GetTileIndex(x, y, width);
+export function ChangeFieldTile(field, cropState, x, y, width) {
+  let i = GetTileIndex(x, y, width);
 
-    // Edits first byte of tile
-    field[i] = (GetBitsForCropStage(cropState.stage) << 2) | GetBitsForCropType(cropState.type);
+  // Edits first byte of tile
+  field[i] =
+    GetBitsForCropStage(cropState.stage) | GetBitsForCropType(cropState.type);
 
-    // Edits bytes 2-4 (Current GDD) of tile
-    let currentGDDFlag = ConvertFloatToUint24(cropState.currentGDD);
+  // Edits bytes 2-4 (Current GDD) of tile
+  let currentGDDFlag = ConvertFloatToUint24(cropState.currentGDD);
 
-    field[i+1] = (currentGDDFlag >> 16) & 0xFF;
-    field[i+2] = (currentGDDFlag >> 8) & 0xFF;
-    field[i+3] = (currentGDDFlag) & 0xFF;
+  field[i + 1] = (currentGDDFlag >> 16) & 0xff;
+  field[i + 2] = (currentGDDFlag >> 8) & 0xff;
+  field[i + 3] = currentGDDFlag & 0xff;
 
-    // Edits bytes 5-7 (required GDD) of tile
-    let requiredGDDFlag = ConvertFloatToUint24(cropState.requiredGDD);
+  // Edits bytes 5-7 (required GDD) of tile
+  let requiredGDDFlag = ConvertFloatToUint24(cropState.requiredGDD);
 
-    field[i+4] = (requiredGDDFlag >> 16) & 0xFF;
-    field[i+5] = (requiredGDDFlag >> 8) & 0xFF;
-    field[i+6] = (requiredGDDFlag) & 0xFF;
+  field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
+  field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
+  field[i + 6] = requiredGDDFlag & 0xff;
 }
 
 /**
@@ -90,20 +95,26 @@ export function ChangeFieldTile(field, cropState, x, y, width){
  * @param {int} width The width of the field
  * @returns A new Crop state object with all the information in the tile
  */
-export function GetCropState(field, x, y, width){
-    let i = GetTileIndex(x, y, width);
+export function GetCropState(field, x, y, width) {
+  let i = GetTileIndex(x, y, width);
 
-    let tile = new CropState();
+  let tile = new CropState();
 
-    tile.type = field[i] & 0x03;
-    tile.stage = (field[i] >> 2) & 0xFF;
+  tile.type = field[i] & 0x03;
+  tile.stage = (field[i] >> 2) & 0xff;
 
-    tile.currentGDD = Convert3Uint8ToFloat(field[i+1], field[i+2], field[i+3]);
-    tile.requiredGDD = Convert3Uint8ToFloat(field[i+4], field[i+5], field[i+6]);
+  tile.currentGDD = Convert3Uint8ToFloat(
+    field[i + 1],
+    field[i + 2],
+    field[i + 3],
+  );
+  tile.requiredGDD = Convert3Uint8ToFloat(
+    field[i + 4],
+    field[i + 5],
+    field[i + 6],
+  );
 
-    
-
-    return tile;
+  return tile;
 }
 
 /**
@@ -111,30 +122,30 @@ export function GetCropState(field, x, y, width){
  * @param {CROP_TYPES} cropType What crop type the tile should be
  * @returns A bit flag representing the crop type
  */
-export function GetBitsForCropType(cropType){
-    switch(cropType){
-        case CROP_TYPES.WHEAT:
-            return 0x00;
-        //other cases here being 0x01/0x02/0x03
-    }
+export function GetBitsForCropType(cropType) {
+  switch (cropType) {
+    case CROP_TYPES.WHEAT:
+      return 0x00;
+    //other cases here being 0x01/0x02/0x03
+  }
 }
 
 /**
  * Gives proper bit flag to alter the bits representing crop stage
- * @param {CROP_STAGES} cropStage What stage the crop is at 
+ * @param {CROP_STAGES} cropStage What stage the crop is at
  * @returns A bit flag representing the crop stage
  */
-export function GetBitsForCropStage(cropStage){
-    switch(cropStage){
-        case CROP_STAGES.UNPLANTED:
-            return 0x00 << 2;
-        case CROP_STAGES.SEEDED:
-            return 0x01 << 2;
-        case CROP_STAGES.MATURE:
-            return 0x02 << 2;
-        default: 
-            return GetBitsForCropStage(CROP_STAGES.UNPLANTED);
-    }
+export function GetBitsForCropStage(cropStage) {
+  switch (cropStage) {
+    case CROP_STAGES.UNPLANTED:
+      return 0x00 << 2;
+    case CROP_STAGES.SEEDED:
+      return 0x01 << 2;
+    case CROP_STAGES.MATURE:
+      return 0x02 << 2;
+    default:
+      return GetBitsForCropStage(CROP_STAGES.UNPLANTED);
+  }
 }
 
 /**
@@ -142,13 +153,12 @@ export function GetBitsForCropStage(cropStage){
  * @param {float} floatToConvert A float between 0 and 167772.154 inclusive
  * @returns A bit flag representing the passed float in Uint24 form
  */
-export function ConvertFloatToUint24(floatToConvert){
-    if (floatToConvert > 167772.154 || floatToConvert < 0) return 0x000000;
+export function ConvertFloatToUint24(floatToConvert) {
+  if (floatToConvert > 167772.154 || floatToConvert < 0) return 0x000000;
 
-    let intForConversion = Math.round(floatToConvert*100);
+  let intForConversion = Math.round(floatToConvert * 100);
 
-    return intForConversion & 0xFFFFFF;
-
+  return intForConversion & 0xffffff;
 }
 
 /**
@@ -158,8 +168,8 @@ export function ConvertFloatToUint24(floatToConvert){
  * @param {Uint8} u8_3 Least significant byte
  * @returns A Float that is the combination of the three Uint8's
  */
-export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3){
-    return ((u8_1 << 16) | (u8_2 << 8) | u8_3)/100;
+export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3) {
+  return ((u8_1 << 16) | (u8_2 << 8) | u8_3) / 100;
 }
 
 /**
@@ -169,6 +179,6 @@ export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3){
  * @param {*} width The width of the field
  * @returns The corresponding index for the given coordinates
  */
-export function GetTileIndex(x, y, width){
-    return width * y + x;
+export function GetTileIndex(x, y, width) {
+  return (width * y + x) * TILE_BYTE_SIZE;
 }
