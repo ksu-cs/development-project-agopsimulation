@@ -1,4 +1,4 @@
-import {CROP_STAGES, CROP_TYPES, CropState} from "../States/StateClasses/CropState";
+import {CROP_STAGES, CROP_TYPES, CropState} from '../States/StateClasses/CropState';
 import { StateManager } from "../States/StateManager";
 
 const TILE_BYTE_SIZE = 7;
