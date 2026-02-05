@@ -195,12 +195,8 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
 });
 
 test("GetCropState correctly grabs the correct Tile", () => {
-  // Grab crop state of original field then make sure it is a CropState and has the correct values
-  // Alter a crop state (index, no method) then grab that crop state to make sure it is correct
-
   const width = 12;
   const height = 12;
-  const byteFieldSize = width * height * TILE_BYTE_SIZE;
   let initalCropState = new CropState();
   let field = CreateBlankField(width, height);
   InitializeField(field, initalCropState);

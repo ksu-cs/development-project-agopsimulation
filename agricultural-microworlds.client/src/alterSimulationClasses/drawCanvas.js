@@ -64,18 +64,6 @@ export default class drawCanvas {
 
     /** @type {CustomEvent} Holds the timeStepData to draw */
     this.simulationState = null;
-
-    // const testfield = CreateBlankField(this.rows, this.columns);
-
-    // InitializeField(testfield, new CropState());
-
-    // let crop = new CropState();
-    // crop.stage = 0;
-    // crop.currentGDD = 20;
-    // ChangeFieldTile(testfield ,crop, 1, 0, this.rows);
-    // console.log(testfield);
-
-    // console.log(GetCropState(testfield, 1, 0, this.rows));
   }
 
   /**
