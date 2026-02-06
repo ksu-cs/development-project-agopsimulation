@@ -1,13 +1,19 @@
 import { StateManager } from "../States/StateManager";
-import { CROP_STAGES, CROP_TYPES, CropState } from "../States/StateClasses/CropState";
+import {
+  CROP_STAGES,
+  CROP_TYPES,
+  CropState,
+} from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import { CreateBlankField, InitializeField } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
-
+import {
+  CreateBlankField,
+  InitializeField,
+} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 /*
 simulationEngine.js

@@ -2,7 +2,7 @@ import SimManager from "../SimManager";
 import {
   ChangeFieldTile,
   GetCropState,
-  TILE_BYTE_SIZE
+  TILE_BYTE_SIZE,
 } from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
 
 export default class TractorSimManager extends SimManager {
@@ -116,7 +116,6 @@ export default class TractorSimManager extends SimManager {
       if (didChange) {
         ChangeFieldTile(field, targetCrop, tileX, tileY, width);
       }
-
     }
   }
 }
