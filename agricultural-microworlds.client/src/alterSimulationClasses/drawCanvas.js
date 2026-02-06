@@ -131,21 +131,20 @@ export default class drawCanvas {
    * Draws the field on the canvas based on the information received from the timeStep event
    */
   drawField() {
-    const fieldRows = this.simulationState.field.length;
-    const fieldCols = this.simulationState.field[0].length;
+    const fieldWidth = this.simulationState.fieldWidth;
+    const fieldHeight = this.simulationState.fieldWidth;
 
     const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
     const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
 
-    const endRow = Math.min(fieldRows, startRow + this.SCREEN_ROWS);
-    const endCol = Math.min(fieldCols, startCol + this.SCREEN_COLUMNS);
+    const endRow = Math.min(fieldHeight, startRow + this.SCREEN_ROWS);
+    const endCol = Math.min(fieldWidth, startCol + this.SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue;
 
-        let crop = this.simulationState.field[i][j];
-        if (!crop) continue;
+        const crop = GetCropState(this.simulationState.field, j, i, fieldWidth);
 
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;

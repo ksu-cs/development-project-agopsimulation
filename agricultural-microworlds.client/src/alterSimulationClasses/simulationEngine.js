@@ -6,6 +6,7 @@ import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
+import { CreateBlankField, InitializeField } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 //const Tractor1 = new Tractor();
 
@@ -82,9 +83,16 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("tractor", tractor);
 
     //3. Setup field
-    const field = Array.from({ length: this.ROWS }, () =>
-      Array.from({ length: this.COLS }, () => new CropState()),
-    );
+    const field = CreateBlankField(this.ROWS, this.COLS);
+
+    const initialCrop = new CropState();
+    initialCrop.type = 0;
+    initialCrop.stage = 0;
+    initialCrop.currentGDD = 0;
+    initialCrop.requiredGDD = 1000;
+
+    InitializeField(field, initialCrop);
+
     this.stateManager.initState("field", field);
   }
 
@@ -128,9 +136,7 @@ export default class simulationEngine extends EventTarget {
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
       } else if (key === "field") {
-        nextStates[key] = oldStates[key].map((row) =>
-          row.map((c) => c.clone()),
-        );
+        nextStates[key] = oldStates[key].slice();
       }
     }
 
@@ -218,6 +224,7 @@ export default class simulationEngine extends EventTarget {
           tractor.y,
           this.nightFadeProgress,
           field,
+          this.COLS,
           dateString,
           gddString,
         ),

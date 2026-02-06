@@ -1,5 +1,6 @@
 import SimManager from "../SimManager";
 import { CROP_STAGES } from "../../States/StateClasses/CropState";
+import { ChangeFieldTile, GetCropState } from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
 
 export default class CropManager extends SimManager {
   update(deltaTime, oldState, newState) {
@@ -17,20 +18,28 @@ export default class CropManager extends SimManager {
       return;
     }
 
-    const rows = currentField.length;
-    const cols = currentField[0].length;
+    const totalBytes = currentField.length;
+    const bytesPerTile = 7;
+    const totalTiles = totalBytes / bytesPerTile;
+    const width = Math.sqrt(totalTiles);
+
+    const rows = width;
+    const cols = width;
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        const nextCrop = nextField[i][j];
+        const cropObj = GetCropState(currentField, j, i, cols);
 
-        if (nextCrop.stage === CROP_STAGES.SEEDED) {
-          nextCrop.currentGDD += gddToAdd;
+        if (cropObj.stage == CROP_STAGES.SEEDED) {
+          cropObj.currentGDD += gddToAdd;
 
-          if (nextCrop.currentGDD >= nextCrop.requiredGDD) {
-            nextCrop.stage = CROP_STAGES.MATURE;
-            nextCrop.currentGDD = nextCrop.requiredGDD;
+          if (cropObj.currentGDD >= cropObj.requiredGDD) {
+            cropObj.stage = CROP_STAGES.MATURE;
+            cropObj.currentGDD = cropObj.requiredGDD;
           }
+
+          ChangeFieldTile(nextField, cropObj, j, i, cols);
+
         }
       }
     }
