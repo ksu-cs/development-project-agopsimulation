@@ -4,7 +4,7 @@
   ChangeFieldTile,
   GetCropState,
 } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
-import { CropState } from "../States/StateClasses/CropState";
+import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
 
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
@@ -149,13 +149,13 @@ export default class drawCanvas {
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;
         switch (crop.stage) {
-          case 0:
+          case CROP_STAGES.UNPLANTED:
             tileImage = this.dirtImage;
             break;
-          case 1:
+          case CROP_STAGES.SEEDED:
             tileImage = this.seedImage;
             break;
-          case 2:
+          case CROP_STAGES.MATURE:
             tileImage = this.wheatImage;
             break;
         }

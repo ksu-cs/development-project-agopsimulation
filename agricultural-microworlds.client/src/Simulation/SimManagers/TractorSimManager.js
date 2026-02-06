@@ -2,6 +2,7 @@ import SimManager from "../SimManager";
 import {
   ChangeFieldTile,
   GetCropState,
+  TILE_BYTE_SIZE
 } from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
 
 export default class TractorSimManager extends SimManager {
@@ -99,7 +100,7 @@ export default class TractorSimManager extends SimManager {
     const tileY = Math.floor(y / this.TILE_HEIGHT);
 
     // Calculate dimensions
-    const totalTiles = field.length / 7;
+    const totalTiles = field.length / TILE_BYTE_SIZE;
     const width = Math.sqrt(totalTiles);
 
     if (

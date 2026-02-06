@@ -1,5 +1,5 @@
 import { StateManager } from "../States/StateManager";
-import { CropState } from "../States/StateClasses/CropState";
+import { CROP_STAGES, CROP_TYPES, CropState } from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import timeStepData from "./timeStepData";
@@ -8,7 +8,6 @@ import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import { CreateBlankField, InitializeField } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
-//const Tractor1 = new Tractor();
 
 /*
 simulationEngine.js
@@ -86,8 +85,8 @@ export default class simulationEngine extends EventTarget {
     const field = CreateBlankField(this.ROWS, this.COLS);
 
     const initialCrop = new CropState();
-    initialCrop.type = 0;
-    initialCrop.stage = 0;
+    initialCrop.type = CROP_TYPES.WHEAT;
+    initialCrop.stage = CROP_STAGES.UNPLANTED;
     initialCrop.currentGDD = 0;
     initialCrop.requiredGDD = 1000;
 
@@ -332,7 +331,7 @@ export default class simulationEngine extends EventTarget {
     const tileY = Math.floor(midY / this.TILE_HEIGHT);
 
     if (tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
-      const crop = field[tileY][tileX];
+      const crop = field[tileY][tileX]; // CHANGE HERE
       return crop.stage == checkTiles;
     }
     return false;

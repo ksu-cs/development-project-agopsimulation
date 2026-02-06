@@ -1,6 +1,6 @@
 import SimManager from "../SimManager";
 import { CROP_STAGES } from "../../States/StateClasses/CropState";
-import { ChangeFieldTile, GetCropState } from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
+import { ChangeFieldTile, GetCropState, TILE_BYTE_SIZE } from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
 
 export default class CropManager extends SimManager {
   update(deltaTime, oldState, newState) {
@@ -19,8 +19,7 @@ export default class CropManager extends SimManager {
     }
 
     const totalBytes = currentField.length;
-    const bytesPerTile = 7;
-    const totalTiles = totalBytes / bytesPerTile;
+    const totalTiles = totalBytes / TILE_BYTE_SIZE;
     const width = Math.sqrt(totalTiles);
 
     const rows = width;
