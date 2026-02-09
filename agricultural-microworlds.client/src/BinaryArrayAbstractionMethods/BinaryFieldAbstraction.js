@@ -36,24 +36,7 @@ export function CreateBlankField(rows, columns) {
  */
 export function InitializeField(field, initalCropState) {
   for (let i = 0; i < field.length; i += TILE_BYTE_SIZE) {
-    // Edits first byte of tile
-    field[i] =
-      GetBitsForCropStage(initalCropState.stage) |
-      GetBitsForCropType(initalCropState.type);
-
-    // Edits bytes 2-4 (Current GDD) of tile
-    let currentGDDFlag = ConvertFloatToUint24(initalCropState.currentGDD);
-
-    field[i + 1] = (currentGDDFlag >> 16) & 0xff;
-    field[i + 2] = (currentGDDFlag >> 8) & 0xff;
-    field[i + 3] = currentGDDFlag & 0xff;
-
-    // Edits bytes 5-7 (required GDD) of tile
-    let requiredGDDFlag = ConvertFloatToUint24(initalCropState.requiredGDD);
-
-    field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
-    field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
-    field[i + 6] = requiredGDDFlag & 0xff;
+    AlterEntireFieldTileUsingUintArrayIndex(field, initalCropState, i);
   }
 }
 
@@ -66,8 +49,20 @@ export function InitializeField(field, initalCropState) {
  * @param {int} width The width of the field
  */
 export function ChangeFieldTile(field, cropState, x, y, width) {
-  let i = GetTileIndex(x, y, width);
+  AlterEntireFieldTileUsingUintArrayIndex(
+    field,
+    cropState,
+    GetTileIndex(x, y, width),
+  );
+}
 
+/**
+ * Alters all the properties in a field tile based on the given CropState
+ * @param {Uint8Array} field The memory array where the field is
+ * @param {CropState} cropState The crop stage to change the tile to
+ * @param {int} i The index int the UintArray to alter
+ */
+function AlterEntireFieldTileUsingUintArrayIndex(field, cropState, i) {
   // Edits first byte of tile
   field[i] =
     GetBitsForCropStage(cropState.stage) | GetBitsForCropType(cropState.type);
