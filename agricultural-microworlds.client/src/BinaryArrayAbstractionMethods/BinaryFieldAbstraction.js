@@ -3,7 +3,6 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
-import { StateManager } from "../States/StateManager";
 
 export const TILE_BYTE_SIZE = 7;
 /**
