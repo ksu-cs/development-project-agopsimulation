@@ -9,16 +9,13 @@ import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 
 //const Tractor1 = new Tractor();
 
-/*
-simulationEngine.js
-
-1. Maintains the official Simulation State
-2. Runs Game Loop
-3. Coordinates Simulation Managers
-4. Connects aync Blockly commands with loop
-
-*/
+/**
+ * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
+ */
 export default class simulationEngine extends EventTarget {
+  /**
+   * @constructor Defines and instances all constants, managers, and variables for the engine.
+   */
   constructor() {
     super();
 
@@ -57,12 +54,17 @@ export default class simulationEngine extends EventTarget {
     this.activeTask = null;
   }
 
-  // Helper: Get manager instance
+  /**
+   * Returns a manager instance of a specific type.
+   * @param {type} type The type of manager to search for.
+   */
   getManager(type) {
     return this.managers.find((m) => m instanceof type);
   }
 
-  // Sets up initial state for grid
+  /**
+   * Initializes all simulation states of the weather, tractor, and field.
+   */
   initializeStates() {
     // 1. Setup weather
     const weatherState = new WeatherState();
@@ -81,14 +83,16 @@ export default class simulationEngine extends EventTarget {
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
-    //3. Setup field
+    // 3. Setup field
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState()),
     );
     this.stateManager.initState("field", field);
   }
 
-  // Loop Control
+  /**
+   * Begins running the simulation, calling the first loop.
+   */
   startMoving() {
     if (!this.isRunning) {
       this.isRunning = true;
@@ -97,6 +101,9 @@ export default class simulationEngine extends EventTarget {
     }
   }
 
+  /**
+   * Stops all active tick-based actions within the simulation.
+   */
   stopMovement() {
     this.isRunning = false;
     this.simulationSessionId++;
@@ -106,7 +113,11 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
   }
 
-  // Main game loop
+  /**
+   * The main game loop.
+   * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
+   * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
+   */
   loop(timestamp) {
     if (!this.isRunning) return;
 
@@ -173,6 +184,9 @@ export default class simulationEngine extends EventTarget {
     this.animationId = requestAnimationFrame(this.loop.bind(this));
   }
 
+  /**
+   * Resolves the currently active task, if possible.
+   */
   resolveActiveTask() {
     if (this.activeTask && this.activeTask.resolve) {
       const resolve = this.activeTask.resolve;
@@ -189,7 +203,9 @@ export default class simulationEngine extends EventTarget {
     }
   }
 
-  // Gives snapshot of required data to visualization
+  /**
+   * Dispatches an event to obtain a timestamp of the current simulation and its states.
+   */
   timeStepEvent() {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
@@ -227,6 +243,11 @@ export default class simulationEngine extends EventTarget {
 
   // --- ASYNC COMMANDS ---
 
+  /**
+   * Begins moving the tractor for a set amount of time.
+   * @param {number} durationInSeconds The length of time the tractor should be moving for.
+   * @returns {Promise} Returns a new Promise to handle tractor movement.
+   */
   async moveForward(durationInSeconds) {
     const mySessionId = this.simulationSessionId;
     const tractor = this.stateManager.getState("tractor");
@@ -241,6 +262,11 @@ export default class simulationEngine extends EventTarget {
     });
   }
 
+  /**
+   * Tells the tractor to turn a set amount of degrees over time.
+   * @param {number} angle The amount, in degrees, that the tractor should turn.
+   * @returns {Promise} Returns a new Promise to handle tractor turning.
+   */
   async turnXDegrees(angle) {
     const mySessionId = this.simulationSessionId;
     const tractor = this.stateManager.getState("tractor");
@@ -256,6 +282,11 @@ export default class simulationEngine extends EventTarget {
     });
   }
 
+  /**
+   * Halts all tractor movement, waiting for a set amount of in-simulation weeks to pass.
+   * @param {number} weeks How many weeks the tractor should wait for.
+   * @returns {Promise} Returns a new Promise to wait a certain amount of time.
+   */
   async waitXWeeks(weeks) {
     const mySessionId = this.simulationSessionId;
     const durationInSeconds = Number(weeks) * 7.0;
@@ -275,59 +306,87 @@ export default class simulationEngine extends EventTarget {
     });
   }
 
+  /**
+   * Toggles harvesting for the tractor on or off.
+   * @param {boolean} isOn Whether or not harvesting should be enabled.
+   */
   toggleHarvesting(isOn) {
     const tractor = this.stateManager.getState("tractor");
     if (tractor) tractor.isHarvestingOn = isOn;
   }
 
+  /**
+   * Toggles seeding for the tractor on or off.
+   * @param {boolean} isOn Whether or not seeding should be enabled.
+   */
   toggleSeeding(isOn) {
     const tractor = this.stateManager.getState("tractor");
     if (tractor) tractor.isSeedingOn = isOn;
   }
 
+  /**
+   * Sets the speed multiplier for the simulation's weather manager.
+   * @param {number} speed The speed multiplier for the weather.
+   */
   setSpeedMultiplier(speed) {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;
   }
 
+  /**
+   * Checks if a tile in front of the tractor contains a certain type of tile.
+   * @param {any} type The type of tile to search for.
+   * @returns {boolean} Whether or not a tile was found in front of the tractor.
+   */
   CheckIfPlantInFront(type) {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
-    if (!tractor || !field) return false;
+    const tractorManager = this.getManager(TractorManager);
+    const centerX = tractor.x + 32;
+    const centerY = tractor.y + 32;
+    const rad = (tractor.angle * Math.PI) / 180;
+    const frontX = centerX + Math.cos(rad) * tractorManager.HEADER_OFFSET;
+    const frontY = centerY + Math.sin(rad) * tractorManager.HEADER_OFFSET;
 
-    const centerX = tractor.x + this.FRAME_WIDTH / 2;
-    const centerY = tractor.y + this.FRAME_HEIGHT / 2;
-    const rad = tractor.angle * (Math.PI / 180);
-    const cos = Math.cos(rad);
-    const sin = Math.sin(rad);
+    const pSin = Math.sin(rad);
+    const pCos = Math.cos(rad);
+    const pointsToCheck = 10;
 
-    const topLeftX = -this.FRAME_WIDTH / 2;
-    const topLeftY = -this.FRAME_HEIGHT / 2;
-    const topRightX = this.FRAME_WIDTH / 2;
-    const topRightY = -this.FRAME_HEIGHT / 2;
+    for (let i = 0; i < pointsToCheck; i++) {
+      const t = i / (pointsToCheck - 1) - 0.5;
+      const offset = t * tractorManager.HEADER_WIDTH;
+      const checkX = frontX - pSin * offset;
+      const checkY = frontY + pCos * offset;
 
-    const p1 = {
-      x: centerX + (topLeftX * cos - topLeftY * sin),
-      y: centerY + (topLeftX * sin + topLeftY * cos),
-    };
-    const p2 = {
-      x: centerX + (topRightX * cos - topRightY * sin),
-      y: centerY + (topRightX * sin + topRightY * cos),
-    };
+      if (this.checkIfTileMatches(checkX, checkY, field, type))
+        return true;
+    }
 
-    return this.detectWhatTilesAreHit(p1.x, p1.y, p2.x, p2.y, type, field);
+    return false;
   }
 
-  detectWhatTilesAreHit(x0, y0, x1, y1, checkTiles, field) {
-    const midX = (x0 + x1) / 2;
-    const midY = (y0 + y1) / 2;
-    const tileX = Math.floor(midX / this.TILE_WIDTH);
-    const tileY = Math.floor(midY / this.TILE_HEIGHT);
+  /**
+   * Detects if a tile is within the field and matches a certain type.
+   * @param {number} x The X of the tile.
+   * @param {number} y The Y of the tile.
+   * @param {any} field The tile field.
+   * @param {any} type The type of tile to check for.
+   * @returns {boolean} Whether or not the tile is of matching type.
+   */
+  checkIfTileMatches(x, y, field, type) {
+    const tileX = Math.floor(x / this.TILE_WIDTH);
+    const tileY = Math.floor(y / this.TILE_HEIGHT);
 
-    if (tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
-      const crop = field[tileY][tileX];
-      return crop.stage == checkTiles;
+    if (
+      tileY >= 0 &&
+      tileY < field.length &&
+      tileX >= 0 &&
+      tileX < field[0].length
+    ) {
+      const targetCrop = field[tileY][tileX];
+      return targetCrop.stage == type;
     }
+
     return false;
   }
 

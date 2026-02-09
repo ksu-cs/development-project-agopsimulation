@@ -209,7 +209,7 @@ export default class drawCanvas {
   }
 
   /**
-   * Draws a representation of Night time on the canvas
+   * Draws a representation of Night time on the canvas.
    */
   drawNight() {
     this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
@@ -217,8 +217,7 @@ export default class drawCanvas {
   }
 
   /**
-   * Called everytime a necessary starting image loads,
-   * after all images are loaded makes the initial draw on the canvas
+   * Called everytime a necessary starting image loads, incrementing the load count, and initializing the field once ready for initialization.
    */
   onImageLoad() {
     this.imageLoadCount++;
@@ -230,7 +229,7 @@ export default class drawCanvas {
   }
 
   /**
-   * Sets all the sprite onload methods
+   * Sets all the sprite onload methods.
    */
   setSpriteOnLoadMethods() {
     this.tractorSprite.onload = () => {
