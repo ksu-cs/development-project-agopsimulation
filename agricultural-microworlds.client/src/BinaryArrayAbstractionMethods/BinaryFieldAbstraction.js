@@ -168,9 +168,9 @@ export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3) {
 
 /**
  * Calculates the index in the 1D array from 2D array coordinates
- * @param {*} x The ZERO INDEXED x value where it should be in the array
- * @param {*} y The ZERO INDEXED y value where it should be in the array
- * @param {*} width The width of the field
+ * @param {int} x The ZERO INDEXED x value where it should be in the array
+ * @param {int} y The ZERO INDEXED y value where it should be in the array
+ * @param {int} width The width of the field
  * @returns The corresponding index for the given coordinates
  */
 export function GetTileIndex(x, y, width) {
