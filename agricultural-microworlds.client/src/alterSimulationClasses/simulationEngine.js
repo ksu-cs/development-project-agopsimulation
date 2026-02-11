@@ -358,8 +358,7 @@ export default class simulationEngine extends EventTarget {
       const checkX = frontX - pSin * offset;
       const checkY = frontY + pCos * offset;
 
-      if (this.checkIfTileMatches(checkX, checkY, field, type))
-        return true;
+      if (this.checkIfTileMatches(checkX, checkY, field, type)) return true;
     }
 
     return false;
