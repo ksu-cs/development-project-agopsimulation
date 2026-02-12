@@ -55,6 +55,7 @@ export class CropState extends State {
   plant() {
     this.stage = CROP_STAGES.SEEDED;
     this.currentGDD = 0.0;
+    return true;
   }
 
   clone() {

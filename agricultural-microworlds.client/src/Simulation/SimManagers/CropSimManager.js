@@ -4,7 +4,7 @@ import {
   ChangeFieldTile,
   GetCropState,
   TILE_BYTE_SIZE,
-} from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
+} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 export default class CropManager extends SimManager {
   update(deltaTime, oldState, newState) {
