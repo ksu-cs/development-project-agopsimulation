@@ -120,7 +120,12 @@ export function GetBitsForCropType(cropType) {
   switch (cropType) {
     case CROP_TYPES.WHEAT:
       return 0x00;
-    //other cases here being 0x01/0x02/0x03
+    case CROP_TYPES.CORN:
+      return 0x01;
+    case CROP_TYPES.SOY:
+      return 0x02;
+    default:
+      return GetBitsForCropType(CROP_TYPES.WHEAT);
   }
 }
 

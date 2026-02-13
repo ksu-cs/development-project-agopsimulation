@@ -31,13 +31,24 @@ test("CreateBlankField returns a Uint8Array with the correct values", () => {
 });
 
 test("GetBitsForCropType returns the correct flag", () => {
-  const crop = CROP_TYPES.WHEAT;
+  const crop1 = CROP_TYPES.WHEAT;
+  const crop2 = CROP_TYPES.CORN;
+  const crop3 = CROP_TYPES.SOY;
 
-  const given = GetBitsForCropType(crop);
-  const expected = 0;
+  const given1 = GetBitsForCropType(crop1);
+  const given2 = GetBitsForCropType(crop2);
+  const given3 = GetBitsForCropType(crop3);
 
-  expect(typeof given).toBe("number");
-  expect(given).toEqual(expected);
+  const expected1 = 0;
+  const expected2 = 1;
+  const expected3 = 2;
+
+  expect(typeof given1).toBe("number");
+  expect(typeof given2).toBe("number");
+  expect(typeof given3).toBe("number");
+  expect(given1).toEqual(expected1);
+  expect(given2).toEqual(expected2);
+  expect(given3).toEqual(expected3);
 });
 
 test("GetBitsForCropStage returns correct flag", () => {
@@ -166,10 +177,13 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   InitializeField(field, initalCropState);
 
   let newCropState = new CropState();
+  newCropState.type = CROP_TYPES.CORN;
   newCropState.currentGDD = 20;
 
   ChangeFieldTile(field, newCropState, 5, 5, 12);
   // currentGDD will be stored as 2000 after going through the Uint24 conversion process
+  // type will be corn so the last 2 bits of the first byte in the tile should be 01, and the stage should be MATURE so the first 6 bits would be 0000 10
+  // So the first byte will be 0000 1001
   // It would change bytes 3-4 in a tile section
   // Changing it to 0000 0111 1101 0000 = 2000
   // The index of the altered crop tile would be 5 * 12 + 5 = 65 * TILE_BYTE_SIZE = 455
@@ -179,7 +193,11 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   let expectedValue = 20;
 
   for (let i = 0; i < byteFieldSize; i += TILE_BYTE_SIZE) {
-    if (field[i + 2] == 0b00000111 && field[i + 3] == 0b11010000) {
+    if (
+      field[i + 2] == 0b00000111 &&
+      field[i + 3] == 0b11010000 &&
+      field[i] == 0b00001001
+    ) {
       expect(i).toEqual(expectedIndex);
       break;
     }
