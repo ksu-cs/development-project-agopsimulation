@@ -1,6 +1,9 @@
 import State from "../State";
 
 export default class TractorState extends State {
+  /**
+   * Creates a new TractorState, and initializes all default properties.
+   */
   constructor() {
     super();
 
@@ -20,6 +23,9 @@ export default class TractorState extends State {
     this.yieldScore = 0;
   }
 
+  /**
+   * Clones all properties from this TractorState into a newly created one.
+   */
   clone() {
     const newState = new TractorState();
     newState.basespeed = this.basespeed;
