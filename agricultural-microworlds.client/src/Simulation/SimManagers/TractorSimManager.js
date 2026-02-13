@@ -2,7 +2,8 @@ import SimManager from "../SimManager";
 import {
   ChangeFieldTile,
   GetCropState,
-} from "/workspaces/development-project-agopsimulation/agricultural-microworlds.client/src/BinaryArrayAbstractionMethods/BinaryFieldAbstraction.js";
+  TILE_BYTE_SIZE,
+} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -58,8 +59,10 @@ export default class TractorSimManager extends SimManager {
       if (crop.isMature()) {
         crop.reset();
         tractor.yieldScore += 1;
+        return true;
       } else if (crop.isGrowing()) {
         crop.reset(); // Destroy if harvesting early
+        return true;
       }
     });
   }
@@ -68,6 +71,7 @@ export default class TractorSimManager extends SimManager {
     this.applyToolAction(tractor, field, (crop) => {
       if (crop.isUnplanted()) {
         crop.plant();
+        return true;
       }
     });
   }
@@ -99,14 +103,14 @@ export default class TractorSimManager extends SimManager {
     const tileY = Math.floor(y / this.TILE_HEIGHT);
 
     // Calculate dimensions
-    const totalTiles = field.length / 7;
+    const totalTiles = field.length / TILE_BYTE_SIZE;
     const width = Math.sqrt(totalTiles);
 
     if (
       tileY >= 0 &&
-      tileY < field.length &&
+      tileY < this.FIELD_COLS &&
       tileX >= 0 &&
-      tileX < field[0].length
+      tileX < this.FIELD_COLS
     ) {
       const targetCrop = GetCropState(field, tileX, tileY, width);
 
@@ -115,7 +119,6 @@ export default class TractorSimManager extends SimManager {
       if (didChange) {
         ChangeFieldTile(field, targetCrop, tileX, tileY, width);
       }
-
     }
   }
 }

@@ -1,14 +1,19 @@
 import { StateManager } from "../States/StateManager";
-import { CropState } from "../States/StateClasses/CropState";
+import {
+  CROP_STAGES,
+  CROP_TYPES,
+  CropState,
+} from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import { CreateBlankField, InitializeField } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
-
-//const Tractor1 = new Tractor();
+import {
+  CreateBlankField,
+  InitializeField,
+} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -88,8 +93,8 @@ export default class simulationEngine extends EventTarget {
     const field = CreateBlankField(this.ROWS, this.COLS);
 
     const initialCrop = new CropState();
-    initialCrop.type = 0;
-    initialCrop.stage = 0;
+    initialCrop.type = CROP_TYPES.WHEAT;
+    initialCrop.stage = CROP_STAGES.UNPLANTED;
     initialCrop.currentGDD = 0;
     initialCrop.requiredGDD = 1000;
 
@@ -389,7 +394,7 @@ export default class simulationEngine extends EventTarget {
       tileX >= 0 &&
       tileX < field[0].length
     ) {
-      const targetCrop = field[tileY][tileX];
+      const targetCrop = field[tileY][tileX]; // CHANGE HERE
       return targetCrop.stage == type;
     }
 
