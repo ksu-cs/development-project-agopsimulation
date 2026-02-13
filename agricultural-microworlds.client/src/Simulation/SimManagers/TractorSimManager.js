@@ -1,4 +1,9 @@
 import SimManager from "../SimManager";
+import {
+  ChangeFieldTile,
+  GetCropState,
+  TILE_BYTE_SIZE,
+} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -7,6 +12,7 @@ export default class TractorSimManager extends SimManager {
     this.TILE_HEIGHT = 8;
     this.HEADER_OFFSET = 20;
     this.HEADER_WIDTH = 64;
+    this.FIELD_COLS = 300;
   }
 
   update(deltaTime, oldState, newState) {
@@ -53,8 +59,10 @@ export default class TractorSimManager extends SimManager {
       if (crop.isMature()) {
         crop.reset();
         tractor.yieldScore += 1;
+        return true;
       } else if (crop.isGrowing()) {
         crop.reset(); // Destroy if harvesting early
+        return true;
       }
     });
   }
@@ -63,6 +71,7 @@ export default class TractorSimManager extends SimManager {
     this.applyToolAction(tractor, field, (crop) => {
       if (crop.isUnplanted()) {
         crop.plant();
+        return true;
       }
     });
   }
@@ -93,14 +102,23 @@ export default class TractorSimManager extends SimManager {
     const tileX = Math.floor(x / this.TILE_WIDTH);
     const tileY = Math.floor(y / this.TILE_HEIGHT);
 
+    // Calculate dimensions
+    const totalTiles = field.length / TILE_BYTE_SIZE;
+    const width = Math.sqrt(totalTiles);
+
     if (
       tileY >= 0 &&
-      tileY < field.length &&
+      tileY < this.FIELD_COLS &&
       tileX >= 0 &&
-      tileX < field[0].length
+      tileX < this.FIELD_COLS
     ) {
-      const targetCrop = field[tileY][tileX];
-      actionCallback(targetCrop);
+      const targetCrop = GetCropState(field, tileX, tileY, width);
+
+      const didChange = actionCallback(targetCrop);
+
+      if (didChange) {
+        ChangeFieldTile(field, targetCrop, tileX, tileY, width);
+      }
     }
   }
 }

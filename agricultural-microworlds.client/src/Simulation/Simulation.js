@@ -67,6 +67,7 @@ export default class Simulation {
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState()),
     );
+
     this.stateManager.initState("field", field);
   }
 

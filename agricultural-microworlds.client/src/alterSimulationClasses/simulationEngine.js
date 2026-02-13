@@ -1,13 +1,19 @@
 import { StateManager } from "../States/StateManager";
-import { CropState } from "../States/StateClasses/CropState";
+import {
+  CROP_STAGES,
+  CROP_TYPES,
+  CropState,
+} from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-
-//const Tractor1 = new Tractor();
+import {
+  CreateBlankField,
+  InitializeField,
+} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -83,10 +89,17 @@ export default class simulationEngine extends EventTarget {
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
-    // 3. Setup field
-    const field = Array.from({ length: this.ROWS }, () =>
-      Array.from({ length: this.COLS }, () => new CropState()),
-    );
+    //3. Setup field
+    const field = CreateBlankField(this.ROWS, this.COLS);
+
+    const initialCrop = new CropState();
+    initialCrop.type = CROP_TYPES.WHEAT;
+    initialCrop.stage = CROP_STAGES.UNPLANTED;
+    initialCrop.currentGDD = 0;
+    initialCrop.requiredGDD = 1000;
+
+    InitializeField(field, initialCrop);
+
     this.stateManager.initState("field", field);
   }
 
@@ -139,9 +152,7 @@ export default class simulationEngine extends EventTarget {
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
       } else if (key === "field") {
-        nextStates[key] = oldStates[key].map((row) =>
-          row.map((c) => c.clone()),
-        );
+        nextStates[key] = oldStates[key].slice();
       }
     }
 
@@ -234,6 +245,7 @@ export default class simulationEngine extends EventTarget {
           tractor.y,
           this.nightFadeProgress,
           field,
+          this.COLS,
           dateString,
           gddString,
         ),
@@ -359,31 +371,6 @@ export default class simulationEngine extends EventTarget {
       const checkY = frontY + pCos * offset;
 
       if (this.checkIfTileMatches(checkX, checkY, field, type)) return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Detects if a tile is within the field and matches a certain type.
-   * @param {number} x The X of the tile.
-   * @param {number} y The Y of the tile.
-   * @param {any} field The tile field.
-   * @param {any} type The type of tile to check for.
-   * @returns {boolean} Whether or not the tile is of matching type.
-   */
-  checkIfTileMatches(x, y, field, type) {
-    const tileX = Math.floor(x / this.TILE_WIDTH);
-    const tileY = Math.floor(y / this.TILE_HEIGHT);
-
-    if (
-      tileY >= 0 &&
-      tileY < field.length &&
-      tileX >= 0 &&
-      tileX < field[0].length
-    ) {
-      const targetCrop = field[tileY][tileX];
-      return targetCrop.stage == type;
     }
 
     return false;

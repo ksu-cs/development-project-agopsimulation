@@ -1,4 +1,12 @@
-﻿/**
+﻿import {
+  CreateBlankField,
+  InitializeField,
+  ChangeFieldTile,
+  GetCropState,
+} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
+
+/**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
  */
 export default class drawCanvas {
@@ -35,7 +43,7 @@ export default class drawCanvas {
     this.TILE_WIDTH = this.TILE_BASE_SIZE / this.FIELD_SCALE;
     this.TILE_HEIGHT = this.TILE_BASE_SIZE / this.FIELD_SCALE;
 
-    // SCreen variables
+    // Screen variables
     this.WORLD_WIDTH_IN_SCREENS = 5;
     this.WORLD_HEIGHT_IN_SCREENS = 5;
     this.SCREEN_ROWS = Math.floor(this.canvas.height / this.TILE_HEIGHT) + 2;
@@ -123,32 +131,31 @@ export default class drawCanvas {
    * Draws the field on the canvas based on the information received from the timeStep event
    */
   drawField() {
-    const fieldRows = this.simulationState.field.length;
-    const fieldCols = this.simulationState.field[0].length;
+    const fieldWidth = this.simulationState.fieldWidth;
+    const fieldHeight = this.simulationState.fieldWidth;
 
     const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
     const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
 
-    const endRow = Math.min(fieldRows, startRow + this.SCREEN_ROWS);
-    const endCol = Math.min(fieldCols, startCol + this.SCREEN_COLUMNS);
+    const endRow = Math.min(fieldHeight, startRow + this.SCREEN_ROWS);
+    const endCol = Math.min(fieldWidth, startCol + this.SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue;
 
-        let crop = this.simulationState.field[i][j];
-        if (!crop) continue;
+        const crop = GetCropState(this.simulationState.field, j, i, fieldWidth);
 
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;
         switch (crop.stage) {
-          case 0:
+          case CROP_STAGES.UNPLANTED:
             tileImage = this.dirtImage;
             break;
-          case 1:
+          case CROP_STAGES.SEEDED:
             tileImage = this.seedImage;
             break;
-          case 2:
+          case CROP_STAGES.MATURE:
             tileImage = this.wheatImage;
             break;
         }
