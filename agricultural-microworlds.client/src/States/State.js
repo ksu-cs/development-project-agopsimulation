@@ -1,7 +1,15 @@
 export default class State {
   clone() {
-    const newState = new State();
+    this.state = {
+      Implements: [
+        {
+          type: "harvester",
+          position: {0: 0}
+        }
+      ],
+      Crops: [
 
-    return newState;
+      ]
+    }
   }
 }
