@@ -30,6 +30,7 @@ export default class drawCanvas {
     // Sprite setup
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
+    this.cornImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
@@ -56,10 +57,11 @@ export default class drawCanvas {
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+    this.cornImage.src = "./src/assets/corn.png";
 
     // Image initialization
     this.imageLoadCount = 0;
-    this.imageCount = 4;
+    this.imageCount = 5;
     this.isInitialized = false;
 
     /** @type {CustomEvent} Holds the timeStepData to draw */
@@ -156,7 +158,16 @@ export default class drawCanvas {
             tileImage = this.seedImage;
             break;
           case CROP_STAGES.MATURE:
-            tileImage = this.wheatImage;
+            switch (crop.type) {
+              case 0:
+                tileImage = this.wheatImage;
+                break;
+              case 1:
+                tileImage = this.cornImage;
+                break;
+              default:
+                tileImage = this.wheatImage;
+            }
             break;
         }
         const tileWorldX = j * this.TILE_WIDTH;
@@ -241,11 +252,11 @@ export default class drawCanvas {
    */
   setSpriteOnLoadMethods() {
     this.tractorSprite.onload = () => {
-      console.log("✅ Tractor sprite loaded!");
+      console.log("Tractor sprite loaded!");
       this.onImageLoad();
     };
     this.tractorSprite.onerror = () => {
-      console.error("❌ Failed to load tractor sprite!");
+      console.error("Failed to load tractor sprite!");
     };
     this.dirtImage.onload = () => {
       console.log("DirtImage loaded!");
@@ -267,6 +278,13 @@ export default class drawCanvas {
     };
     this.wheatImage.onerror = () => {
       console.error("failed to load WheatImage");
+    };
+    this.cornImage.onload = () => {
+      console.log("CornImage loaded!");
+      this.onImageLoad();
+    };
+    this.cornImage.onerror = () => {
+      console.error("failed to load CornImage");
     };
   }
 }

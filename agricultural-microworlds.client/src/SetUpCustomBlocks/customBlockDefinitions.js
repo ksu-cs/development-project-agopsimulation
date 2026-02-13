@@ -299,6 +299,8 @@ var switchCropBeingPlanted = {
       ],
     },
   ],
+  previousStatement: null,
+  nextStatement: null,
   style: "control_blocks",
   tooltip: "Switch the crop that is being planted when seeding is turned on",
 };

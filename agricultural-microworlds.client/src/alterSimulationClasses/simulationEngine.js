@@ -92,7 +92,7 @@ export default class simulationEngine extends EventTarget {
 
     const initialCrop = new CropState();
     initialCrop.type = CROP_TYPES.WHEAT;
-    initialCrop.stage = CROP_STAGES.UNPLANTED;
+    initialCrop.stage = CROP_STAGES.MATURE;
     initialCrop.currentGDD = 0;
     initialCrop.requiredGDD = 1000;
 
