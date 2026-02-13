@@ -1,5 +1,8 @@
 import State from "../State";
 
+/**
+ * A state that stores data for the moving tractor traveling around the fields.
+ */
 export default class TractorState extends State {
   /**
    * Creates a new TractorState, and initializes all default properties.

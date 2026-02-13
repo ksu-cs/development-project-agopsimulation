@@ -1,5 +1,8 @@
 import State from "../State";
 
+/**
+ * A state that stores data for the seeder attached to a tractor.
+ */
 export default class SeederState extends State {
   /**
    * Creates a new SeederState, and initializes all default properties.
