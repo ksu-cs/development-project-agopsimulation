@@ -1,4 +1,5 @@
 import { javascriptGenerator } from "blockly/javascript";
+import { CROP_TYPES } from "../States/StateClasses/CropState";
 
 javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
   const duration =
@@ -70,4 +71,23 @@ javascriptGenerator.forBlock["get_current_week"] = function (generator) {
 
 javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
+};
+
+javascriptGenerator.forBlock["switch_crop_being_planted"] = function (block) {
+  const toggle = block.getFieldValue("toggleType");
+  var crop;
+  switch (toggle) {
+    case "0":
+      crop = CROP_TYPES.WHEAT;
+      break;
+    case "1":
+      crop = CROP_TYPES.CORN;
+      break;
+    case "2":
+      crop = CROP_TYPES.SOY;
+      break;
+    default:
+      crop = CROP_TYPES.WHEAT;
+  }
+  return `simulationMethods.switchCropBeingPlanted(${crop});\n`;
 };

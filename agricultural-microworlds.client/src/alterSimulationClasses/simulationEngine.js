@@ -297,6 +297,15 @@ export default class simulationEngine extends EventTarget {
     if (tractor) tractor.isSeedingOn = isOn;
   }
 
+  /**
+   * Switches the crop being planted by the seeder.
+   * @param {CROP_TYPES} crop - The type of crop to plant
+   */
+  switchCropBeingPlanted(crop) {
+    const tractor = this.stateManager.getState("tractor");
+    if (tractor) tractor.cropBeingPlanted = crop;
+  }
+
   setSpeedMultiplier(speed) {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;

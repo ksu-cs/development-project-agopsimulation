@@ -8,6 +8,8 @@ export const CROP_STAGES = {
 
 export const CROP_TYPES = {
   WHEAT: 0,
+  CORN: 1,
+  SOY: 2,
 };
 
 // State of crop at a snapshot
