@@ -376,14 +376,6 @@ export default class simulationEngine extends EventTarget {
     return false;
   }
 
-    if (tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
-      const crop = field[tileY][tileX]; // CHANGE HERE
-      return crop.stage == checkTiles;
-    }
-
-    return false;
-  }
-
   async loadStations() {
     try {
       const response = await fetch(
