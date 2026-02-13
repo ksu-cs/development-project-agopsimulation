@@ -47,7 +47,7 @@ javascriptGenerator.forBlock["wait_x_weeks"] = function (block, generator) {
 javascriptGenerator.forBlock["is_over_tile"] = function (block, generator) {
   const type = block.getFieldValue("TYPE");
   let checkResult = `simulationMethods.CheckIfPlantInFront(${type})`;
-  return [checkResult, generator.ORDER_RELATIONAL];
+  return [checkResult, generator.ORDER_ATOMIC];
 };
 
 javascriptGenerator.forBlock["math_number"] = function (block, generator) {
