@@ -3,8 +3,9 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
+import FieldTileState from "../States/StateClasses/FieldTileState";
 
-export const TILE_BYTE_SIZE = 7;
+export const TILE_BYTE_SIZE = 13;
 /**
  * Field tile bit setup (current)
  * Crop type 4 types supported (2 bits)
@@ -33,22 +34,24 @@ export function CreateBlankField(rows, columns) {
  * @param {Uint8Array} field The memory array where the field is
  * @param {CropState} initalCropState The crop state values to intialize the field to
  */
-export function InitializeField(field, initalCropState) {
+export function InitializeField(field, initialTileState) {
+  const initialCropState = initialTileState.cropState;
+
   for (let i = 0; i < field.length; i += TILE_BYTE_SIZE) {
     // Edits first byte of tile
     field[i] =
-      GetBitsForCropStage(initalCropState.stage) |
-      GetBitsForCropType(initalCropState.type);
+      GetBitsForCropStage(initialCropState.stage) |
+      GetBitsForCropType(initialCropState.type);
 
     // Edits bytes 2-4 (Current GDD) of tile
-    let currentGDDFlag = ConvertFloatToUint24(initalCropState.currentGDD);
+    let currentGDDFlag = ConvertFloatToUint24(initialCropState.currentGDD);
 
     field[i + 1] = (currentGDDFlag >> 16) & 0xff;
     field[i + 2] = (currentGDDFlag >> 8) & 0xff;
     field[i + 3] = currentGDDFlag & 0xff;
 
     // Edits bytes 5-7 (required GDD) of tile
-    let requiredGDDFlag = ConvertFloatToUint24(initalCropState.requiredGDD);
+    let requiredGDDFlag = ConvertFloatToUint24(initialCropState.requiredGDD);
 
     field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
     field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
@@ -64,8 +67,9 @@ export function InitializeField(field, initalCropState) {
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
  */
-export function ChangeFieldTile(field, cropState, x, y, width) {
+export function ChangeFieldTile(field, tileState, x, y, width) {
   let i = GetTileIndex(x, y, width);
+  const cropState = tileState.cropState;
 
   // Edits first byte of tile
   field[i] =
@@ -84,6 +88,60 @@ export function ChangeFieldTile(field, cropState, x, y, width) {
   field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
   field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
   field[i + 6] = requiredGDDFlag & 0xff;
+
+  // --- TILE DATA ---
+  let waterFlag = ConvertFloatToUint24(tileState.waterLevel);
+  field[i + 7] = (waterFlag >> 16) & 0xff;
+  field[i + 8] = (waterFlag >> 8) & 0xff;
+  field[i + 9] = waterFlag & 0xff;
+
+  let mineralsFlag = ConvertFloatToUint24(tileState.minerals);
+  field[i + 10] = (mineralsFlag >> 16) & 0xff;
+  field[i + 11] = (mineralsFlag >> 8) & 0xff;
+  field[i + 12] = mineralsFlag & 0xff;
+}
+
+/**
+ * Gets a readable form of the FieldTile state at the specified x and y coordinate
+ * @param {Uint8Array} field The memory array where the field is
+ * @param {int} x The x value for where the tile is located at on the field
+ * @param {int} y The y value for where the tile is located at on the field
+ * @param {int} width The width of the field
+ * @returns A new FieldTile state object with all the information in the tile
+ */
+export function GetFieldTile(field, x, y, width) {
+  let i = GetTileIndex(x, y, width);
+
+  let tile = new FieldTileState();
+
+  tile.cropState.type = field[i] & 0x03;
+  tile.cropState.stage = (field[i] >> 2) & 0xff;
+
+  tile.cropState.currentGDD = Convert3Uint8ToFloat(
+    field[i + 1],
+    field[i + 2],
+    field[i + 3],
+  );
+  tile.cropState.requiredGDD = Convert3Uint8ToFloat(
+    field[i + 4],
+    field[i + 5],
+    field[i + 6],
+  );
+
+  // 2. Populate Tile Properties
+  tile.waterLevel = Convert3Uint8ToFloat(
+    field[i + 7],
+    field[i + 8],
+    field[i + 9],
+  );
+
+  tile.minerals = Convert3Uint8ToFloat(
+    field[i + 10],
+    field[i + 11],
+    field[i + 12],
+  );
+
+  return tile;
 }
 
 /**
@@ -124,6 +182,8 @@ export function GetCropState(field, x, y, width) {
 export function GetBitsForCropType(cropType) {
   switch (cropType) {
     case CROP_TYPES.WHEAT:
+      return 0x01;
+    case CROP_TYPES.EMPTY:
       return 0x00;
     //other cases here being 0x01/0x02/0x03
   }

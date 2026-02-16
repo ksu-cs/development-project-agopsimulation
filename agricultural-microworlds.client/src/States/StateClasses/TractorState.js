@@ -1,9 +1,5 @@
-import State from "../State";
-
-export default class TractorState extends State {
+export default class TractorState {
   constructor() {
-    super();
-
     this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
 
