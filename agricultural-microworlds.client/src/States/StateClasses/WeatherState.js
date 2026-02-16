@@ -1,4 +1,4 @@
-export default class WeatherState{
+export default class WeatherState {
   constructor() {
     this.csvLines = []; // Stores the parsed CSV data
     this.startDate = null; // Stores the simulation start date

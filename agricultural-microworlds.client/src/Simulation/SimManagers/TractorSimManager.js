@@ -71,7 +71,7 @@ export default class TractorSimManager extends SimManager {
 
   handleSeeding(tractor, field) {
     this.applyToolAction(tractor, field, (tile) => {
-      const crop = tile.cropState
+      const crop = tile.cropState;
 
       if (crop.isUnplanted()) {
         crop.plant();

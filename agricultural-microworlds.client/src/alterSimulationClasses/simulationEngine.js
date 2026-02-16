@@ -93,7 +93,7 @@ export default class simulationEngine extends EventTarget {
     // 3. Setup field
     const field = CreateBlankField(this.ROWS, this.COLS);
 
-    const initialTile = new FieldTileState(); 
+    const initialTile = new FieldTileState();
     if (!initialTile.cropState) {
       initialTile.cropState = new CropState();
     }

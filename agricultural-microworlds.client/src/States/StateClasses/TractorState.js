@@ -1,6 +1,5 @@
-export default class TractorState{
+export default class TractorState {
   constructor() {
-
     this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
 

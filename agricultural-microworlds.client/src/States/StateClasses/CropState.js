@@ -1,4 +1,3 @@
-
 export const CROP_STAGES = {
   UNPLANTED: 0,
   SEEDED: 1,
@@ -7,11 +6,11 @@ export const CROP_STAGES = {
 
 export const CROP_TYPES = {
   EMPTY: 0,
-  WHEAT: 1
+  WHEAT: 1,
 };
 
 // State of crop at a snapshot
-export class CropState{
+export class CropState {
   constructor() {
     // Default to MATURE
     this.stage = CROP_STAGES.MATURE;

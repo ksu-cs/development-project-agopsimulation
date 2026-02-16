@@ -99,7 +99,6 @@ export function ChangeFieldTile(field, tileState, x, y, width) {
   field[i + 10] = (mineralsFlag >> 16) & 0xff;
   field[i + 11] = (mineralsFlag >> 8) & 0xff;
   field[i + 12] = mineralsFlag & 0xff;
-
 }
 
 /**
@@ -111,7 +110,6 @@ export function ChangeFieldTile(field, tileState, x, y, width) {
  * @returns A new FieldTile state object with all the information in the tile
  */
 export function GetFieldTile(field, x, y, width) {
-
   let i = GetTileIndex(x, y, width);
 
   let tile = new FieldTileState();
@@ -134,17 +132,16 @@ export function GetFieldTile(field, x, y, width) {
   tile.waterLevel = Convert3Uint8ToFloat(
     field[i + 7],
     field[i + 8],
-    field[i + 9]
+    field[i + 9],
   );
 
   tile.minerals = Convert3Uint8ToFloat(
     field[i + 10],
     field[i + 11],
-    field[i + 12]
+    field[i + 12],
   );
 
   return tile;
-
 }
 
 /**
