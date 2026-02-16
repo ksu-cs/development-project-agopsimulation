@@ -70,7 +70,7 @@ export default class TractorSimManager extends SimManager {
   handleSeeding(tractor, field) {
     this.applyToolAction(tractor, field, (crop) => {
       if (crop.isUnplanted()) {
-        crop.plant();
+        crop.plant(tractor.cropBeingPlanted);
         return true;
       }
     });

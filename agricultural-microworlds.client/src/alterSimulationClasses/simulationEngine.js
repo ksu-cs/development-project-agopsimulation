@@ -310,48 +310,7 @@ export default class simulationEngine extends EventTarget {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;
   }
-
-  CheckIfPlantInFront(type) {
-    const tractor = this.stateManager.getState("tractor");
-    const field = this.stateManager.getState("field");
-    if (!tractor || !field) return false;
-
-    const centerX = tractor.x + this.FRAME_WIDTH / 2;
-    const centerY = tractor.y + this.FRAME_HEIGHT / 2;
-    const rad = tractor.angle * (Math.PI / 180);
-    const cos = Math.cos(rad);
-    const sin = Math.sin(rad);
-
-    const topLeftX = -this.FRAME_WIDTH / 2;
-    const topLeftY = -this.FRAME_HEIGHT / 2;
-    const topRightX = this.FRAME_WIDTH / 2;
-    const topRightY = -this.FRAME_HEIGHT / 2;
-
-    const p1 = {
-      x: centerX + (topLeftX * cos - topLeftY * sin),
-      y: centerY + (topLeftX * sin + topLeftY * cos),
-    };
-    const p2 = {
-      x: centerX + (topRightX * cos - topRightY * sin),
-      y: centerY + (topRightX * sin + topRightY * cos),
-    };
-
-    return this.detectWhatTilesAreHit(p1.x, p1.y, p2.x, p2.y, type, field);
-  }
-
-  detectWhatTilesAreHit(x0, y0, x1, y1, checkTiles, field) {
-    const midX = (x0 + x1) / 2;
-    const midY = (y0 + y1) / 2;
-    const tileX = Math.floor(midX / this.TILE_WIDTH);
-    const tileY = Math.floor(midY / this.TILE_HEIGHT);
-
-    if (tileY >= 0 && tileY < this.ROWS && tileX >= 0 && tileX < this.COLS) {
-      const crop = field[tileY][tileX]; // CHANGE HERE
-      return crop.stage == checkTiles;
-    }
-    return false;
-  }
-
+  
   async loadStations() {
     try {
       const response = await fetch(

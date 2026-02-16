@@ -53,9 +53,13 @@ export class CropState extends State {
     this.currentGDD = 0.0;
   }
 
-  // Plant Seeds
-  plant() {
+  /**
+   * Plants the seed for this crop
+   * @param {CROP_TYPES} cropType The type of crop to change the seeded value to
+   */
+  plant(cropType) {
     this.stage = CROP_STAGES.SEEDED;
+    this.type = cropType;
     this.currentGDD = 0.0;
   }
 
