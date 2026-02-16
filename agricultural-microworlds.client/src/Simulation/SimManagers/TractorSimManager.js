@@ -1,7 +1,7 @@
 import SimManager from "../SimManager";
 import {
   ChangeFieldTile,
-  GetCropState,
+  GetFieldTile,
   TILE_BYTE_SIZE,
 } from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
@@ -55,7 +55,9 @@ export default class TractorSimManager extends SimManager {
   }
 
   handleHarvesting(tractor, field) {
-    this.applyToolAction(tractor, field, (crop) => {
+    this.applyToolAction(tractor, field, (tile) => {
+      const crop = tile.cropState;
+
       if (crop.isMature()) {
         crop.reset();
         tractor.yieldScore += 1;
@@ -68,7 +70,9 @@ export default class TractorSimManager extends SimManager {
   }
 
   handleSeeding(tractor, field) {
-    this.applyToolAction(tractor, field, (crop) => {
+    this.applyToolAction(tractor, field, (tile) => {
+      const crop = tile.cropState
+
       if (crop.isUnplanted()) {
         crop.plant();
         return true;
@@ -112,7 +116,7 @@ export default class TractorSimManager extends SimManager {
       tileX >= 0 &&
       tileX < this.FIELD_COLS
     ) {
-      const targetCrop = GetCropState(field, tileX, tileY, width);
+      const targetCrop = GetFieldTile(field, tileX, tileY, width);
 
       const didChange = actionCallback(targetCrop);
 

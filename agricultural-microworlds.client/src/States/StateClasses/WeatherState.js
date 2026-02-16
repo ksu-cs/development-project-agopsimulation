@@ -1,8 +1,5 @@
-import State from "../State";
-
-export default class WeatherState extends State {
+export default class WeatherState{
   constructor() {
-    super();
     this.csvLines = []; // Stores the parsed CSV data
     this.startDate = null; // Stores the simulation start date
 

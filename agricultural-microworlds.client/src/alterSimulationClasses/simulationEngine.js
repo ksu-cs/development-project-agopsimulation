@@ -6,6 +6,7 @@ import {
 } from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
+import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
@@ -92,13 +93,20 @@ export default class simulationEngine extends EventTarget {
     // 3. Setup field
     const field = CreateBlankField(this.ROWS, this.COLS);
 
+    const initialTile = new FieldTileState(); 
+    if (!initialTile.cropState) {
+      initialTile.cropState = new CropState();
+    }
+
     const initialCrop = new CropState();
     initialCrop.type = CROP_TYPES.WHEAT;
     initialCrop.stage = CROP_STAGES.UNPLANTED;
     initialCrop.currentGDD = 0;
     initialCrop.requiredGDD = 1000;
 
-    InitializeField(field, initialCrop);
+    initialTile.cropState = initialCrop;
+
+    InitializeField(field, initialTile);
 
     this.stateManager.initState("field", field);
   }

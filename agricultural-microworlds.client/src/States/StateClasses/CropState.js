@@ -1,4 +1,3 @@
-import State from "../State";
 
 export const CROP_STAGES = {
   UNPLANTED: 0,
@@ -7,16 +6,16 @@ export const CROP_STAGES = {
 };
 
 export const CROP_TYPES = {
-  WHEAT: 0,
+  EMPTY: 0,
+  WHEAT: 1
 };
 
 // State of crop at a snapshot
-export class CropState extends State {
+export class CropState{
   constructor() {
-    super();
     // Default to MATURE
     this.stage = CROP_STAGES.MATURE;
-    this.type = CROP_TYPES.WHEAT;
+    this.type = CROP_TYPES.EMPTY;
     this.currentGDD = 0.0;
     this.requiredGDD = 1000.0; // The GDD needed to reach maturity
   }
