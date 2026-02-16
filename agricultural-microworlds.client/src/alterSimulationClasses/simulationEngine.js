@@ -402,7 +402,7 @@ export default class simulationEngine extends EventTarget {
       tileX >= 0 &&
       tileX < field[0].length
     ) {
-      const targetCrop = field[tileY][tileX]; // CHANGE HERE
+      const targetCrop = field[tileY][tileX];
       return targetCrop.stage == type;
     }
 
@@ -450,7 +450,5 @@ export default class simulationEngine extends EventTarget {
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
-
-    // Explicitly update display on reset so Date resets instantly on screen
   }
 }
