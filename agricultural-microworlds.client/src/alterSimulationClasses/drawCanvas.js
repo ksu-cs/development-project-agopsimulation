@@ -31,6 +31,7 @@ export default class drawCanvas {
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.cornImage = new Image();
+    this.soybeanImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
@@ -58,10 +59,11 @@ export default class drawCanvas {
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
     this.cornImage.src = "./src/assets/corn.png";
+    this.soybeanImage.src = "./src/assets/soybean.png";
 
     // Image initialization
     this.imageLoadCount = 0;
-    this.imageCount = 5;
+    this.imageCount = 6;
     this.isInitialized = false;
 
     /** @type {CustomEvent} Holds the timeStepData to draw */
@@ -164,6 +166,9 @@ export default class drawCanvas {
                 break;
               case 1:
                 tileImage = this.cornImage;
+                break;
+              case 2:
+                tileImage = this.soybeanImage;
                 break;
               default:
                 tileImage = this.wheatImage;
@@ -285,6 +290,13 @@ export default class drawCanvas {
     };
     this.cornImage.onerror = () => {
       console.error("failed to load CornImage");
+    };
+    this.soybeanImage.onload = () => {
+      console.log("SoybeanImage loaded!");
+      this.onImageLoad();
+    };
+    this.soybeanImage.onerror = () => {
+      console.error("failed to load SoybeanImage");
     };
   }
 }

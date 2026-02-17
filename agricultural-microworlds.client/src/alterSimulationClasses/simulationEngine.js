@@ -91,10 +91,9 @@ export default class simulationEngine extends EventTarget {
     const field = CreateBlankField(this.ROWS, this.COLS);
 
     const initialCrop = new CropState();
-    initialCrop.type = CROP_TYPES.CORN;
+    initialCrop.changeCropType(CROP_TYPES.SOY);
     initialCrop.stage = CROP_STAGES.MATURE;
     initialCrop.currentGDD = 0;
-    initialCrop.requiredGDD = 1000;
 
     InitializeField(field, initialCrop);
 
@@ -310,7 +309,7 @@ export default class simulationEngine extends EventTarget {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;
   }
-  
+
   async loadStations() {
     try {
       const response = await fetch(

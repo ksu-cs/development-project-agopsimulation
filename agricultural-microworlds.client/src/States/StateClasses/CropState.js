@@ -12,6 +12,11 @@ export const CROP_TYPES = {
   SOY: 2,
 };
 
+const CROP_GDDS = [];
+CROP_GDDS[CROP_TYPES.WHEAT] = 1000.0;
+CROP_GDDS[CROP_TYPES.CORN] = 1300.0;
+CROP_GDDS[CROP_TYPES.SOY] = 900.0;
+
 // State of crop at a snapshot
 export class CropState extends State {
   constructor() {
@@ -20,7 +25,7 @@ export class CropState extends State {
     this.stage = CROP_STAGES.MATURE;
     this.type = CROP_TYPES.WHEAT;
     this.currentGDD = 0.0;
-    this.requiredGDD = 1000.0; // The GDD needed to reach maturity
+    this.requiredGDD = CROP_GDDS[CROP_TYPES.WHEAT]; // The GDD needed to reach maturity
   }
 
   updateGrowth(deltaGDD) {
@@ -34,6 +39,15 @@ export class CropState extends State {
       this.currentGDD = this.requiredGDD;
       this.stage = CROP_STAGES.MATURE;
     }
+  }
+
+  /**
+   * Changes the crop type and the releating properties to align with that
+   * @param {CROP_TYPES} cropType the crop type to change to
+   */
+  changeCropType(cropType) {
+    this.type = cropType;
+    this.requiredGDD = CROP_GDDS[cropType];
   }
 
   isGrowing() {
@@ -59,8 +73,10 @@ export class CropState extends State {
    */
   plant(cropType) {
     this.stage = CROP_STAGES.SEEDED;
-    this.type = cropType;
     this.currentGDD = 0.0;
+    if (cropType != this.type) {
+      this.changeCropType(cropType);
+    }
   }
 
   clone() {
