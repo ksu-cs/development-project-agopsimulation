@@ -70,4 +70,14 @@ javascriptGenerator.forBlock["get_current_week"] = function (generator) {
 
 javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
+
+};
+
+javascriptGenerator.forBlock["change_vehicle"] = function () {
+  // For now: just change the MAIN vehicle's sprite/type
+  return `simulationMethods.setMainVehicleType("inverted");\n`;
+};
+
+javascriptGenerator.forBlock["change_vehicle_2"] = function () {
+  return `simulationMethods.setMainVehicleType("tractor");\n`;
 };

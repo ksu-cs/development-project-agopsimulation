@@ -285,4 +285,38 @@ Blocks["start_program"] = {
   },
 };
 
+
+
+var changeVehicleToInvert = {
+  type: "change_vehicle",            // ✅ match toolbox + Blocks["change_vehicle"]
+  message0: "Inverted",
+  previousStatement: null,
+  nextStatement: null,
+  style: "vehicle_blocks",
+  tooltip: "Change controlled vehicle to inverted.",
+};
+
+Blocks["change_vehicle"] = {
+  init: function () {
+    this.jsonInit(changeVehicleToInvert);
+  },
+};
+
+var changeVehicleToMain = {
+  type: "change_vehicle_2",          // ✅ match toolbox + Blocks["change_vehicle_2"]
+  message0: "Main",
+  previousStatement: null,
+  nextStatement: null,
+  style: "vehicle_blocks",
+  tooltip: "Change controlled vehicle to main.",
+};
+
+Blocks["change_vehicle_2"] = {
+  init: function () {
+    this.jsonInit(changeVehicleToMain);
+  },
+};
+
+
+
 //#endregion

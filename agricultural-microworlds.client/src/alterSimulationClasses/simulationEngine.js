@@ -235,23 +235,28 @@ export default class simulationEngine extends EventTarget {
     // Calculate GDD String
     const gddString = weather.cumulativeGDD.toFixed(2);
 
-    this.dispatchEvent(
-      new CustomEvent("simulationEngineCreated", {
-        bubbles: true,
-        detail: new timeStepData(
-          tractor.angle,
-          tractor.yieldScore,
-          tractor.x,
-          tractor.y,
-          this.nightFadeProgress,
-          field,
-          this.COLS,
-          dateString,
-          gddString,
-        ),
-      }),
-    );
-  }
+    const ts = new timeStepData(
+    tractor.angle,
+    tractor.yieldScore,
+    tractor.x,
+    tractor.y,
+    this.nightFadeProgress,
+    field,
+    this.COLS,
+    dateString,
+    gddString
+  );
+
+  //default back to tractor
+  ts.vehicleType = tractor.type || "tractor";
+
+  this.dispatchEvent(
+    new CustomEvent("simulationEngineCreated", {
+      bubbles: true,
+      detail: ts,
+    }),
+  );
+}
 
   // --- ASYNC COMMANDS ---
 
@@ -420,4 +425,18 @@ export default class simulationEngine extends EventTarget {
 
     // Explicitly update display on reset so Date resets instantly on screen
   }
+
+setMainVehicleType(type) {
+  const tractor = this.stateManager.getState("tractor");
+  if (!tractor) return;
+
+  tractor.type = type;
+
+  console.log("setMainVehicleType", type, tractor.type);
+console.log("BLOCK CALLED", type);
+
+  this.timeStepEvent(); //immediant refresh
+}
+
+
 }

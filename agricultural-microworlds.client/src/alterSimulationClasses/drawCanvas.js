@@ -28,6 +28,7 @@ export default class drawCanvas {
     this.cameraY = 0;
 
     // Sprite setup
+    this.invertedTractorSprite = new Image();
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.seedImage = new Image();
@@ -52,6 +53,7 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
+    this.invertedTractorSprite.src = "./src/assets/combine-harvester-inverted.png";
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
@@ -184,11 +186,17 @@ export default class drawCanvas {
    * Draws the on the canvas based on the information received from the timeStep event
    */
   drawTractor() {
+    console.log("drawTractor tick", this.simulationState?.vehicleType);
+
     const screenX = this.simulationState.tractorWorldX - this.cameraX;
     const screenY = this.simulationState.tractorWorldY - this.cameraY;
 
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
+
+  const type = this.simulationState.vehicleType || "tractor";
+  const sprite = type === "inverted" ? this.invertedTractorSprite : this.tractorSprite;
+
 
     this.ctx.save();
     this.ctx.translate(
@@ -197,7 +205,7 @@ export default class drawCanvas {
     );
     this.ctx.rotate(angleInRadians);
     this.ctx.drawImage(
-      this.tractorSprite,
+      sprite,
       -this.FRAME_WIDTH / 2,
       -this.FRAME_HEIGHT / 2,
     );
@@ -212,6 +220,7 @@ export default class drawCanvas {
         `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
         `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
         `Angle: ${normalizedAngle}°<br>`;
+        `Vehicle Type: ${type}<br>`;
     }
   }
 

@@ -18,6 +18,8 @@ export default class TractorState extends State {
     this.isSeedingOn = false;
 
     this.yieldScore = 0;
+    this.type = "tractor";
+
   }
 
   clone() {
@@ -37,6 +39,7 @@ export default class TractorState extends State {
     newState.isSeedingOn = this.isSeedingOn;
 
     newState.yieldScore = this.yieldScore;
+    newState.type = this.type
     return newState;
   }
 }
