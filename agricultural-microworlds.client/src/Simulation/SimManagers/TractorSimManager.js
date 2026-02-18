@@ -80,8 +80,14 @@ export default class TractorSimManager extends SimManager {
     });
   }
 
-  // Helper to avoid duplicating the geometry math
-  applyToolAction(tractor, field, actionCallback) {
+  /**
+   * Gets all tiles that the tractor is currently over.
+   * @param {any} tractor The tractor.
+   * @param {any} field The crop field.
+   * @return {Array} Returns an array of all tiles the tractor is currently over.
+   */
+  getTilesCurrentlyOver(tractor, field) {
+    let tilesOver = [];
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
@@ -98,11 +104,44 @@ export default class TractorSimManager extends SimManager {
       const checkX = frontX - pSin * offset;
       const checkY = frontY + pCos * offset;
 
-      this.interactWithTile(checkX, checkY, field, actionCallback);
+      const targetCrop = this.getTileAtLocation(checkX, checkY, field);
+      if (targetCrop)
+        tilesOver.push(targetCrop, targetCrop);
+    }
+
+    return tilesOver;
+  }
+
+  /**
+   * Gets all tiles that the tractor is currently over.
+   * @param {any} tractor The tractor.
+   * @param {any} field The crop field.
+   * @param {any} actionCallback The action to take on a valid tile.
+   * */
+  applyToolAction(tractor, field, actionCallback) {
+    let tilesOver = this.getTilesCurrentlyOver(tractor, field);
+    
+    for (let i = 0; i < tilesOver.length; i++) {
+      if (tilesOver[i]) {
+        const didChange = actionCallback(tilesOver[i][0]);
+
+        if (didChange) {
+          const totalTiles = field.length / TILE_BYTE_SIZE;
+          const width = Math.sqrt(totalTiles);
+          ChangeFieldTile(field, tilesOver[i][0], tilesOver[i][1], tilesOver[i][2], width);
+        }
+      }
     }
   }
 
-  interactWithTile(x, y, field, actionCallback) {
+  /**
+   * Gets a tile at a specific coordinate on the field
+   * @param {number} x The x-coordinate.
+   * @param {number} y The y-coordinate.
+   * @param {any} field The crop field.
+   * @returns {Array} An array of a field tile, and each of its proper coordinates.
+   * */
+  getTileAtLocation(x, y, field) {
     const tileX = Math.floor(x / this.TILE_WIDTH);
     const tileY = Math.floor(y / this.TILE_HEIGHT);
 
@@ -117,12 +156,9 @@ export default class TractorSimManager extends SimManager {
       tileX < this.FIELD_COLS
     ) {
       const targetCrop = GetFieldTile(field, tileX, tileY, width);
-
-      const didChange = actionCallback(targetCrop);
-
-      if (didChange) {
-        ChangeFieldTile(field, targetCrop, tileX, tileY, width);
-      }
+      return [targetCrop, tileX, tileY];
     }
+
+    return null;
   }
 }
