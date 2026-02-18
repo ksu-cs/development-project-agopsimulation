@@ -105,8 +105,7 @@ export default class TractorSimManager extends SimManager {
       const checkY = frontY + pCos * offset;
 
       const targetCrop = this.getTileAtLocation(checkX, checkY, field);
-      if (targetCrop)
-        tilesOver.push(targetCrop, targetCrop);
+      if (targetCrop) tilesOver.push(targetCrop, targetCrop);
     }
 
     return tilesOver;
@@ -120,7 +119,7 @@ export default class TractorSimManager extends SimManager {
    * */
   applyToolAction(tractor, field, actionCallback) {
     let tilesOver = this.getTilesCurrentlyOver(tractor, field);
-    
+
     for (let i = 0; i < tilesOver.length; i++) {
       if (tilesOver[i]) {
         const didChange = actionCallback(tilesOver[i][0]);
@@ -128,7 +127,13 @@ export default class TractorSimManager extends SimManager {
         if (didChange) {
           const totalTiles = field.length / TILE_BYTE_SIZE;
           const width = Math.sqrt(totalTiles);
-          ChangeFieldTile(field, tilesOver[i][0], tilesOver[i][1], tilesOver[i][2], width);
+          ChangeFieldTile(
+            field,
+            tilesOver[i][0],
+            tilesOver[i][1],
+            tilesOver[i][2],
+            width,
+          );
         }
       }
     }
