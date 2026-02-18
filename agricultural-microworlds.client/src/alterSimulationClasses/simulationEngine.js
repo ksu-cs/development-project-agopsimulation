@@ -362,48 +362,14 @@ export default class simulationEngine extends EventTarget {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
-    const centerX = tractor.x + 32;
-    const centerY = tractor.y + 32;
-    const rad = (tractor.angle * Math.PI) / 180;
-    const frontX = centerX + Math.cos(rad) * tractorManager.HEADER_OFFSET;
-    const frontY = centerY + Math.sin(rad) * tractorManager.HEADER_OFFSET;
 
-    const pSin = Math.sin(rad);
-    const pCos = Math.cos(rad);
-    const pointsToCheck = 10;
+    let tilesOver = tractorManager.getTilesCurrentlyOver(tractor, field);
+    for (let i = 0; i < tilesOver.length; i++) {
 
-    for (let i = 0; i < pointsToCheck; i++) {
-      const t = i / (pointsToCheck - 1) - 0.5;
-      const offset = t * tractorManager.HEADER_WIDTH;
-      const checkX = frontX - pSin * offset;
-      const checkY = frontY + pCos * offset;
-
-      if (this.checkIfTileMatches(checkX, checkY, field, type)) return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Detects if a tile is within the field and matches a certain type.
-   * @param {number} x The X of the tile.
-   * @param {number} y The Y of the tile.
-   * @param {any} field The tile field.
-   * @param {any} type The type of tile to check for.
-   * @returns {boolean} Whether or not the tile is of matching type.
-   */
-  checkIfTileMatches(x, y, field, type) {
-    const tileX = Math.floor(x / this.TILE_WIDTH);
-    const tileY = Math.floor(y / this.TILE_HEIGHT);
-
-    if (
-      tileY >= 0 &&
-      tileY < field.length &&
-      tileX >= 0 &&
-      tileX < field[0].length
-    ) {
-      const targetCrop = field[tileY][tileX];
-      return targetCrop.stage == type;
+      const cropState = tilesOver[i][0].cropState;
+      if (cropState && tilesOver[i][0].stage == type) {
+        return true;
+      }
     }
 
     return false;
