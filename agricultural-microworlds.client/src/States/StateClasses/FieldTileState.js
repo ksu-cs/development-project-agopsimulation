@@ -7,3 +7,4 @@ export default class FieldTileState {
     this.minerals = 1000;
   }
 }
+
