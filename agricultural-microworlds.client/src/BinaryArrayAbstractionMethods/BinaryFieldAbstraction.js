@@ -43,7 +43,7 @@ export function InitializeField(field, initialTileState) {
 /**
  * Changes a crop tile on the field to be different values
  * @param {Uint8Array} field The memory array where the field is
- * @param {TileState} tileState The crop stage to change the tile to
+ * @param {FieldTileState} tileState The crop stage to change the tile to
  * @param {int} x The x value for where the tile is located at on the field
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
@@ -99,7 +99,7 @@ export function GetFieldTile(field, x, y, width) {
 /**
  * Alters all the properties in a field tile based on the given CropState
  * @param {Uint8Array} field The memory array where the field is
- * @param {TileState} tileState The crop stage to change the tile to
+ * @param {FieldTileState} tileState The crop stage to change the tile to
  * @param {int} i The index int the UintArray to alter
  */
 function AlterEntireFieldTileUsingUintArrayIndex(field, tileState, i) {
