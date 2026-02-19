@@ -1,3 +1,5 @@
+import { CROP_TYPES } from "./CropState";
+
 export default class TractorState {
   constructor() {
     this.basespeed = 20;
@@ -12,6 +14,7 @@ export default class TractorState {
     this.isMoving = false;
     this.isHarvestingOn = false;
     this.isSeedingOn = false;
+    this.cropBeingPlanted = CROP_TYPES.WHEAT;
 
     this.yieldScore = 0;
   }
@@ -29,8 +32,9 @@ export default class TractorState {
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
 
-    // FIXED: This was missing, causing seeding to stop after 1 frame
     newState.isSeedingOn = this.isSeedingOn;
+
+    newState.cropBeingPlanted = this.cropBeingPlanted;
 
     newState.yieldScore = this.yieldScore;
     return newState;

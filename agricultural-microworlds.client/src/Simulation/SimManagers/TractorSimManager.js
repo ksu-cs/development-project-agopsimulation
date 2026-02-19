@@ -74,7 +74,7 @@ export default class TractorSimManager extends SimManager {
       const crop = tile.cropState;
 
       if (crop.isUnplanted()) {
-        crop.plant();
+        crop.plant(tractor.cropBeingPlanted);
         return true;
       }
     });
