@@ -3,6 +3,7 @@ import { CROP_STAGES } from "../../States/StateClasses/CropState";
 import {
   ChangeFieldTile,
   GetCropState,
+  GetFieldTile,
   TILE_BYTE_SIZE,
 } from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 
@@ -31,7 +32,8 @@ export default class CropManager extends SimManager {
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        const cropObj = GetCropState(currentField, j, i, cols);
+        const fieldTile = GetFieldTile(currentField, j, i, cols);
+        const cropObj = fieldTile.cropState;
 
         if (cropObj.stage == CROP_STAGES.SEEDED) {
           cropObj.currentGDD += gddToAdd;
@@ -41,7 +43,9 @@ export default class CropManager extends SimManager {
             cropObj.currentGDD = cropObj.requiredGDD;
           }
 
-          ChangeFieldTile(nextField, cropObj, j, i, cols);
+          fieldTile.cropState = cropObj;
+
+          ChangeFieldTile(nextField, fieldTile, j, i, cols);
         }
       }
     }

@@ -6,6 +6,7 @@ import {
 } from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
+import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
@@ -89,8 +90,13 @@ export default class simulationEngine extends EventTarget {
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
-    //3. Setup field
+    // 3. Setup field
     const field = CreateBlankField(this.ROWS, this.COLS);
+
+    const initialTile = new FieldTileState();
+    if (!initialTile.cropState) {
+      initialTile.cropState = new CropState();
+    }
 
     const initialCrop = new CropState();
     initialCrop.type = CROP_TYPES.WHEAT;
@@ -98,7 +104,9 @@ export default class simulationEngine extends EventTarget {
     initialCrop.currentGDD = 0;
     initialCrop.requiredGDD = 1000;
 
-    InitializeField(field, initialCrop);
+    initialTile.cropState = initialCrop;
+
+    InitializeField(field, initialTile);
 
     this.stateManager.initState("field", field);
   }
@@ -376,6 +384,31 @@ export default class simulationEngine extends EventTarget {
     return false;
   }
 
+  /**
+   * Detects if a tile is within the field and matches a certain type.
+   * @param {number} x The X of the tile.
+   * @param {number} y The Y of the tile.
+   * @param {any} field The tile field.
+   * @param {any} type The type of tile to check for.
+   * @returns {boolean} Whether or not the tile is of matching type.
+   */
+  checkIfTileMatches(x, y, field, type) {
+    const tileX = Math.floor(x / this.TILE_WIDTH);
+    const tileY = Math.floor(y / this.TILE_HEIGHT);
+
+    if (
+      tileY >= 0 &&
+      tileY < field.length &&
+      tileX >= 0 &&
+      tileX < field[0].length
+    ) {
+      const targetCrop = field[tileY][tileX];
+      return targetCrop.stage == type;
+    }
+
+    return false;
+  }
+
   async loadStations() {
     try {
       const response = await fetch(
@@ -417,7 +450,5 @@ export default class simulationEngine extends EventTarget {
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
-
-    // Explicitly update display on reset so Date resets instantly on screen
   }
 }

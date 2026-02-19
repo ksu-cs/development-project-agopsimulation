@@ -2,7 +2,7 @@ import {
   CreateBlankField,
   InitializeField,
   ChangeFieldTile,
-  GetCropState,
+  GetCropState as GetFieldTile,
   GetBitsForCropType,
   GetBitsForCropStage,
   ConvertFloatToUint24,
@@ -15,6 +15,7 @@ import {
   CROP_TYPES,
   CropState,
 } from "../src/States/StateClasses/CropState";
+import FieldTileState from "../src/States/StateClasses/FieldTileState";
 
 //import { expect, test } from "jest";
 
@@ -31,13 +32,20 @@ test("CreateBlankField returns a Uint8Array with the correct values", () => {
 });
 
 test("GetBitsForCropType returns the correct flag", () => {
-  const crop = CROP_TYPES.WHEAT;
+  const crop1 = CROP_TYPES.EMPTY;
+  const crop2 = CROP_TYPES.WHEAT;
 
-  const given = GetBitsForCropType(crop);
-  const expected = 0;
+  const given1 = GetBitsForCropType(crop1);
+  const given2 = GetBitsForCropType(crop2);
 
-  expect(typeof given).toBe("number");
-  expect(given).toEqual(expected);
+  const expected1 = 0;
+  const expected2 = 1;
+
+  expect(typeof given1).toBe("number");
+  expect(typeof given2).toBe("number");
+
+  expect(given1).toEqual(expected1);
+  expect(given2).toEqual(expected2);
 });
 
 test("GetBitsForCropStage returns correct flag", () => {
@@ -127,9 +135,9 @@ test("InitializeField alters field correctly", () => {
   const width = 2;
   const height = 2;
   const byteFieldSize = width * height * TILE_BYTE_SIZE;
-  let initalCropState = new CropState();
+  let initialFieldTileState = new FieldTileState();
   let field = CreateBlankField(width, height);
-  InitializeField(field, initalCropState);
+  InitializeField(field, initialFieldTileState);
 
   let expected = new Uint8Array(byteFieldSize);
 
@@ -161,20 +169,20 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   const width = 12;
   const height = 12;
   const byteFieldSize = width * height * TILE_BYTE_SIZE;
-  let initalCropState = new CropState();
+  let initialFieldTileState = new FieldTileState();
   let field = CreateBlankField(width, height);
-  InitializeField(field, initalCropState);
+  InitializeField(field, initialFieldTileState);
 
-  let newCropState = new CropState();
-  newCropState.currentGDD = 20;
+  let newFieldTile = new FieldTileState();
+  newFieldTile.cropState.currentGDD = 20;
 
-  ChangeFieldTile(field, newCropState, 5, 5, 12);
+  ChangeFieldTile(field, newFieldTile, 5, 5, 12);
   // currentGDD will be stored as 2000 after going through the Uint24 conversion process
   // It would change bytes 3-4 in a tile section
   // Changing it to 0000 0111 1101 0000 = 2000
-  // The index of the altered crop tile would be 5 * 12 + 5 = 65 * TILE_BYTE_SIZE = 455
+  // The index of the altered crop tile would be 5 * 12 + 5 = 65 * TILE_BYTE_SIZE = 845
 
-  let expectedIndex = 455;
+  let expectedIndex = 845;
 
   let expectedValue = 20;
 
@@ -194,14 +202,14 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   ).toEqual(expectedValue);
 });
 
-test("GetCropState correctly grabs the correct Tile", () => {
+test("GetFieldTile correctly grabs the correct Tile", () => {
   const width = 12;
   const height = 12;
-  let initalCropState = new CropState();
+  let initialFieldTile = new FieldTileState();
   let field = CreateBlankField(width, height);
-  InitializeField(field, initalCropState);
+  InitializeField(field, initialFieldTile);
 
-  let expectedIntial = GetCropState(field, 5, 5, width);
+  let expectedIntial = GetFieldTile(field, 5, 5, width);
 
   expect(expectedIntial).toBeInstanceOf(CropState);
 
@@ -226,7 +234,7 @@ test("GetCropState correctly grabs the correct Tile", () => {
   expectedCropState.currentGDD = 20;
   expectedCropState.requiredGDD = 1001;
 
-  let givenCropState = GetCropState(field, alterCropX, alterCropY, width);
+  let givenCropState = GetFieldTile(field, alterCropX, alterCropY, width);
 
   expect(givenCropState.stage).toEqual(expectedCropState.stage);
   expect(givenCropState.type).toEqual(expectedCropState.type);
