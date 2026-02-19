@@ -32,7 +32,7 @@ export function CreateBlankField(rows, columns) {
 /**
  * Sets up the data for the intial state of the field
  * @param {Uint8Array} field The memory array where the field is
- * @param {TileState} initalTileState The crop state values to intialize the field to
+ * @param {FieldTileState} initalTileState The crop state values to intialize the field to
  */
 export function InitializeField(field, initialTileState) {
   for (let i = 0; i < field.length; i += TILE_BYTE_SIZE) {
