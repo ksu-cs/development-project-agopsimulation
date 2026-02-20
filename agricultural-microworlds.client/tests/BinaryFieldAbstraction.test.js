@@ -34,18 +34,27 @@ test("CreateBlankField returns a Uint8Array with the correct values", () => {
 test("GetBitsForCropType returns the correct flag", () => {
   const crop1 = CROP_TYPES.EMPTY;
   const crop2 = CROP_TYPES.WHEAT;
+  const crop3 = CROP_TYPES.CORN;
+  const crop4 = CROP_TYPES.SOY;
 
   const given1 = GetBitsForCropType(crop1);
   const given2 = GetBitsForCropType(crop2);
+  const given3 = GetBitsForCropType(crop3);
+  const given4 = GetBitsForCropType(crop4);
 
   const expected1 = 0;
   const expected2 = 1;
+  const expected3 = 2;
+  const expected4 = 3;
 
   expect(typeof given1).toBe("number");
   expect(typeof given2).toBe("number");
-
+  expect(typeof given3).toBe("number");
+  expect(typeof given4).toBe("number");
   expect(given1).toEqual(expected1);
   expect(given2).toEqual(expected2);
+  expect(given3).toEqual(expected3);
+  expect(given4).toEqual(expected4);
 });
 
 test("GetBitsForCropStage returns correct flag", () => {
@@ -136,6 +145,8 @@ test("InitializeField alters field correctly", () => {
   const height = 2;
   const byteFieldSize = width * height * TILE_BYTE_SIZE;
   let initialFieldTileState = new FieldTileState();
+  initialFieldTileState.cropState.changeCropType(CROP_TYPES.WHEAT);
+  initialFieldTileState.cropState.stage = CROP_STAGES.MATURE;
   let field = CreateBlankField(width, height);
   InitializeField(field, initialFieldTileState);
 
@@ -149,7 +160,7 @@ test("InitializeField alters field correctly", () => {
   // byte 5-7 = 0000 0001 1000 0110 1010 0000 (separated every 4 bits for readability not to show separation)
   for (let i = 0; i < byteFieldSize; i += TILE_BYTE_SIZE) {
     // byte 1
-    expected[i] = 0b00001000;
+    expected[i] = 0b00001001;
 
     // byte 2-4
     expected[i + 1] = 0b00000000;
@@ -160,6 +171,16 @@ test("InitializeField alters field correctly", () => {
     expected[i + 4] = 0b00000001;
     expected[i + 5] = 0b10000110;
     expected[i + 6] = 0b10100000;
+
+    // byte 8-10
+    expected[i + 7] = 0b00000001;
+    expected[i + 8] = 0b10000110;
+    expected[i + 9] = 0b10100000;
+
+    // byte 11-13
+    expected[i + 10] = 0b00000001;
+    expected[i + 11] = 0b10000110;
+    expected[i + 12] = 0b10100000;
   }
 
   expect(field).toEqual(expected);
@@ -174,10 +195,13 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   InitializeField(field, initialFieldTileState);
 
   let newFieldTile = new FieldTileState();
+  newFieldTile.cropState.type = CROP_TYPES.CORN;
   newFieldTile.cropState.currentGDD = 20;
 
   ChangeFieldTile(field, newFieldTile, 5, 5, 12);
   // currentGDD will be stored as 2000 after going through the Uint24 conversion process
+  // type will be corn so the last 2 bits of the first byte in the tile should be 01, and the stage should be MATURE so the first 6 bits would be 0000 10
+  // So the first byte will be 0000 1001
   // It would change bytes 3-4 in a tile section
   // Changing it to 0000 0111 1101 0000 = 2000
   // The index of the altered crop tile would be 5 * 12 + 5 = 65 * TILE_BYTE_SIZE = 845
@@ -187,7 +211,11 @@ test("ChangeFieldTile correctly alters, THE CORRECT Tile", () => {
   let expectedValue = 20;
 
   for (let i = 0; i < byteFieldSize; i += TILE_BYTE_SIZE) {
-    if (field[i + 2] == 0b00000111 && field[i + 3] == 0b11010000) {
+    if (
+      field[i + 2] == 0b00000111 &&
+      field[i + 3] == 0b11010000 &&
+      field[i] == 0b00001001
+    ) {
       expect(i).toEqual(expectedIndex);
       break;
     }

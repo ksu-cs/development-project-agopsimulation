@@ -285,4 +285,29 @@ Blocks["start_program"] = {
   },
 };
 
+var switchCropBeingPlanted = {
+  type: "switch_crop_being_planted",
+  message0: "Switch crop being planted to %1",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleType",
+      options: [
+        ["Wheat", "0"],
+        ["Corn", "1"],
+        ["Soybean", "2"],
+      ],
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Switch the crop that is being planted when seeding is turned on",
+};
+Blocks["switch_crop_being_planted"] = {
+  init: function () {
+    this.jsonInit(switchCropBeingPlanted);
+  },
+};
+
 //#endregion

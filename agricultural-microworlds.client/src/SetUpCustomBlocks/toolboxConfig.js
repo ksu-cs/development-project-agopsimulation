@@ -51,6 +51,7 @@ export const toolbox = {
         { kind: "block", type: "toggle_harvesting" },
         { kind: "block", type: "toggle_seeding" },
         { kind: "block", type: "wait_x_weeks" },
+        { kind: "block", type: "switch_crop_being_planted" },
       ],
     },
     {
