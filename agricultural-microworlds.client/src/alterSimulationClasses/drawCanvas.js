@@ -31,6 +31,8 @@ export default class drawCanvas {
     this.invertedTractorSprite = new Image();
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
+    this.cornImage = new Image();
+    this.soybeanImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
@@ -53,15 +55,18 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
-    this.invertedTractorSprite.src = "./src/assets/combine-harvester-inverted.png";
+    this.invertedTractorSprite.src =
+      "./src/assets/combine-harvester-inverted.png";
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+    this.cornImage.src = "./src/assets/corn.png";
+    this.soybeanImage.src = "./src/assets/soybean.png";
 
     // Image initialization
     this.imageLoadCount = 0;
-    this.imageCount = 4;
+    this.imageCount = 6;
     this.isInitialized = false;
 
     /** @type {CustomEvent} Holds the timeStepData to draw */
@@ -158,7 +163,19 @@ export default class drawCanvas {
             tileImage = this.seedImage;
             break;
           case CROP_STAGES.MATURE:
-            tileImage = this.wheatImage;
+            switch (crop.type) {
+              case 1:
+                tileImage = this.wheatImage;
+                break;
+              case 2:
+                tileImage = this.cornImage;
+                break;
+              case 3:
+                tileImage = this.soybeanImage;
+                break;
+              default:
+                tileImage = this.wheatImage;
+            }
             break;
         }
         const tileWorldX = j * this.TILE_WIDTH;
@@ -192,9 +209,9 @@ export default class drawCanvas {
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-  const type = this.simulationState.vehicleType || "tractor";
-  const sprite = type === "inverted" ? this.invertedTractorSprite : this.tractorSprite;
-
+    const type = this.simulationState.vehicleType || "tractor";
+    const sprite =
+      type === "inverted" ? this.invertedTractorSprite : this.tractorSprite;
 
     this.ctx.save();
     this.ctx.translate(
@@ -202,11 +219,7 @@ export default class drawCanvas {
       screenY + this.FRAME_HEIGHT / 2,
     );
     this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      sprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
+    this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
     this.ctx.restore();
 
     // Debug info is allowed to fail silently if element is missing,
@@ -218,7 +231,7 @@ export default class drawCanvas {
         `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
         `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
         `Angle: ${normalizedAngle}°<br>`;
-        `Vehicle Type: ${type}<br>`;
+      `Vehicle Type: ${type}<br>`;
     }
   }
 
@@ -247,11 +260,11 @@ export default class drawCanvas {
    */
   setSpriteOnLoadMethods() {
     this.tractorSprite.onload = () => {
-      console.log("✅ Tractor sprite loaded!");
+      console.log("Tractor sprite loaded!");
       this.onImageLoad();
     };
     this.tractorSprite.onerror = () => {
-      console.error("❌ Failed to load tractor sprite!");
+      console.error("Failed to load tractor sprite!");
     };
     this.dirtImage.onload = () => {
       console.log("DirtImage loaded!");
@@ -273,6 +286,20 @@ export default class drawCanvas {
     };
     this.wheatImage.onerror = () => {
       console.error("failed to load WheatImage");
+    };
+    this.cornImage.onload = () => {
+      console.log("CornImage loaded!");
+      this.onImageLoad();
+    };
+    this.cornImage.onerror = () => {
+      console.error("failed to load CornImage");
+    };
+    this.soybeanImage.onload = () => {
+      console.log("SoybeanImage loaded!");
+      this.onImageLoad();
+    };
+    this.soybeanImage.onerror = () => {
+      console.error("failed to load SoybeanImage");
     };
   }
 }

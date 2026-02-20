@@ -3,8 +3,9 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
+import FieldTileState from "../States/StateClasses/FieldTileState";
 
-export const TILE_BYTE_SIZE = 7;
+export const TILE_BYTE_SIZE = 13;
 /**
  * Field tile bit setup (current)
  * Crop type 4 types supported (2 bits)
@@ -31,42 +32,78 @@ export function CreateBlankField(rows, columns) {
 /**
  * Sets up the data for the intial state of the field
  * @param {Uint8Array} field The memory array where the field is
- * @param {CropState} initalCropState The crop state values to intialize the field to
+ * @param {FieldTileState} initalTileState The crop state values to intialize the field to
  */
-export function InitializeField(field, initalCropState) {
+export function InitializeField(field, initialTileState) {
   for (let i = 0; i < field.length; i += TILE_BYTE_SIZE) {
-    // Edits first byte of tile
-    field[i] =
-      GetBitsForCropStage(initalCropState.stage) |
-      GetBitsForCropType(initalCropState.type);
-
-    // Edits bytes 2-4 (Current GDD) of tile
-    let currentGDDFlag = ConvertFloatToUint24(initalCropState.currentGDD);
-
-    field[i + 1] = (currentGDDFlag >> 16) & 0xff;
-    field[i + 2] = (currentGDDFlag >> 8) & 0xff;
-    field[i + 3] = currentGDDFlag & 0xff;
-
-    // Edits bytes 5-7 (required GDD) of tile
-    let requiredGDDFlag = ConvertFloatToUint24(initalCropState.requiredGDD);
-
-    field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
-    field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
-    field[i + 6] = requiredGDDFlag & 0xff;
+    AlterEntireFieldTileUsingUintArrayIndex(field, initialTileState, i);
   }
 }
 
 /**
  * Changes a crop tile on the field to be different values
  * @param {Uint8Array} field The memory array where the field is
- * @param {CropState} cropState The crop stage to change the tile to
+ * @param {FieldTileState} tileState The crop stage to change the tile to
  * @param {int} x The x value for where the tile is located at on the field
  * @param {int} y The y value for where the tile is located at on the field
  * @param {int} width The width of the field
  */
-export function ChangeFieldTile(field, cropState, x, y, width) {
+export function ChangeFieldTile(field, tileState, x, y, width) {
+  let i = GetTileIndex(x, y, width);
+  AlterEntireFieldTileUsingUintArrayIndex(field, tileState, i);
+}
+
+/**
+ * Gets a readable form of the FieldTile state at the specified x and y coordinate
+ * @param {Uint8Array} field The memory array where the field is
+ * @param {int} x The x value for where the tile is located at on the field
+ * @param {int} y The y value for where the tile is located at on the field
+ * @param {int} width The width of the field
+ * @returns A new FieldTile state object with all the information in the tile
+ */
+export function GetFieldTile(field, x, y, width) {
   let i = GetTileIndex(x, y, width);
 
+  let tile = new FieldTileState();
+
+  tile.cropState.type = field[i] & 0x03;
+  tile.cropState.stage = (field[i] >> 2) & 0xff;
+
+  tile.cropState.currentGDD = Convert3Uint8ToFloat(
+    field[i + 1],
+    field[i + 2],
+    field[i + 3],
+  );
+  tile.cropState.requiredGDD = Convert3Uint8ToFloat(
+    field[i + 4],
+    field[i + 5],
+    field[i + 6],
+  );
+
+  // 2. Populate Tile Properties
+  tile.waterLevel = Convert3Uint8ToFloat(
+    field[i + 7],
+    field[i + 8],
+    field[i + 9],
+  );
+
+  tile.minerals = Convert3Uint8ToFloat(
+    field[i + 10],
+    field[i + 11],
+    field[i + 12],
+  );
+
+  return tile;
+}
+
+/**
+ * Alters all the properties in a field tile based on the given CropState
+ * @param {Uint8Array} field The memory array where the field is
+ * @param {FieldTileState} tileState The crop stage to change the tile to
+ * @param {int} i The index int the UintArray to alter
+ */
+function AlterEntireFieldTileUsingUintArrayIndex(field, tileState, i) {
+  const cropState = tileState.cropState;
   // Edits first byte of tile
   field[i] =
     GetBitsForCropStage(cropState.stage) | GetBitsForCropType(cropState.type);
@@ -84,6 +121,17 @@ export function ChangeFieldTile(field, cropState, x, y, width) {
   field[i + 4] = (requiredGDDFlag >> 16) & 0xff;
   field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
   field[i + 6] = requiredGDDFlag & 0xff;
+
+  // --- TILE DATA ---
+  let waterFlag = ConvertFloatToUint24(tileState.waterLevel);
+  field[i + 7] = (waterFlag >> 16) & 0xff;
+  field[i + 8] = (waterFlag >> 8) & 0xff;
+  field[i + 9] = waterFlag & 0xff;
+
+  let mineralsFlag = ConvertFloatToUint24(tileState.minerals);
+  field[i + 10] = (mineralsFlag >> 16) & 0xff;
+  field[i + 11] = (mineralsFlag >> 8) & 0xff;
+  field[i + 12] = mineralsFlag & 0xff;
 }
 
 /**
@@ -123,9 +171,16 @@ export function GetCropState(field, x, y, width) {
  */
 export function GetBitsForCropType(cropType) {
   switch (cropType) {
-    case CROP_TYPES.WHEAT:
+    case CROP_TYPES.EMPTY:
       return 0x00;
-    //other cases here being 0x01/0x02/0x03
+    case CROP_TYPES.WHEAT:
+      return 0x01;
+    case CROP_TYPES.CORN:
+      return 0x02;
+    case CROP_TYPES.SOY:
+      return 0x03;
+    default:
+      return GetBitsForCropType(CROP_TYPES.WHEAT);
   }
 }
 
@@ -173,9 +228,9 @@ export function Convert3Uint8ToFloat(u8_1, u8_2, u8_3) {
 
 /**
  * Calculates the index in the 1D array from 2D array coordinates
- * @param {*} x The ZERO INDEXED x value where it should be in the array
- * @param {*} y The ZERO INDEXED y value where it should be in the array
- * @param {*} width The width of the field
+ * @param {int} x The ZERO INDEXED x value where it should be in the array
+ * @param {int} y The ZERO INDEXED y value where it should be in the array
+ * @param {int} width The width of the field
  * @returns The corresponding index for the given coordinates
  */
 export function GetTileIndex(x, y, width) {

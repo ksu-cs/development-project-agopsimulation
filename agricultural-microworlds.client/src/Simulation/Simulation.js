@@ -31,27 +31,23 @@ export default class Simulation {
       new TractorManager(),
     ];
 
+    this.wheatImage = new Image();
+    this.seedImage = new Image();
+    this.dirtImage = new Image();
 
-this.wheatImage = new Image();
-this.seedImage = new Image();
-this.dirtImage = new Image();
+    this.wheatImage.src = "./src/assets/wheat.png";
+    this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
+    this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
 
-this.wheatImage.src = "./src/assets/wheat.png";
-this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
-this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+    this.vehicleSprites = {
+      tractor: new Image(),
+      inverted: new Image(),
+    };
 
-
-
-this.vehicleSprites = {
-  tractor: new Image(),
-  inverted: new Image(),
-};
-
-this.vehicleSprites.tractor.src = "./src/assets/combine-harvester.png"; 
-this.vehicleSprites.inverted.src = "./src/assets/combine-harvester-inverted.png"; 
-this.setSpriteOnLoadMethods();
-
-
+    this.vehicleSprites.tractor.src = "./src/assets/combine-harvester.png";
+    this.vehicleSprites.inverted.src =
+      "./src/assets/combine-harvester-inverted.png";
+    this.setSpriteOnLoadMethods();
 
     this.lastFrameTime = 0;
     this.animationId = -1;
@@ -66,60 +62,58 @@ this.setSpriteOnLoadMethods();
       this.draw();
     }, 100);
   }
-initializeStates() {
-  this.stateManager.initState("weather", new WeatherState());
+  initializeStates() {
+    this.stateManager.initState("weather", new WeatherState());
 
-  // Vehicles array
-  const mkVehicle = (id, x, y, type = "tractor") => {
-    const v = new TractorState(); // reuse TractorState for now
-    v.id = id;
-    v.type = type;
+    // Vehicles array
+    const mkVehicle = (id, x, y, type = "tractor") => {
+      const v = new TractorState(); // reuse TractorState for now
+      v.id = id;
+      v.type = type;
 
-    v.x = x;
-    v.y = y;
+      v.x = x;
+      v.y = y;
 
-    // Defaults you already rely on:
-    v.isMoving = false;
-    v.isHarvestingOn = false;
-    v.isSeedingOn = false;
+      // Defaults you already rely on:
+      v.isMoving = false;
+      v.isHarvestingOn = false;
+      v.isSeedingOn = false;
 
-    // Optional per-vehicle behavior tuning:
-    // v.basespeed = ...
-    // v.turnSpeed = ...
+      // Optional per-vehicle behavior tuning:
+      // v.basespeed = ...
+      // v.turnSpeed = ...
 
-    return v;
-  };
+      return v;
+    };
 
-  const cx = (this.COLS * this.TILE_SIZE) / 2;
-  const cy = (this.ROWS * this.TILE_SIZE) / 2;
+    const cx = (this.COLS * this.TILE_SIZE) / 2;
+    const cy = (this.ROWS * this.TILE_SIZE) / 2;
 
-  const vehicles = [
-    mkVehicle("v1", cx, cy, "tractor"),
-    // Example second vehicle
-    mkVehicle("v2", cx + 80, cy + 40, "inverted"),
-  ];
+    const vehicles = [
+      mkVehicle("v1", cx, cy, "tractor"),
+      // Example second vehicle
+      mkVehicle("v2", cx + 80, cy + 40, "inverted"),
+    ];
 
-  this.stateManager.initState("vehicles", vehicles);
-  this.stateManager.initState("activeVehicleId", "v1");
-  this.stateManager.initState("tractor", vehicles[0]); // backwards compatible
+    this.stateManager.initState("vehicles", vehicles);
+    this.stateManager.initState("activeVehicleId", "v1");
+    this.stateManager.initState("tractor", vehicles[0]); // backwards compatible
 
-  const field = Array.from({ length: this.ROWS }, () =>
-    Array.from({ length: this.COLS }, () => new CropState()),
-  );
-  this.stateManager.initState("field", field);
-}
-
+    const field = Array.from({ length: this.ROWS }, () =>
+      Array.from({ length: this.COLS }, () => new CropState()),
+    );
+    this.stateManager.initState("field", field);
+  }
 
   setSpriteOnLoadMethods() {
     const redraw = () => {
       this.updateCamera();
       this.draw();
     };
-Object.values(this.vehicleSprites).forEach(img => (img.onload = redraw));
-this.wheatImage.onload = redraw;
-this.seedImage.onload = redraw;
-this.dirtImage.onload = redraw;
-
+    Object.values(this.vehicleSprites).forEach((img) => (img.onload = redraw));
+    this.wheatImage.onload = redraw;
+    this.seedImage.onload = redraw;
+    this.dirtImage.onload = redraw;
   }
 
   async loadStations() {
@@ -191,22 +185,23 @@ this.dirtImage.onload = redraw;
     const oldStates = this.stateManager.states;
     const nextStates = {};
 
-for (const key in oldStates) {
-  if (oldStates[key] && typeof oldStates[key].clone === "function") {
-    nextStates[key] = oldStates[key].clone();
-  } else if (key === "field") {
-    nextStates[key] = oldStates[key].map((row) => row.map((c) => c.clone()));
-  } else if (key === "vehicles") {
-    // Each vehicle is a TractorState (has clone())
-    nextStates[key] = oldStates[key].map(v =>
-      (v && typeof v.clone === "function") ? v.clone() : structuredClone(v)
-    );
-  } else {
-    // primitives like activeVehicleId
-    nextStates[key] = oldStates[key];
-  }
-}
-
+    for (const key in oldStates) {
+      if (oldStates[key] && typeof oldStates[key].clone === "function") {
+        nextStates[key] = oldStates[key].clone();
+      } else if (key === "field") {
+        nextStates[key] = oldStates[key].map((row) =>
+          row.map((c) => c.clone()),
+        );
+      } else if (key === "vehicles") {
+        // Each vehicle is a TractorState (has clone())
+        nextStates[key] = oldStates[key].map((v) =>
+          v && typeof v.clone === "function" ? v.clone() : structuredClone(v),
+        );
+      } else {
+        // primitives like activeVehicleId
+        nextStates[key] = oldStates[key];
+      }
+    }
 
     for (const sm of this.managers) {
       sm.update(deltaTime, oldStates, nextStates);
@@ -222,40 +217,39 @@ for (const key in oldStates) {
     this.animationId = requestAnimationFrame(this.loop.bind(this));
   }
 
-updateCamera() {
-  const vehicles = this.stateManager.getState("vehicles");
-  const activeId = this.stateManager.getState("activeVehicleId");
+  updateCamera() {
+    const vehicles = this.stateManager.getState("vehicles");
+    const activeId = this.stateManager.getState("activeVehicleId");
 
-  if (!vehicles || vehicles.length === 0) return;
+    if (!vehicles || vehicles.length === 0) return;
 
-  const v = activeId ? vehicles.find(x => x.id === activeId) : vehicles[0];
-  if (!v) return;
+    const v = activeId ? vehicles.find((x) => x.id === activeId) : vehicles[0];
+    if (!v) return;
 
-  const centerX = v.x + 32;
-  const centerY = v.y + 32;
+    const centerX = v.x + 32;
+    const centerY = v.y + 32;
 
-  let targetCameraX = centerX - this.canvas.width / 2;
-  let targetCameraY = centerY - this.canvas.height / 2;
+    let targetCameraX = centerX - this.canvas.width / 2;
+    let targetCameraY = centerY - this.canvas.height / 2;
 
-  const worldPixelWidth = this.COLS * this.TILE_SIZE;
-  const worldPixelHeight = this.ROWS * this.TILE_SIZE;
+    const worldPixelWidth = this.COLS * this.TILE_SIZE;
+    const worldPixelHeight = this.ROWS * this.TILE_SIZE;
 
-  const maxCameraX = worldPixelWidth - this.canvas.width;
-  const maxCameraY = worldPixelHeight - this.canvas.height;
+    const maxCameraX = worldPixelWidth - this.canvas.width;
+    const maxCameraY = worldPixelHeight - this.canvas.height;
 
-  this.cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
-  this.cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
-}
-
+    this.cameraX = Math.max(0, Math.min(targetCameraX, maxCameraX));
+    this.cameraY = Math.max(0, Math.min(targetCameraY, maxCameraY));
+  }
 
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const field = this.stateManager.getState("field");
-  const vehicles = this.stateManager.getState("vehicles");
+    const vehicles = this.stateManager.getState("vehicles");
 
     if (field) this.drawField(field);
-  if (vehicles) this.drawVehicles(vehicles);
+    if (vehicles) this.drawVehicles(vehicles);
   }
 
   drawField(field) {
@@ -295,77 +289,76 @@ updateCamera() {
     }
   }
 
-drawVehicles(vehicles) {
-  for (const v of vehicles) this.drawVehicle(v);
-}
+  drawVehicles(vehicles) {
+    for (const v of vehicles) this.drawVehicle(v);
+  }
 
-drawVehicle(v) {
-  this.ctx.save();
+  drawVehicle(v) {
+    this.ctx.save();
 
-  const screenX = v.x - this.cameraX;
-  const screenY = v.y - this.cameraY;
+    const screenX = v.x - this.cameraX;
+    const screenY = v.y - this.cameraY;
 
-  const centerX = screenX + 32;
-  const centerY = screenY + 32;
+    const centerX = screenX + 32;
+    const centerY = screenY + 32;
 
-  const sprite = this.vehicleSprites[v.type] || this.vehicleSprites.tractor;
+    const sprite = this.vehicleSprites[v.type] || this.vehicleSprites.tractor;
 
-  this.ctx.translate(centerX, centerY);
-  this.ctx.rotate((v.angle * Math.PI) / 180);
-  this.ctx.drawImage(sprite, -32, -32, 64, 64);
-  this.ctx.restore();
-}
+    this.ctx.translate(centerX, centerY);
+    this.ctx.rotate((v.angle * Math.PI) / 180);
+    this.ctx.drawImage(sprite, -32, -32, 64, 64);
+    this.ctx.restore();
+  }
 
-getVehicles() {
-  return this.stateManager.getState("vehicles") || [];
-}
+  getVehicles() {
+    return this.stateManager.getState("vehicles") || [];
+  }
 
-getVehicleById(id) {
-  return this.getVehicles().find(v => v.id === id);
-}
+  getVehicleById(id) {
+    return this.getVehicles().find((v) => v.id === id);
+  }
 
-setActiveVehicle(id) {
-  // only set if it exists
-  const exists = this.getVehicleById(id);
-  if (exists) this.stateManager.commitState("activeVehicleId", id);
-}
+  setActiveVehicle(id) {
+    // only set if it exists
+    const exists = this.getVehicleById(id);
+    if (exists) this.stateManager.commitState("activeVehicleId", id);
+  }
 
-spawnVehicle(type, id, x, y) {
-  // prevent duplicates
-  const vehicles = this.getVehicles();
-  if (vehicles.some(v => v.id === id)) return;
+  spawnVehicle(type, id, x, y) {
+    // prevent duplicates
+    const vehicles = this.getVehicles();
+    if (vehicles.some((v) => v.id === id)) return;
 
-  const v = new TractorState();        // reuse TractorState as VehicleState
-  v.id = id;
-  v.type = type;
+    const v = new TractorState(); // reuse TractorState as VehicleState
+    v.id = id;
+    v.type = type;
 
-  v.x = x;
-  v.y = y;
+    v.x = x;
+    v.y = y;
 
-  // defaults
-  v.isMoving = false;
-  v.isHarvestingOn = false;
-  v.isSeedingOn = false;
+    // defaults
+    v.isMoving = false;
+    v.isHarvestingOn = false;
+    v.isSeedingOn = false;
 
-  // IMPORTANT: make sure these exist for turning/movement
-  v.angle = v.angle ?? 0;
-  v.goalAngle = v.goalAngle ?? 0;
+    // IMPORTANT: make sure these exist for turning/movement
+    v.angle = v.angle ?? 0;
+    v.goalAngle = v.goalAngle ?? 0;
 
-  // Add it and commit
-  const newVehicles = [...vehicles, v];
-  this.stateManager.commitState("vehicles", newVehicles);
+    // Add it and commit
+    const newVehicles = [...vehicles, v];
+    this.stateManager.commitState("vehicles", newVehicles);
 
-  // optional: auto select the newly spawned vehicle
-  this.stateManager.commitState("activeVehicleId", id);
-}
+    // optional: auto select the newly spawned vehicle
+    this.stateManager.commitState("activeVehicleId", id);
+  }
 
+  setMainVehicleType(type) {
+    const vehicles = this.stateManager.getState("vehicles");
+    if (!vehicles || vehicles.length === 0) return;
 
-setMainVehicleType(type) {
-  const vehicles = this.stateManager.getState("vehicles");
-  if (!vehicles || vehicles.length === 0) return;
-
-  vehicles[0].type = type;
-}
+    vehicles[0].type = type;
+  }
 
   // --- API ---
 

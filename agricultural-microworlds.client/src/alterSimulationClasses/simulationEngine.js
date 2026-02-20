@@ -6,6 +6,7 @@ import {
 } from "../States/StateClasses/CropState";
 import TractorState from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
+import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
@@ -89,16 +90,22 @@ export default class simulationEngine extends EventTarget {
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
-    //3. Setup field
+    // 3. Setup field
     const field = CreateBlankField(this.ROWS, this.COLS);
 
-    const initialCrop = new CropState();
-    initialCrop.type = CROP_TYPES.WHEAT;
-    initialCrop.stage = CROP_STAGES.UNPLANTED;
-    initialCrop.currentGDD = 0;
-    initialCrop.requiredGDD = 1000;
+    const initialTile = new FieldTileState();
+    if (!initialTile.cropState) {
+      initialTile.cropState = new CropState();
+    }
 
-    InitializeField(field, initialCrop);
+    const initialCrop = new CropState();
+    initialCrop.changeCropType(CROP_TYPES.CORN);
+    initialCrop.stage = CROP_STAGES.MATURE;
+    initialCrop.currentGDD = 0;
+
+    initialTile.cropState = initialCrop;
+
+    InitializeField(field, initialTile);
 
     this.stateManager.initState("field", field);
   }
@@ -236,27 +243,27 @@ export default class simulationEngine extends EventTarget {
     const gddString = weather.cumulativeGDD.toFixed(2);
 
     const ts = new timeStepData(
-    tractor.angle,
-    tractor.yieldScore,
-    tractor.x,
-    tractor.y,
-    this.nightFadeProgress,
-    field,
-    this.COLS,
-    dateString,
-    gddString
-  );
+      tractor.angle,
+      tractor.yieldScore,
+      tractor.x,
+      tractor.y,
+      this.nightFadeProgress,
+      field,
+      this.COLS,
+      dateString,
+      gddString,
+    );
 
-  //default back to tractor
-  ts.vehicleType = tractor.type || "tractor";
+    //default back to tractor
+    ts.vehicleType = tractor.type || "tractor";
 
-  this.dispatchEvent(
-    new CustomEvent("simulationEngineCreated", {
-      bubbles: true,
-      detail: ts,
-    }),
-  );
-}
+    this.dispatchEvent(
+      new CustomEvent("simulationEngineCreated", {
+        bubbles: true,
+        detail: ts,
+      }),
+    );
+  }
 
   // --- ASYNC COMMANDS ---
 
@@ -342,6 +349,15 @@ export default class simulationEngine extends EventTarget {
   }
 
   /**
+   * Switches the crop being planted by the seeder.
+   * @param {CROP_TYPES} crop - The type of crop to plant
+   */
+  switchCropBeingPlanted(crop) {
+    const tractor = this.stateManager.getState("tractor");
+    if (tractor) tractor.cropBeingPlanted = crop;
+  }
+
+  /**
    * Sets the speed multiplier for the simulation's weather manager.
    * @param {number} speed The speed multiplier for the weather.
    */
@@ -359,23 +375,13 @@ export default class simulationEngine extends EventTarget {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
-    const centerX = tractor.x + 32;
-    const centerY = tractor.y + 32;
-    const rad = (tractor.angle * Math.PI) / 180;
-    const frontX = centerX + Math.cos(rad) * tractorManager.HEADER_OFFSET;
-    const frontY = centerY + Math.sin(rad) * tractorManager.HEADER_OFFSET;
 
-    const pSin = Math.sin(rad);
-    const pCos = Math.cos(rad);
-    const pointsToCheck = 10;
-
-    for (let i = 0; i < pointsToCheck; i++) {
-      const t = i / (pointsToCheck - 1) - 0.5;
-      const offset = t * tractorManager.HEADER_WIDTH;
-      const checkX = frontX - pSin * offset;
-      const checkY = frontY + pCos * offset;
-
-      if (this.checkIfTileMatches(checkX, checkY, field, type)) return true;
+    let tilesOver = tractorManager.getTilesCurrentlyOver(tractor, field);
+    for (let i = 0; i < tilesOver.length; i++) {
+      const cropState = tilesOver[i][0].cropState;
+      if (cropState && tilesOver[i][0].stage == type) {
+        return true;
+      }
     }
 
     return false;
@@ -422,21 +428,17 @@ export default class simulationEngine extends EventTarget {
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
-
-    // Explicitly update display on reset so Date resets instantly on screen
   }
 
-setMainVehicleType(type) {
-  const tractor = this.stateManager.getState("tractor");
-  if (!tractor) return;
+  setMainVehicleType(type) {
+    const tractor = this.stateManager.getState("tractor");
+    if (!tractor) return;
 
-  tractor.type = type;
+    tractor.type = type;
 
-  console.log("setMainVehicleType", type, tractor.type);
-console.log("BLOCK CALLED", type);
+    console.log("setMainVehicleType", type, tractor.type);
+    console.log("BLOCK CALLED", type);
 
-  this.timeStepEvent(); //immediant refresh
-}
-
-
+    this.timeStepEvent(); //immediant refresh
+  }
 }

@@ -285,10 +285,33 @@ Blocks["start_program"] = {
   },
 };
 
-
+var switchCropBeingPlanted = {
+  type: "switch_crop_being_planted",
+  message0: "Switch crop being planted to %1",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleType",
+      options: [
+        ["Wheat", "0"],
+        ["Corn", "1"],
+        ["Soybean", "2"],
+      ],
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Switch the crop that is being planted when seeding is turned on",
+};
+Blocks["switch_crop_being_planted"] = {
+  init: function () {
+    this.jsonInit(switchCropBeingPlanted);
+  },
+};
 
 var changeVehicleToInvert = {
-  type: "change_vehicle",            // ✅ match toolbox + Blocks["change_vehicle"]
+  type: "change_vehicle", // ✅ match toolbox + Blocks["change_vehicle"]
   message0: "Inverted",
   previousStatement: null,
   nextStatement: null,
@@ -303,7 +326,7 @@ Blocks["change_vehicle"] = {
 };
 
 var changeVehicleToMain = {
-  type: "change_vehicle_2",          // ✅ match toolbox + Blocks["change_vehicle_2"]
+  type: "change_vehicle_2", // ✅ match toolbox + Blocks["change_vehicle_2"]
   message0: "Main",
   previousStatement: null,
   nextStatement: null,
@@ -316,7 +339,5 @@ Blocks["change_vehicle_2"] = {
     this.jsonInit(changeVehicleToMain);
   },
 };
-
-
 
 //#endregion

@@ -1,9 +1,7 @@
-import State from "../State";
+import { CROP_TYPES } from "./CropState";
 
-export default class TractorState extends State {
+export default class TractorState {
   constructor() {
-    super();
-
     this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
 
@@ -16,10 +14,10 @@ export default class TractorState extends State {
     this.isMoving = false;
     this.isHarvestingOn = false;
     this.isSeedingOn = false;
+    this.cropBeingPlanted = CROP_TYPES.WHEAT;
 
     this.yieldScore = 0;
     this.type = "tractor";
-
   }
 
   clone() {
@@ -35,11 +33,12 @@ export default class TractorState extends State {
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
 
-    // FIXED: This was missing, causing seeding to stop after 1 frame
     newState.isSeedingOn = this.isSeedingOn;
 
+    newState.cropBeingPlanted = this.cropBeingPlanted;
+
     newState.yieldScore = this.yieldScore;
-    newState.type = this.type
+    newState.type = this.type;
     return newState;
   }
 }
