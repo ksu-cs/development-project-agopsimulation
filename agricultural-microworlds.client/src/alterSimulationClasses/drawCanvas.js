@@ -186,8 +186,6 @@ export default class drawCanvas {
    * Draws the on the canvas based on the information received from the timeStep event
    */
   drawTractor() {
-    console.log("drawTractor tick", this.simulationState?.vehicleType);
-
     const screenX = this.simulationState.tractorWorldX - this.cameraX;
     const screenY = this.simulationState.tractorWorldY - this.cameraY;
 
