@@ -28,6 +28,7 @@ export default class drawCanvas {
     this.cameraY = 0;
 
     // Sprite setup
+    this.invertedTractorSprite = new Image();
     this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.cornImage = new Image();
@@ -54,6 +55,8 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
+    this.invertedTractorSprite.src =
+      "./src/assets/combine-harvester-inverted.png";
     this.tractorSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
@@ -206,17 +209,17 @@ export default class drawCanvas {
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
+    const type = this.simulationState.vehicleType || "tractor";
+    const sprite =
+      type === "inverted" ? this.invertedTractorSprite : this.tractorSprite;
+
     this.ctx.save();
     this.ctx.translate(
       screenX + this.FRAME_WIDTH / 2,
       screenY + this.FRAME_HEIGHT / 2,
     );
     this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(
-      this.tractorSprite,
-      -this.FRAME_WIDTH / 2,
-      -this.FRAME_HEIGHT / 2,
-    );
+    this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
     this.ctx.restore();
 
     // Debug info is allowed to fail silently if element is missing,
@@ -228,6 +231,7 @@ export default class drawCanvas {
         `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
         `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
         `Angle: ${normalizedAngle}°<br>`;
+      `Vehicle Type: ${type}<br>`;
     }
   }
 

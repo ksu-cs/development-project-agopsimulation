@@ -31,15 +31,23 @@ export default class Simulation {
       new TractorManager(),
     ];
 
-    this.tractorSprite = new Image();
     this.wheatImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
 
-    this.tractorSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
+
+    this.vehicleSprites = {
+      tractor: new Image(),
+      inverted: new Image(),
+    };
+
+    this.vehicleSprites.tractor.src = "./src/assets/combine-harvester.png";
+    this.vehicleSprites.inverted.src =
+      "./src/assets/combine-harvester-inverted.png";
+    this.setSpriteOnLoadMethods();
 
     this.lastFrameTime = 0;
     this.animationId = -1;
@@ -54,20 +62,46 @@ export default class Simulation {
       this.draw();
     }, 100);
   }
-
   initializeStates() {
     this.stateManager.initState("weather", new WeatherState());
 
-    const tractor = new TractorState();
-    // Center of map
-    tractor.x = (this.COLS * this.TILE_SIZE) / 2;
-    tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
-    this.stateManager.initState("tractor", tractor);
+    // Vehicles array
+    const mkVehicle = (id, x, y, type = "tractor") => {
+      const v = new TractorState(); // reuse TractorState for now
+      v.id = id;
+      v.type = type;
+
+      v.x = x;
+      v.y = y;
+
+      // Defaults you already rely on:
+      v.isMoving = false;
+      v.isHarvestingOn = false;
+      v.isSeedingOn = false;
+
+      // Optional per-vehicle behavior tuning:
+      // v.basespeed = ...
+      // v.turnSpeed = ...
+
+      return v;
+    };
+
+    const cx = (this.COLS * this.TILE_SIZE) / 2;
+    const cy = (this.ROWS * this.TILE_SIZE) / 2;
+
+    const vehicles = [
+      mkVehicle("v1", cx, cy, "tractor"),
+      // Example second vehicle
+      mkVehicle("v2", cx + 80, cy + 40, "inverted"),
+    ];
+
+    this.stateManager.initState("vehicles", vehicles);
+    this.stateManager.initState("activeVehicleId", "v1");
+    this.stateManager.initState("tractor", vehicles[0]); // backwards compatible
 
     const field = Array.from({ length: this.ROWS }, () =>
       Array.from({ length: this.COLS }, () => new CropState()),
     );
-
     this.stateManager.initState("field", field);
   }
 
@@ -76,7 +110,7 @@ export default class Simulation {
       this.updateCamera();
       this.draw();
     };
-    this.tractorSprite.onload = redraw;
+    Object.values(this.vehicleSprites).forEach((img) => (img.onload = redraw));
     this.wheatImage.onload = redraw;
     this.seedImage.onload = redraw;
     this.dirtImage.onload = redraw;
@@ -158,6 +192,14 @@ export default class Simulation {
         nextStates[key] = oldStates[key].map((row) =>
           row.map((c) => c.clone()),
         );
+      } else if (key === "vehicles") {
+        // Each vehicle is a TractorState (has clone())
+        nextStates[key] = oldStates[key].map((v) =>
+          v && typeof v.clone === "function" ? v.clone() : structuredClone(v),
+        );
+      } else {
+        // primitives like activeVehicleId
+        nextStates[key] = oldStates[key];
       }
     }
 
@@ -176,20 +218,20 @@ export default class Simulation {
   }
 
   updateCamera() {
-    const tractor = this.stateManager.getState("tractor");
-    if (!tractor) return;
+    const vehicles = this.stateManager.getState("vehicles");
+    const activeId = this.stateManager.getState("activeVehicleId");
 
-    // 1. Calculate Tractor Center
-    const tractorCenterX = tractor.x + 32;
-    const tractorCenterY = tractor.y + 32;
+    if (!vehicles || vehicles.length === 0) return;
 
-    // 2. Calculate ideal camera position (centered on tractor)
-    let targetCameraX = tractorCenterX - this.canvas.width / 2;
-    let targetCameraY = tractorCenterY - this.canvas.height / 2;
+    const v = activeId ? vehicles.find((x) => x.id === activeId) : vehicles[0];
+    if (!v) return;
 
-    // 3. Clamp logic to prevent white space
-    // The camera cannot go less than 0
-    // The camera cannot go more than WorldWidth - CanvasWidth
+    const centerX = v.x + 32;
+    const centerY = v.y + 32;
+
+    let targetCameraX = centerX - this.canvas.width / 2;
+    let targetCameraY = centerY - this.canvas.height / 2;
+
     const worldPixelWidth = this.COLS * this.TILE_SIZE;
     const worldPixelHeight = this.ROWS * this.TILE_SIZE;
 
@@ -204,10 +246,10 @@ export default class Simulation {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     const field = this.stateManager.getState("field");
-    const tractor = this.stateManager.getState("tractor");
+    const vehicles = this.stateManager.getState("vehicles");
 
     if (field) this.drawField(field);
-    if (tractor) this.drawTractor(tractor);
+    if (vehicles) this.drawVehicles(vehicles);
   }
 
   drawField(field) {
@@ -247,26 +289,82 @@ export default class Simulation {
     }
   }
 
-  drawTractor(tractor) {
+  drawVehicles(vehicles) {
+    for (const v of vehicles) this.drawVehicle(v);
+  }
+
+  drawVehicle(v) {
     this.ctx.save();
 
-    const screenX = tractor.x - this.cameraX;
-    const screenY = tractor.y - this.cameraY;
+    const screenX = v.x - this.cameraX;
+    const screenY = v.y - this.cameraY;
 
     const centerX = screenX + 32;
     const centerY = screenY + 32;
 
+    const sprite = this.vehicleSprites[v.type] || this.vehicleSprites.tractor;
+
     this.ctx.translate(centerX, centerY);
-    this.ctx.rotate((tractor.angle * Math.PI) / 180);
-    this.ctx.drawImage(this.tractorSprite, -32, -32, 64, 64);
+    this.ctx.rotate((v.angle * Math.PI) / 180);
+    this.ctx.drawImage(sprite, -32, -32, 64, 64);
     this.ctx.restore();
+  }
+
+  getVehicles() {
+    return this.stateManager.getState("vehicles") || [];
+  }
+
+  getVehicleById(id) {
+    return this.getVehicles().find((v) => v.id === id);
+  }
+
+  setActiveVehicle(id) {
+    // only set if it exists
+    const exists = this.getVehicleById(id);
+    if (exists) this.stateManager.commitState("activeVehicleId", id);
+  }
+
+  spawnVehicle(type, id, x, y) {
+    // prevent duplicates
+    const vehicles = this.getVehicles();
+    if (vehicles.some((v) => v.id === id)) return;
+
+    const v = new TractorState(); // reuse TractorState as VehicleState
+    v.id = id;
+    v.type = type;
+
+    v.x = x;
+    v.y = y;
+
+    // defaults
+    v.isMoving = false;
+    v.isHarvestingOn = false;
+    v.isSeedingOn = false;
+
+    // IMPORTANT: make sure these exist for turning/movement
+    v.angle = v.angle ?? 0;
+    v.goalAngle = v.goalAngle ?? 0;
+
+    // Add it and commit
+    const newVehicles = [...vehicles, v];
+    this.stateManager.commitState("vehicles", newVehicles);
+
+    // optional: auto select the newly spawned vehicle
+    this.stateManager.commitState("activeVehicleId", id);
+  }
+
+  setMainVehicleType(type) {
+    const vehicles = this.stateManager.getState("vehicles");
+    if (!vehicles || vehicles.length === 0) return;
+
+    vehicles[0].type = type;
   }
 
   // --- API ---
 
   async moveForward(durationInSeconds) {
     return new Promise((resolve) => {
-      const tractor = this.stateManager.getState("tractor");
+      const tractor = this.getActiveVehicle();
       if (tractor) tractor.isMoving = true;
 
       const speedMult =

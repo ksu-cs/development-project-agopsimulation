@@ -17,6 +17,7 @@ export default class TractorState {
     this.cropBeingPlanted = CROP_TYPES.WHEAT;
 
     this.yieldScore = 0;
+    this.type = "tractor";
   }
 
   clone() {
@@ -37,6 +38,7 @@ export default class TractorState {
     newState.cropBeingPlanted = this.cropBeingPlanted;
 
     newState.yieldScore = this.yieldScore;
+    newState.type = this.type;
     return newState;
   }
 }
