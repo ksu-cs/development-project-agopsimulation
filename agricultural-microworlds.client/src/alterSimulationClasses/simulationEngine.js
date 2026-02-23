@@ -376,10 +376,9 @@ export default class simulationEngine extends EventTarget {
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
 
-    let tilesOver = tractorManager.getTilesCurrentlyOver(tractor, field);
-    for (let i = 0; i < tilesOver.length; i++) {
-      const cropState = tilesOver[i][0].cropState;
-      if (cropState && tilesOver[i][0].stage == type) {
+    for (const targetCrop of tractorManager.getTilesCurrentlyOver(tractor, field)) {
+      const cropState = targetCrop[0].cropState;
+      if (cropState && cropState.stage == type) {
         return true;
       }
     }
