@@ -77,7 +77,7 @@ javascriptGenerator.forBlock["start_program"] = function () {
 javascriptGenerator.forBlock["change_vehicle"] = function (block) {
   const toggle = block.getFieldValue("toggleVehicle");
   var vehicle;
-  switch (toggle){
+  switch (toggle) {
     case "0":
       vehicle = VEHICLES.HARVESTER;
       break;

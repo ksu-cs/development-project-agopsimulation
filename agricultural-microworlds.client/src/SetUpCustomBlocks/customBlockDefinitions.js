@@ -320,17 +320,17 @@ var changeVehicle = {
       options: [
         ["Harvester", "0"],
         ["Seeder", "1"],
-      ]
-    }
+      ],
+    },
   ],
   previousStatement: null,
   nextStatement: null,
   style: "control_blocks",
   tooltip: "Switch the vehicle being controlled",
-}
+};
 Blocks["change_vehicle"] = {
-  init: function() {
+  init: function () {
     this.jsonInit(changeVehicle);
-  }
-}
+  },
+};
 //#endregion

@@ -340,7 +340,6 @@ export default class simulationEngine extends EventTarget {
       tractor.isHarvestingOn = isOn;
       if (isOn) tractor.isSeedingOn = false;
     }
-
   }
 
   /**
