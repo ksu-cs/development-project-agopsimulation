@@ -86,7 +86,6 @@ export const toolbox = {
       categorystyle: "vehicles_category",
       contents: [
         { kind: "block", type: "change_vehicle" },
-        { kind: "block", type: "change_vehicle_2" },
       ],
     },
   ],

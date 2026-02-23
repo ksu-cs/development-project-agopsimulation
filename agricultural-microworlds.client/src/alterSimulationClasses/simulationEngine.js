@@ -4,7 +4,7 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
-import TractorState from "../States/StateClasses/TractorState";
+import TractorState, { VEHICLES } from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
@@ -254,8 +254,8 @@ export default class simulationEngine extends EventTarget {
       gddString,
     );
 
-    //default back to tractor
-    ts.vehicleType = tractor.type || "tractor";
+    //default back to Harvester
+    ts.vehicleType = tractor.type || VEHICLES.HARVESTER;
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -436,9 +436,6 @@ export default class simulationEngine extends EventTarget {
 
     tractor.type = type;
 
-    console.log("setMainVehicleType", type, tractor.type);
-    console.log("BLOCK CALLED", type);
-
-    this.timeStepEvent(); //immediant refresh
+    this.timeStepEvent();
   }
 }
