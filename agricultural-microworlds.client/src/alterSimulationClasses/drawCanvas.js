@@ -28,8 +28,8 @@ export default class drawCanvas {
     this.cameraY = 0;
 
     // Sprite setup
-    this.invertedTractorSprite = new Image();
-    this.tractorSprite = new Image();
+    this.seederSprite = new Image();
+    this.harvesterSprite = new Image();
     this.wheatImage = new Image();
     this.cornImage = new Image();
     this.soybeanImage = new Image();
@@ -55,9 +55,9 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
-    this.invertedTractorSprite.src =
-      "./src/assets/combine-harvester-inverted.png";
-    this.tractorSprite.src = "./src/assets/combine-harvester.png";
+    this.seederSprite.src =
+      "./src/assets/seeder.png";
+    this.harvesterSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
@@ -211,7 +211,7 @@ export default class drawCanvas {
 
     const type = this.simulationState.vehicleType || "tractor";
     const sprite =
-      type === "inverted" ? this.invertedTractorSprite : this.tractorSprite;
+      type === "inverted" ? this.seederSprite : this.harvesterSprite;
 
     this.ctx.save();
     this.ctx.translate(
@@ -259,11 +259,11 @@ export default class drawCanvas {
    * Sets all the sprite onload methods.
    */
   setSpriteOnLoadMethods() {
-    this.tractorSprite.onload = () => {
+    this.harvesterSprite.onload = () => {
       console.log("Tractor sprite loaded!");
       this.onImageLoad();
     };
-    this.tractorSprite.onerror = () => {
+    this.harvesterSprite.onerror = () => {
       console.error("Failed to load tractor sprite!");
     };
     this.dirtImage.onload = () => {

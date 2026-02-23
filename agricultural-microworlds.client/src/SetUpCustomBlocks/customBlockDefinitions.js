@@ -312,7 +312,7 @@ Blocks["switch_crop_being_planted"] = {
 
 var changeVehicleToInvert = {
   type: "change_vehicle", // ✅ match toolbox + Blocks["change_vehicle"]
-  message0: "Inverted",
+  message0: "Seeder",
   previousStatement: null,
   nextStatement: null,
   style: "vehicle_blocks",
@@ -327,7 +327,7 @@ Blocks["change_vehicle"] = {
 
 var changeVehicleToMain = {
   type: "change_vehicle_2", // ✅ match toolbox + Blocks["change_vehicle_2"]
-  message0: "Main",
+  message0: "Harvester",
   previousStatement: null,
   nextStatement: null,
   style: "vehicle_blocks",
