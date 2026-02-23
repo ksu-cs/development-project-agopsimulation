@@ -336,7 +336,11 @@ export default class simulationEngine extends EventTarget {
    */
   toggleHarvesting(isOn) {
     const tractor = this.stateManager.getState("tractor");
-    if (tractor) tractor.isHarvestingOn = isOn;
+    if (tractor && tractor.type === VEHICLES.HARVESTER) {
+      tractor.isHarvestingOn = isOn;
+      if (isOn) tractor.isSeedingOn = false;
+    }
+
   }
 
   /**
@@ -345,7 +349,10 @@ export default class simulationEngine extends EventTarget {
    */
   toggleSeeding(isOn) {
     const tractor = this.stateManager.getState("tractor");
-    if (tractor) tractor.isSeedingOn = isOn;
+    if (tractor && tractor.type === VEHICLES.SEEDER) {
+      tractor.isSeedingOn = isOn;
+      if (isOn) tractor.isHarvestingOn = false;
+    }
   }
 
   /**
