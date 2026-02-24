@@ -86,7 +86,7 @@ export default class simulationEngine extends EventTarget {
 
     // 2. Setup tractor
     const tractor = new TractorState();
-    tractor.x = (this.COLS * this.TILE_SIZE) / 2;
+    tractor.x = -150;
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
