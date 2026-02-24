@@ -55,8 +55,7 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
-    this.seederSprite.src =
-      "./src/assets/seeder.png";
+    this.seederSprite.src = "./src/assets/seeder.png";
     this.harvesterSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
