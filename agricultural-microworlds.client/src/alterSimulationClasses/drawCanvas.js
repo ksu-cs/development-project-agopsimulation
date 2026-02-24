@@ -5,6 +5,7 @@
   GetCropState,
 } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
+import { VEHICLES } from "../States/StateClasses/TractorState";
 
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
@@ -28,6 +29,8 @@ export default class drawCanvas {
     this.cameraY = 0;
 
     // Sprite setup
+    this.seederSprite = new Image();
+    this.harvesterSprite = new Image();
     this.seederSprite = new Image();
     this.harvesterSprite = new Image();
     this.wheatImage = new Image();
@@ -65,7 +68,7 @@ export default class drawCanvas {
 
     // Image initialization
     this.imageLoadCount = 0;
-    this.imageCount = 6;
+    this.imageCount = 7;
     this.isInitialized = false;
 
     /** @type {CustomEvent} Holds the timeStepData to draw */
@@ -208,9 +211,9 @@ export default class drawCanvas {
     const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
     var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-    const type = this.simulationState.vehicleType || "tractor";
+    const type = this.simulationState.vehicleType || VEHICLES.HARVESTER;
     const sprite =
-      type === "inverted" ? this.seederSprite : this.harvesterSprite;
+      type === VEHICLES.SEEDER ? this.seederSprite : this.harvesterSprite;
 
     this.ctx.save();
     this.ctx.translate(
@@ -264,6 +267,13 @@ export default class drawCanvas {
     };
     this.harvesterSprite.onerror = () => {
       console.error("Failed to load tractor sprite!");
+    };
+    this.seederSprite.onload = () => {
+      console.log("Seeder sprite loaded!");
+      this.onImageLoad();
+    };
+    this.seederSprite.onerror = () => {
+      console.error("Failed to load seeder sprite!");
     };
     this.dirtImage.onload = () => {
       console.log("DirtImage loaded!");

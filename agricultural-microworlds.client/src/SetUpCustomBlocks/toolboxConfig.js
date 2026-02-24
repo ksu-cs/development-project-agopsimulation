@@ -52,6 +52,7 @@ export const toolbox = {
         { kind: "block", type: "toggle_seeding" },
         { kind: "block", type: "wait_x_weeks" },
         { kind: "block", type: "switch_crop_being_planted" },
+        { kind: "block", type: "change_vehicle" },
       ],
     },
     {
@@ -80,15 +81,6 @@ export const toolbox = {
       categorystyle: "events_category",
       contents: [{ kind: "block", type: "start_program" }],
     },
-    {
-      kind: "category",
-      name: "Vehicles",
-      categorystyle: "vehicles_category",
-      contents: [
-        { kind: "block", type: "change_vehicle" },
-        { kind: "block", type: "change_vehicle_2" },
-      ],
-    },
   ],
 };
 
@@ -105,7 +97,6 @@ export const myTheme = Theme.defineTheme("myTheme", {
     loops_category: { colour: "60" },
     variable_category: { colour: "330" },
     events_category: { colour: "150" },
-    vehicles_category: { colour: "1" },
   },
   blockStyles: {
     // Movement Blocks
@@ -128,9 +119,6 @@ export const myTheme = Theme.defineTheme("myTheme", {
 
     // Style for all blocks in the "Events" category
     event_blocks: { colourPrimary: "150" },
-
-    // Style for all blocks in the "Events" category
-    vehicle_blocks: { colourPrimary: "1" },
   },
   componentStyles: {},
 });
