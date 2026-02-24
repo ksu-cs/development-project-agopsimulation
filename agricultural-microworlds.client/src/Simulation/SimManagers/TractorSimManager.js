@@ -55,29 +55,39 @@ export default class TractorSimManager extends SimManager {
   }
 
   handleHarvesting(tractor, field) {
-    this.applyToolAction(tractor, field, (tile) => {
-      const crop = tile.cropState;
+    this.applyToolAction(
+      tractor,
+      field,
+      (tile) => {
+        const crop = tile.cropState;
 
-      if (crop.isMature()) {
-        crop.reset();
-        tractor.yieldScore += 1;
-        return true;
-      } else if (crop.isGrowing()) {
-        crop.reset(); // Destroy if harvesting early
-        return true;
-      }
-    }, this.HEADER_OFFSET);
+        if (crop.isMature()) {
+          crop.reset();
+          tractor.yieldScore += 1;
+          return true;
+        } else if (crop.isGrowing()) {
+          crop.reset(); // Destroy if harvesting early
+          return true;
+        }
+      },
+      this.HEADER_OFFSET,
+    );
   }
 
   handleSeeding(tractor, field) {
-    this.applyToolAction(tractor, field, (tile) => {
-      const crop = tile.cropState;
+    this.applyToolAction(
+      tractor,
+      field,
+      (tile) => {
+        const crop = tile.cropState;
 
-      if (crop.isUnplanted()) {
-        crop.plant(tractor.cropBeingPlanted);
-        return true;
-      }
-    }, -this.HEADER_OFFSET);
+        if (crop.isUnplanted()) {
+          crop.plant(tractor.cropBeingPlanted);
+          return true;
+        }
+      },
+      -this.HEADER_OFFSET,
+    );
   }
 
   /**

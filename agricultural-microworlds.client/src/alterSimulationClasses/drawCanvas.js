@@ -119,8 +119,10 @@ export default class drawCanvas {
     let targetX = tractorX - this.canvas.width / 2;
     let targetY = tractorY - this.canvas.height / 2;
 
-    const maxCameraX = (this.simulationState.fieldWidth * this.TILE_WIDTH) - this.canvas.width;
-    const maxCameraY = (this.simulationState.fieldWidth * this.TILE_HEIGHT) - this.canvas.height;
+    const maxCameraX =
+      this.simulationState.fieldWidth * this.TILE_WIDTH - this.canvas.width;
+    const maxCameraY =
+      this.simulationState.fieldWidth * this.TILE_HEIGHT - this.canvas.height;
 
     // Clamp to max
     targetX = Math.min(targetX, maxCameraX);
@@ -135,7 +137,7 @@ export default class drawCanvas {
    * Calls the necessary draw methods in the correct order
    */
   drawFieldAndTractor() {
-    this.ctx.fillStyle = "#4a3b2c"; 
+    this.ctx.fillStyle = "#4a3b2c";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.drawField();
