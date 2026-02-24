@@ -31,6 +31,8 @@ export default class drawCanvas {
     // Sprite setup
     this.seederSprite = new Image();
     this.harvesterSprite = new Image();
+    this.seederSprite = new Image();
+    this.harvesterSprite = new Image();
     this.wheatImage = new Image();
     this.cornImage = new Image();
     this.soybeanImage = new Image();
@@ -56,7 +58,7 @@ export default class drawCanvas {
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
 
     // Paths for the images
-    this.seederSprite.src = "./src/assets/combine-harvester-inverted.png";
+    this.seederSprite.src = "./src/assets/seeder.png";
     this.harvesterSprite.src = "./src/assets/combine-harvester.png";
     this.wheatImage.src = "./src/assets/wheat.png";
     this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
@@ -117,8 +119,17 @@ export default class drawCanvas {
     let targetX = tractorX - this.canvas.width / 2;
     let targetY = tractorY - this.canvas.height / 2;
 
-    // Clamp so it does not show edge of field
-    this.cameraX = Math.max(0, targetX);
+    const maxCameraX =
+      this.simulationState.fieldWidth * this.TILE_WIDTH - this.canvas.width;
+    const maxCameraY =
+      this.simulationState.fieldWidth * this.TILE_HEIGHT - this.canvas.height;
+
+    // Clamp to max
+    targetX = Math.min(targetX, maxCameraX);
+    targetY = Math.min(targetY, maxCameraY);
+
+    // Clamp to min
+    this.cameraX = Math.max(-150, targetX);
     this.cameraY = Math.max(0, targetY);
   }
 
@@ -126,7 +137,9 @@ export default class drawCanvas {
    * Calls the necessary draw methods in the correct order
    */
   drawFieldAndTractor() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = "#4a3b2c";
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
     this.drawField();
     this.drawTractor();
 

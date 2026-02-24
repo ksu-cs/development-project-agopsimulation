@@ -55,29 +55,39 @@ export default class TractorSimManager extends SimManager {
   }
 
   handleHarvesting(tractor, field) {
-    this.applyToolAction(tractor, field, (tile) => {
-      const crop = tile.cropState;
+    this.applyToolAction(
+      tractor,
+      field,
+      (tile) => {
+        const crop = tile.cropState;
 
-      if (crop.isMature()) {
-        crop.reset();
-        tractor.yieldScore += 1;
-        return true;
-      } else if (crop.isGrowing()) {
-        crop.reset(); // Destroy if harvesting early
-        return true;
-      }
-    });
+        if (crop.isMature()) {
+          crop.reset();
+          tractor.yieldScore += 1;
+          return true;
+        } else if (crop.isGrowing()) {
+          crop.reset(); // Destroy if harvesting early
+          return true;
+        }
+      },
+      this.HEADER_OFFSET,
+    );
   }
 
   handleSeeding(tractor, field) {
-    this.applyToolAction(tractor, field, (tile) => {
-      const crop = tile.cropState;
+    this.applyToolAction(
+      tractor,
+      field,
+      (tile) => {
+        const crop = tile.cropState;
 
-      if (crop.isUnplanted()) {
-        crop.plant(tractor.cropBeingPlanted);
-        return true;
-      }
-    });
+        if (crop.isUnplanted()) {
+          crop.plant(tractor.cropBeingPlanted);
+          return true;
+        }
+      },
+      -this.HEADER_OFFSET,
+    );
   }
 
   /**
@@ -86,13 +96,13 @@ export default class TractorSimManager extends SimManager {
    * @param {any} field The crop field.
    * @return {Array} Returns an array of all tiles the tractor is currently over.
    */
-  getTilesCurrentlyOver(tractor, field) {
+  getTilesCurrentlyOver(tractor, field, offset) {
     let tilesOver = [];
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
-    const frontX = centerX + Math.cos(rad) * this.HEADER_OFFSET;
-    const frontY = centerY + Math.sin(rad) * this.HEADER_OFFSET;
+    const frontX = centerX + Math.cos(rad) * offset;
+    const frontY = centerY + Math.sin(rad) * offset;
 
     const pSin = Math.sin(rad);
     const pCos = Math.cos(rad);
@@ -117,8 +127,8 @@ export default class TractorSimManager extends SimManager {
    * @param {any} field The crop field.
    * @param {any} actionCallback The action to take on a valid tile.
    * */
-  applyToolAction(tractor, field, actionCallback) {
-    let tilesOver = this.getTilesCurrentlyOver(tractor, field);
+  applyToolAction(tractor, field, actionCallback, offset) {
+    let tilesOver = this.getTilesCurrentlyOver(tractor, field, offset);
 
     for (let i = 0; i < tilesOver.length; i++) {
       if (tilesOver[i]) {
