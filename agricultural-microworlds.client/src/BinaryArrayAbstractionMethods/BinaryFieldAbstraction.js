@@ -5,6 +5,18 @@ import {
 } from "../States/StateClasses/CropState";
 import FieldTileState from "../States/StateClasses/FieldTileState";
 
+/**
+ * Changes to be made:
+ * Make the Tile byte size dynamic?
+ *  - Pass in byte size as a var on create blank field
+ *    - Would set the first byte to be the tile byte size then the rest 0s
+ *  - All accessor methods would use the dynamic tile byte size to iterate through the data
+ * Questions:
+ *  - Set it up to be able to add any property to the tile? Possible efficently?
+ *  - Make abstraction methods a class or continue as static methods?
+ *  - Ideal world, alter/add/remove FieldTileState properties and have this be able store it without having to change code anywhere else. Possible?
+ */
+
 export const TILE_BYTE_SIZE = 13;
 /**
  * Field tile bit setup (current)
@@ -66,19 +78,7 @@ export function GetFieldTile(field, x, y, width) {
 
   let tile = new FieldTileState();
 
-  tile.cropState.type = field[i] & 0x03;
-  tile.cropState.stage = (field[i] >> 2) & 0xff;
-
-  tile.cropState.currentGDD = Convert3Uint8ToFloat(
-    field[i + 1],
-    field[i + 2],
-    field[i + 3],
-  );
-  tile.cropState.requiredGDD = Convert3Uint8ToFloat(
-    field[i + 4],
-    field[i + 5],
-    field[i + 6],
-  );
+  tile.cropState = GetCropState(field, x, y, width);
 
   // 2. Populate Tile Properties
   tile.waterLevel = Convert3Uint8ToFloat(
@@ -122,12 +122,13 @@ function AlterEntireFieldTileUsingUintArrayIndex(field, tileState, i) {
   field[i + 5] = (requiredGDDFlag >> 8) & 0xff;
   field[i + 6] = requiredGDDFlag & 0xff;
 
-  // --- TILE DATA ---
+  // Edits bytes 8-10 (water) of tile
   let waterFlag = ConvertFloatToUint24(tileState.waterLevel);
   field[i + 7] = (waterFlag >> 16) & 0xff;
   field[i + 8] = (waterFlag >> 8) & 0xff;
   field[i + 9] = waterFlag & 0xff;
 
+  // Edits bytes 11-13 (minerals) of tile
   let mineralsFlag = ConvertFloatToUint24(tileState.minerals);
   field[i + 10] = (mineralsFlag >> 16) & 0xff;
   field[i + 11] = (mineralsFlag >> 8) & 0xff;
@@ -145,23 +146,23 @@ function AlterEntireFieldTileUsingUintArrayIndex(field, tileState, i) {
 export function GetCropState(field, x, y, width) {
   let i = GetTileIndex(x, y, width);
 
-  let tile = new CropState();
+  let crop = new CropState();
 
-  tile.type = field[i] & 0x03;
-  tile.stage = (field[i] >> 2) & 0xff;
+  crop.type = field[i] & 0x03;
+  crop.stage = (field[i] >> 2) & 0xff;
 
-  tile.currentGDD = Convert3Uint8ToFloat(
+  crop.currentGDD = Convert3Uint8ToFloat(
     field[i + 1],
     field[i + 2],
     field[i + 3],
   );
-  tile.requiredGDD = Convert3Uint8ToFloat(
+  crop.requiredGDD = Convert3Uint8ToFloat(
     field[i + 4],
     field[i + 5],
     field[i + 6],
   );
 
-  return tile;
+  return crop;
 }
 
 /**
