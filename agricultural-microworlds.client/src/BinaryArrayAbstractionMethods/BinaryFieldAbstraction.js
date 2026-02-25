@@ -6,6 +6,12 @@ import {
 import FieldTileState from "../States/StateClasses/FieldTileState";
 
 /**
+ * Notes:
+ *  - Switch to class implementation
+ *  - dictionary of buffer arrays (1 per var)
+ *  - In Tile state object have dictionary of variables instead of explicitly definded variables (might be unnecessary when abstraction methods and tile state combine)
+ *  - addVar (need a realloc), addVars(multiple), get, set, init, destroy? methods
+ *  - need for var class that has a convert between binary and non binary method? prob not
  * Changes to be made:
  * Make the Tile byte size dynamic?
  *  - Pass in byte size as a var on create blank field
