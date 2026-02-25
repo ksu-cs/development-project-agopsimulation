@@ -4,7 +4,7 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
-import TractorState from "../States/StateClasses/TractorState";
+import TractorState, { VEHICLES } from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
@@ -85,7 +85,9 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("weather", weatherState);
 
     // 2. Setup tractor
-    const tractor = new TractorState((this.COLS * this.TILE_SIZE) / 2, (this.ROWS * this.TILE_SIZE) / 2);
+    const tractor = new TractorState();
+    tractor.x = -150;
+    tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
     // 3. Setup field
@@ -252,8 +254,8 @@ export default class simulationEngine extends EventTarget {
       gddString,
     );
 
-    //default back to tractor
-    ts.vehicleType = tractor.type || "tractor";
+    //default back to Harvester
+    ts.vehicleType = tractor.type || VEHICLES.HARVESTER;
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -334,7 +336,10 @@ export default class simulationEngine extends EventTarget {
    */
   toggleHarvesting(isOn) {
     const tractor = this.stateManager.getState("tractor");
-    if (tractor) tractor.isHarvestingOn = isOn;
+    if (tractor && tractor.type === VEHICLES.HARVESTER) {
+      tractor.isHarvestingOn = isOn;
+      if (isOn) tractor.isSeedingOn = false;
+    }
   }
 
   /**
@@ -343,7 +348,10 @@ export default class simulationEngine extends EventTarget {
    */
   toggleSeeding(isOn) {
     const tractor = this.stateManager.getState("tractor");
-    if (tractor) tractor.isSeedingOn = isOn;
+    if (tractor && tractor.type === VEHICLES.SEEDER) {
+      tractor.isSeedingOn = isOn;
+      if (isOn) tractor.isHarvestingOn = false;
+    }
   }
 
   /**
@@ -433,9 +441,6 @@ export default class simulationEngine extends EventTarget {
 
     tractor.type = type;
 
-    console.log("setMainVehicleType", type, tractor.type);
-    console.log("BLOCK CALLED", type);
-
-    this.timeStepEvent(); //immediant refresh
+    this.timeStepEvent();
   }
 }

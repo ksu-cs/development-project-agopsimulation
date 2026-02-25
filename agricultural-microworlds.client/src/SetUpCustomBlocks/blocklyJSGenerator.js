@@ -1,5 +1,6 @@
 import { javascriptGenerator } from "blockly/javascript";
 import { CROP_TYPES } from "../States/StateClasses/CropState";
+import { VEHICLES } from "../States/StateClasses/TractorState";
 
 javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
   const duration =
@@ -73,13 +74,21 @@ javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
 };
 
-javascriptGenerator.forBlock["change_vehicle"] = function () {
-  // For now: just change the MAIN vehicle's sprite/type
-  return `simulationMethods.setMainVehicleType("inverted");\n`;
-};
-
-javascriptGenerator.forBlock["change_vehicle_2"] = function () {
-  return `simulationMethods.setMainVehicleType("tractor");\n`;
+javascriptGenerator.forBlock["change_vehicle"] = function (block) {
+  const toggle = block.getFieldValue("toggleVehicle");
+  var vehicle;
+  switch (toggle) {
+    case "0":
+      vehicle = VEHICLES.HARVESTER;
+      break;
+    case "1":
+      vehicle = VEHICLES.SEEDER;
+      break;
+    default:
+      vehicle = VEHICLES.HARVESTER;
+      break;
+  }
+  return `simulationMethods.setMainVehicleType(${vehicle});\n`;
 };
 
 javascriptGenerator.forBlock["switch_crop_being_planted"] = function (block) {

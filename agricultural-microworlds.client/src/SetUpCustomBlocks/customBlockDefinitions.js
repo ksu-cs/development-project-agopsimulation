@@ -310,34 +310,27 @@ Blocks["switch_crop_being_planted"] = {
   },
 };
 
-var changeVehicleToInvert = {
-  type: "change_vehicle", // ✅ match toolbox + Blocks["change_vehicle"]
-  message0: "Inverted",
+var changeVehicle = {
+  type: "change_vehicle",
+  message0: "Swaps the vehicle to %1",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleVehicle",
+      options: [
+        ["Harvester", "0"],
+        ["Seeder", "1"],
+      ],
+    },
+  ],
   previousStatement: null,
   nextStatement: null,
-  style: "vehicle_blocks",
-  tooltip: "Change controlled vehicle to inverted.",
+  style: "control_blocks",
+  tooltip: "Switch the vehicle being controlled",
 };
-
 Blocks["change_vehicle"] = {
   init: function () {
-    this.jsonInit(changeVehicleToInvert);
+    this.jsonInit(changeVehicle);
   },
 };
-
-var changeVehicleToMain = {
-  type: "change_vehicle_2", // ✅ match toolbox + Blocks["change_vehicle_2"]
-  message0: "Main",
-  previousStatement: null,
-  nextStatement: null,
-  style: "vehicle_blocks",
-  tooltip: "Change controlled vehicle to main.",
-};
-
-Blocks["change_vehicle_2"] = {
-  init: function () {
-    this.jsonInit(changeVehicleToMain);
-  },
-};
-
 //#endregion

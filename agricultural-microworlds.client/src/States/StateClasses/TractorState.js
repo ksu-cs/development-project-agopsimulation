@@ -1,5 +1,10 @@
 import { CROP_TYPES } from "./CropState";
 
+export const VEHICLES = {
+  HARVESTER: 0,
+  SEEDER: 1,
+};
+
 export default class TractorState {
   /**
    * Initializes a new TractorState.
@@ -22,7 +27,7 @@ export default class TractorState {
     this.cropBeingPlanted = CROP_TYPES.WHEAT;
 
     this.yieldScore = 0;
-    this.type = "tractor";
+    this.type = VEHICLES.HARVESTER;
   }
 
   clone() {
