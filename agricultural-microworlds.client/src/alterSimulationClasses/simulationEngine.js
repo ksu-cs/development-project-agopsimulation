@@ -85,9 +85,7 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("weather", weatherState);
 
     // 2. Setup tractor
-    const tractor = new TractorState();
-    tractor.x = (this.COLS * this.TILE_SIZE) / 2;
-    tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
+    const tractor = new TractorState((this.COLS * this.TILE_SIZE) / 2, (this.ROWS * this.TILE_SIZE) / 2);
     this.stateManager.initState("tractor", tractor);
 
     // 3. Setup field

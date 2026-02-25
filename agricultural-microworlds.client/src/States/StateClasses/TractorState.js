@@ -1,12 +1,17 @@
 import { CROP_TYPES } from "./CropState";
 
 export default class TractorState {
-  constructor() {
+  /**
+   * Initializes a new TractorState.
+   * @param {number} inX The tractor's x position.
+   * @param {number} inY The tractor's y position.
+   */
+  constructor(inX, inY) {
     this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
 
-    this.x = 0;
-    this.y = 0;
+    this.x = inX;
+    this.y = inY;
     this.angle = 0;
     this.goalAngle = 0;
 
