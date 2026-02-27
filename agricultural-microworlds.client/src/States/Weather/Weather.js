@@ -4,6 +4,7 @@ export default class WeatherManager {
     this.cumulativeGDD = 0;
     this.currentDayIndex = 0;
     this.Wheatgdd = wheatGDD; // base GDD threshold
+    this.cumulativeRain = 0;
   }
 
   async loadStations() {
@@ -40,13 +41,14 @@ export default class WeatherManager {
     const start = startDateValue.replaceAll("-", "");
     const end = `${endDate.getFullYear()}${(endDate.getMonth() + 1).toString().padStart(2, "0")}${endDate.getDate().toString().padStart(2, "0")}`;
 
-    const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG`;
+    const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${station}&int=day&t_start=${start}000000&t_end=${end}000000&vars=TEMP2MAVG,PRECIP`;
     const response = await fetch(url);
     const data = await response.text();
     const lines = data.trim().split("\n");
     this.csvLines = lines.slice(1).map((line) => line.split(","));
     this.cumulativeGDD = 0;
     this.currentDayIndex = 0;
+    this.rainfall = 0;
   }
 
   calculateDailyGDD() {
@@ -71,5 +73,13 @@ export default class WeatherManager {
     }
     this.cumulativeGDD += sum;
     return sum;
+  }
+
+  calculateRainfall(){
+    if (!this.csvLines[this.currentDayIndex]) return 0;
+    const rain = parseFloat(this.csvLines[this.currentDayIndex][3]);
+    this.cumulativeRain += rain;
+    this.currentDayIndex++;
+    return this.cumulativeRain;
   }
 }

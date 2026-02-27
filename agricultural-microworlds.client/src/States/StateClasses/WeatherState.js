@@ -13,8 +13,10 @@ export default class WeatherState extends State {
 
     // GDD Tracking
     this.cumulativeGDD = 0;
-
     this.gddToApplyThisFrame = 0;
+    //Rain Tracking
+    this.cumulativeRain = 0;
+    this.rainToApplyThisFrame = 0;
   }
 
   clone() {
@@ -28,6 +30,8 @@ export default class WeatherState extends State {
 
     s.cumulativeGDD = this.cumulativeGDD;
     s.gddToApplyThisFrame = this.gddToApplyThisFrame;
+    s.cumulativeRain = this.cumulativeRain;
+    s.rainToApplyThisFrame = this.rainToApplyThisFrame;
     return s;
   }
 }

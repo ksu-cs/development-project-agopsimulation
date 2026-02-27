@@ -82,7 +82,7 @@ export default class simulationEngine extends EventTarget {
       }
     }
     this.stateManager.initState("weather", weatherState);
-
+    
     // 2. Setup tractor
     const tractor = new TractorState();
     tractor.x = (this.COLS * this.TILE_SIZE) / 2;
@@ -232,20 +232,27 @@ export default class simulationEngine extends EventTarget {
       dateString = dateObj.toLocaleDateString();
     }
 
-    // Calculate GDD String
-    const gddString = weather.cumulativeGDD.toFixed(2);
+// Calculate strings
+const gddString = weather.cumulativeGDD.toFixed(2);
 
-    const ts = new timeStepData(
-    tractor.angle,
-    tractor.yieldScore,
-    tractor.x,
-    tractor.y,
-    this.nightFadeProgress,
-    field,
-    this.COLS,
-    dateString,
-    gddString
-  );
+// pick the rain source from WeatherState 
+const rainValue =
+  weather.cumulativeRain ?? weather.cumulativePrecip ?? weather.cumulativePrecipitation ?? 0;
+const rainString = Number(rainValue).toFixed(2);
+
+const ts = new timeStepData(
+  tractor.angle,
+  tractor.yieldScore,
+  tractor.x,
+  tractor.y,
+  this.nightFadeProgress,
+  field,
+  this.COLS,
+  dateString,
+  gddString,
+  tractor.type || "tractor", 
+  rainString                 
+);
 
   //default back to tractor
   ts.vehicleType = tractor.type || "tractor";
