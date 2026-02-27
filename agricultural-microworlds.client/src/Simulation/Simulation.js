@@ -2,7 +2,7 @@ import { StateManager } from "../States/StateManager";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import TractorState from "../States/StateClasses/TractorState";
+import ImplementState from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import { CropState } from "../States/StateClasses/CropState";
 
@@ -67,7 +67,7 @@ export default class Simulation {
 
     // Vehicles array
     const mkVehicle = (id, x, y, type = "tractor") => {
-      const v = new TractorState(); // reuse TractorState for now
+      const v = new ImplementState();
       v.id = id;
       v.type = type;
 
@@ -193,7 +193,7 @@ export default class Simulation {
           row.map((c) => c.clone()),
         );
       } else if (key === "vehicles") {
-        // Each vehicle is a TractorState (has clone())
+        // Each vehicle is a ImplementState (has clone())
         nextStates[key] = oldStates[key].map((v) =>
           v && typeof v.clone === "function" ? v.clone() : structuredClone(v),
         );
@@ -329,7 +329,7 @@ export default class Simulation {
     const vehicles = this.getVehicles();
     if (vehicles.some((v) => v.id === id)) return;
 
-    const v = new TractorState(); // reuse TractorState as VehicleState
+    const v = new ImplementState();
     v.id = id;
     v.type = type;
 
@@ -341,7 +341,6 @@ export default class Simulation {
     v.isHarvestingOn = false;
     v.isSeedingOn = false;
 
-    // IMPORTANT: make sure these exist for turning/movement
     v.angle = v.angle ?? 0;
     v.goalAngle = v.goalAngle ?? 0;
 

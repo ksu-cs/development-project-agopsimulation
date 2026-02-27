@@ -5,7 +5,7 @@
   GetCropState,
 } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
-import { VEHICLES } from "../States/StateClasses/TractorState";
+import { VEHICLES } from "../States/StateClasses/ImplementState";
 
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep

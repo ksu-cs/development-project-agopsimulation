@@ -4,7 +4,9 @@ import {
   CROP_TYPES,
   CropState,
 } from "../States/StateClasses/CropState";
-import TractorState, { VEHICLES } from "../States/StateClasses/TractorState";
+import ImplementState, {
+  VEHICLES,
+} from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
@@ -59,6 +61,9 @@ export default class simulationEngine extends EventTarget {
 
     // Active Task System to sync Logic with Physics
     this.activeTask = null;
+
+    this.harvesterWorker = new Worker("WorkerHarvester.js");
+    this.seederWorker = new Worker("WorkerSeeder.js");
   }
 
   /**
@@ -85,7 +90,7 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("weather", weatherState);
 
     // 2. Setup tractor
-    const tractor = new TractorState();
+    const tractor = new ImplementState();
     tractor.x = -150;
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
@@ -340,6 +345,7 @@ export default class simulationEngine extends EventTarget {
       tractor.isHarvestingOn = isOn;
       if (isOn) tractor.isSeedingOn = false;
     }
+    this.harvesterWorker.postMessage(isOn);
   }
 
   /**
@@ -352,6 +358,7 @@ export default class simulationEngine extends EventTarget {
       tractor.isSeedingOn = isOn;
       if (isOn) tractor.isHarvestingOn = false;
     }
+    this.seederWorker.postMessage(isOn);
   }
 
   /**

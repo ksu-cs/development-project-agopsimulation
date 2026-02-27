@@ -5,7 +5,7 @@ export const VEHICLES = {
   SEEDER: 1,
 };
 
-export default class TractorState {
+export default class ImplementState {
   constructor() {
     this.basespeed = 20;
     this.turnSpeed = 90; // Degrees per second
@@ -26,7 +26,7 @@ export default class TractorState {
   }
 
   clone() {
-    const newState = new TractorState();
+    const newState = new ImplementState();
     newState.basespeed = this.basespeed;
     newState.turnSpeed = this.turnSpeed;
 
