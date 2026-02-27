@@ -16,13 +16,17 @@ export default class TractorSimManager extends SimManager {
   }
 
   update(deltaTime, oldState, newState) {
-    const oldTractor = oldState.tractor;
-    const newTractor = newState.tractor;
+    const oldVehicles = oldState.vehicles;
+    const newVehicles = newState.vehicles;
     const newField = newState.field;
 
-    if (!oldTractor || !newTractor || !newField) return;
+    if (!oldVehicles || !newVehicles || !newField) return;
 
-    // Turning and Movement Logic
+    for (let i = 0; i < newVehicles.length; i++) {
+      const oldTractor = oldVehicles[i];
+      const newTractor = newVehicles[i];
+
+      // Turning and Movement Logic
     const diff = newTractor.goalAngle - newTractor.angle;
     const isTurning = Math.abs(diff) > 0.1;
     let moveDistance = 0;
@@ -51,6 +55,8 @@ export default class TractorSimManager extends SimManager {
       this.handleHarvesting(newTractor, newField);
     } else if (oldTractor.isSeedingOn) {
       this.handleSeeding(newTractor, newField);
+    }
+
     }
   }
 
