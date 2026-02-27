@@ -14,6 +14,7 @@ export default class timeStepData {
     currentDate, // Date string ("1/1/2024")
     cumulativeGDD, // Growth Degree Days string
     vehicleType,
+    cumulativeRain
   ) {
     this.angle = angle;
     this.yieldScore = yieldScore;
@@ -25,5 +26,6 @@ export default class timeStepData {
     this.currentDate = currentDate;
     this.cumulativeGDD = cumulativeGDD;
     this.vehicleType = vehicleType;
+    this.cumulativeRain = cumulativeRain;
   }
 }
