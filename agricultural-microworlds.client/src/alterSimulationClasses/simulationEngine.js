@@ -88,6 +88,7 @@ export default class simulationEngine extends EventTarget {
     // 2. Setup tractor
     const tractor1 = new TractorState(-150, (this.ROWS * this.TILE_SIZE) / 2);
     const tractor2 = new TractorState(-50, (this.ROWS * this.TILE_SIZE) / 2);
+    tractor2.type = VEHICLES.SEEDER;
     this.stateManager.initState("tractor", tractor1);
     this.stateManager.initState("tractor1", tractor2);
 
@@ -247,8 +248,22 @@ export default class simulationEngine extends EventTarget {
     // Create an array of all tractor timestep data.
     // If the tractor does not have a type, default back to Harvester.
     let tractorData = [];
-    tractorData.push(new tractorTimeStepData(tractor.angle, tractor.x, tractor.y, tractor.type || VEHICLES.HARVESTER));
-    tractorData.push(new tractorTimeStepData(tractor1.angle, tractor1.x, tractor1.y, tractor1.type || VEHICLES.HARVESTER));
+    tractorData.push(
+      new tractorTimeStepData(
+        tractor.angle,
+        tractor.x,
+        tractor.y,
+        tractor.type || VEHICLES.HARVESTER,
+      ),
+    );
+    tractorData.push(
+      new tractorTimeStepData(
+        tractor1.angle,
+        tractor1.x,
+        tractor1.y,
+        tractor1.type || VEHICLES.HARVESTER,
+      ),
+    );
 
     const ts = new timeStepData(
       tractorData,
@@ -385,7 +400,11 @@ export default class simulationEngine extends EventTarget {
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
 
-    for (const targetCrop of tractorManager.getTilesCurrentlyOver(tractor, field, tractorManager.HEADER_OFFSET)) {
+    for (const targetCrop of tractorManager.getTilesCurrentlyOver(
+      tractor,
+      field,
+      tractorManager.HEADER_OFFSET,
+    )) {
       const cropState = targetCrop[0].cropState;
       if (cropState && cropState.stage == type) {
         return true;

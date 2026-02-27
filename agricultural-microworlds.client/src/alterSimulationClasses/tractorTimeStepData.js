@@ -7,7 +7,7 @@ export default class tractorTimeStepData {
     angle, // Tractor rotation (degrees)
     tractorWorldX, // Absolute X position in the world
     tractorWorldY, // Absolute Y position in the world,
-    vehicleType // The vehicle type.
+    vehicleType, // The vehicle type.
   ) {
     this.angle = angle;
     this.tractorWorldX = tractorWorldX;
