@@ -49,8 +49,8 @@ export default class WeatherManager extends SimManager {
     weatherState.currentDayIndex = 0;
     weatherState.cumulativeGDD = 0;
     if (weatherState.cumulativeRain === undefined) {
-    weatherState.cumulativeRain = 0;
-  }
+      weatherState.cumulativeRain = 0;
+    }
     weatherState.gddToApplyThisFrame = 0;
     weatherState.rainToApplyThisFrame = 0;
 
@@ -59,25 +59,25 @@ export default class WeatherManager extends SimManager {
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
   }
 
- update(deltaTime, oldState, newState) {
-  const weather = oldState.weather;
+  update(deltaTime, oldState, newState) {
+    const weather = oldState.weather;
 
-  // Reset per-frame values
-  weather.gddToApplyThisFrame = 0;
-  weather.rainToApplyThisFrame = 0;
+    // Reset per-frame values
+    weather.gddToApplyThisFrame = 0;
+    weather.rainToApplyThisFrame = 0;
 
-  weather.timeAccumulator += deltaTime;
+    weather.timeAccumulator += deltaTime;
 
-  if (weather.timeAccumulator >= 1.0) {
-    weather.timeAccumulator -= 1.0;
-    this.advanceDay(weather, weather); // update in place
+    if (weather.timeAccumulator >= 1.0) {
+      weather.timeAccumulator -= 1.0;
+      this.advanceDay(weather, weather); // update in place
+    }
+
+    // Mirror cumulative values to top-level for UI
+    newState.weather = weather;
+    newState.cumulativeGDD = weather.cumulativeGDD;
+    newState.cumulativeRain = weather.cumulativeRain;
   }
-
-  // Mirror cumulative values to top-level for UI
-  newState.weather = weather;
-  newState.cumulativeGDD = weather.cumulativeGDD;
-  newState.cumulativeRain = weather.cumulativeRain;
-}
 
   advanceDay(oldWeather, newWeather) {
     if (oldWeather.currentDayIndex >= oldWeather.csvLines.length) return;
@@ -93,8 +93,6 @@ export default class WeatherManager extends SimManager {
     newWeather.gddToApplyThisFrame = dailyGDD;
     newWeather.rainToApplyThisFrame = rain;
 
-
-    
     //console.log("Rain raw value:", dayData[3]);
   }
 }
