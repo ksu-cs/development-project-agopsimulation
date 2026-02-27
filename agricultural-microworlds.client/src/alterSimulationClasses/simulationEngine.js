@@ -240,37 +240,40 @@ export default class simulationEngine extends EventTarget {
     }
 
     // Calculate strings
-const gddString = weather.cumulativeGDD.toFixed(2);
+    const gddString = weather.cumulativeGDD.toFixed(2);
 
-// pick the rain source from WeatherState 
-const rainValue =
-  weather.cumulativeRain ?? weather.cumulativePrecip ?? weather.cumulativePrecipitation ?? 0;
-const rainString = Number(rainValue).toFixed(2);
+    // pick the rain source from WeatherState
+    const rainValue =
+      weather.cumulativeRain ??
+      weather.cumulativePrecip ??
+      weather.cumulativePrecipitation ??
+      0;
+    const rainString = Number(rainValue).toFixed(2);
 
-const ts = new timeStepData(
-  tractor.angle,
-  tractor.yieldScore,
-  tractor.x,
-  tractor.y,
-  this.nightFadeProgress,
-  field,
-  this.COLS,
-  dateString,
-  gddString,
-  tractor.type || "tractor", 
-  rainString                 
-);
+    const ts = new timeStepData(
+      tractor.angle,
+      tractor.yieldScore,
+      tractor.x,
+      tractor.y,
+      this.nightFadeProgress,
+      field,
+      this.COLS,
+      dateString,
+      gddString,
+      tractor.type || "tractor",
+      rainString,
+    );
 
-  //default back to tractor
-  ts.vehicleType = tractor.type || "tractor";
+    //default back to tractor
+    ts.vehicleType = tractor.type || "tractor";
 
-  this.dispatchEvent(
-    new CustomEvent("simulationEngineCreated", {
-      bubbles: true,
-      detail: ts,
-    }),
-  );
-}
+    this.dispatchEvent(
+      new CustomEvent("simulationEngineCreated", {
+        bubbles: true,
+        detail: ts,
+      }),
+    );
+  }
   // --- ASYNC COMMANDS ---
 
   /**
