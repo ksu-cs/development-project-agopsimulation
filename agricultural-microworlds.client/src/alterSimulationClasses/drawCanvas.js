@@ -113,8 +113,12 @@ export default class drawCanvas {
    * Keeps the camera centered on the vehicle while it is moving
    */
   calculateCamera() {
-    const tractorX = this.simulationState.tractorWorldX + 32;
-    const tractorY = this.simulationState.tractorWorldY + 32;
+    let tractorX = 0;
+    let tractorY = 0;
+    if (this.simulationState.tractorData.length > 0) {
+      tractorX = this.simulationState.tractorData[0].tractorWorldX + 32;
+      tractorY = this.simulationState.tractorData[0].tractorWorldY + 32;
+    }
 
     let targetX = tractorX - this.canvas.width / 2;
     let targetY = tractorY - this.canvas.height / 2;
@@ -213,38 +217,46 @@ export default class drawCanvas {
   }
 
   /**
-   * Draws the on the canvas based on the information received from the timeStep event
+   * Draws through all the tractors on the field.
    */
   drawTractor() {
-    const screenX = this.simulationState.tractorWorldX - this.cameraX;
-    const screenY = this.simulationState.tractorWorldY - this.cameraY;
+    for (let i = 0; i < this.simulationState.tractorData.length; i++) {
+      const tractorData = this.simulationState.tractorData[i];
+      if (!tractorData) continue;
 
-    const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
+      const screenX = tractorData.tractorWorldX - this.cameraX;
+      const screenY = tractorData.tractorWorldY - this.cameraY;
 
-    const type = this.simulationState.vehicleType || VEHICLES.HARVESTER;
-    const sprite =
-      type === VEHICLES.SEEDER ? this.seederSprite : this.harvesterSprite;
+      const normalizedAngle = ((tractorData.angle % 360) + 360) % 360;
+      var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
-    this.ctx.restore();
+      const type = tractorData.vehicleType || VEHICLES.HARVESTER;
+      const sprite =
+        type === VEHICLES.SEEDER ? this.seederSprite : this.harvesterSprite;
 
-    // Debug info is allowed to fail silently if element is missing,
-    // but usually debug is in a separate panel not removed here.
-    const debugEl = document.getElementById("debug");
-    if (debugEl) {
-      debugEl.innerHTML =
-        `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
-        `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
-        `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-        `Angle: ${normalizedAngle}°<br>`;
-      `Vehicle Type: ${type}<br>`;
+      this.ctx.save();
+      this.ctx.translate(
+        screenX + this.FRAME_WIDTH / 2,
+        screenY + this.FRAME_HEIGHT / 2,
+      );
+
+      this.ctx.rotate(angleInRadians);
+      this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
+      this.ctx.restore();
+
+      // Debug info is allowed to fail silently if element is missing,
+      // but usually debug is in a separate panel not removed here.
+      if (i == 0) {
+        const debugEl = document.getElementById("debug");
+        if (debugEl) {
+          debugEl.innerHTML =
+            `World Position: (${Math.round(tractorData.tractorWorldX)}, ${Math.round(tractorData.tractorWorldY)})<br>` +
+            `Camera Position: (${Math.round(tractorData.cameraX)}, ${Math.round(tractorData.cameraY)})<br>` +
+            `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
+            `Angle: ${normalizedAngle}°<br>`;
+          `Vehicle Type: ${type}<br>`;
+        }
+      }
     }
   }
 

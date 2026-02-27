@@ -7,6 +7,7 @@ import {
 import TractorState, { VEHICLES } from "../States/StateClasses/TractorState";
 import WeatherState from "../States/StateClasses/WeatherState";
 import FieldTileState from "../States/StateClasses/FieldTileState";
+import tractorTimeStepData from "./tractorTimeStepData";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
@@ -85,10 +86,10 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("weather", weatherState);
 
     // 2. Setup tractor
-    const tractor = new TractorState();
-    tractor.x = -150;
-    tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
-    this.stateManager.initState("tractor", tractor);
+    const tractor1 = new TractorState(-150, (this.ROWS * this.TILE_SIZE) / 2);
+    const tractor2 = new TractorState(-50, (this.ROWS * this.TILE_SIZE) / 2);
+    this.stateManager.initState("tractor", tractor1);
+    this.stateManager.initState("tractor1", tractor2);
 
     // 3. Setup field
     const field = CreateBlankField(this.ROWS, this.COLS);
@@ -226,6 +227,7 @@ export default class simulationEngine extends EventTarget {
    */
   timeStepEvent() {
     const tractor = this.stateManager.getState("tractor");
+    const tractor1 = this.stateManager.getState("tractor1");
     const field = this.stateManager.getState("field");
     const weather = this.stateManager.getState("weather");
 
@@ -242,20 +244,21 @@ export default class simulationEngine extends EventTarget {
     // Calculate GDD String
     const gddString = weather.cumulativeGDD.toFixed(2);
 
+    // Create an array of all tractor timestep data.
+    // If the tractor does not have a type, default back to Harvester.
+    let tractorData = [];
+    tractorData.push(new tractorTimeStepData(tractor.angle, tractor.x, tractor.y, tractor.type || VEHICLES.HARVESTER));
+    tractorData.push(new tractorTimeStepData(tractor1.angle, tractor1.x, tractor1.y, tractor1.type || VEHICLES.HARVESTER));
+
     const ts = new timeStepData(
-      tractor.angle,
+      tractorData,
       tractor.yieldScore,
-      tractor.x,
-      tractor.y,
       this.nightFadeProgress,
       field,
       this.COLS,
       dateString,
       gddString,
     );
-
-    //default back to Harvester
-    ts.vehicleType = tractor.type || VEHICLES.HARVESTER;
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -382,7 +385,7 @@ export default class simulationEngine extends EventTarget {
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
 
-    for (const targetCrop of tractorManager.getTilesCurrentlyOver(tractor, field)) {
+    for (const targetCrop of tractorManager.getTilesCurrentlyOver(tractor, field, tractorManager.HEADER_OFFSET)) {
       const cropState = targetCrop[0].cropState;
       if (cropState && cropState.stage == type) {
         return true;
