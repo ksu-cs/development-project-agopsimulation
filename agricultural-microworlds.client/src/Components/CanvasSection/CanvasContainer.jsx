@@ -31,6 +31,9 @@ class CanvasContainer extends Component {
             <p className={styles.statText} id="gddText">
               Growth Days: 0.00
             </p>
+                          <p className={styles.statText} id="rainText">
+              Precipitation: 0.00
+            </p>
           </div>
           <canvas
             id="gameCanvas"
