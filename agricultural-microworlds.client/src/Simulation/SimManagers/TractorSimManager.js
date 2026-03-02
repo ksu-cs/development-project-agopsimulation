@@ -16,41 +16,46 @@ export default class TractorSimManager extends SimManager {
   }
 
   update(deltaTime, oldState, newState) {
-    const oldTractor = oldState.tractor;
-    const newTractor = newState.tractor;
+    const oldVehicles = oldState.vehicles;
+    const newVehicles = newState.vehicles;
     const newField = newState.field;
 
-    if (!oldTractor || !newTractor || !newField) return;
+    if (!oldVehicles || !newVehicles || !newField) return;
 
-    // Turning and Movement Logic
-    const diff = newTractor.goalAngle - newTractor.angle;
-    const isTurning = Math.abs(diff) > 0.1;
-    let moveDistance = 0;
+    for (let i = 0; i < newVehicles.length; i++) {
+      const oldTractor = oldVehicles[i];
+      const newTractor = newVehicles[i];
 
-    if (isTurning) {
-      const absDiff = Math.abs(diff);
-      const turnStep = newTractor.turnSpeed * deltaTime;
-      const alpha = Math.min(turnStep, absDiff) / absDiff;
-      newTractor.angle =
-        newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
-      moveDistance = newTractor.basespeed * deltaTime;
-    } else if (oldTractor.isMoving) {
-      moveDistance = newTractor.basespeed * deltaTime;
-    }
+      // Turning and Movement Logic
+      const diff = newTractor.goalAngle - newTractor.angle;
+      const isTurning = Math.abs(diff) > 0.1;
+      let moveDistance = 0;
 
-    if (moveDistance > 0) {
-      const rad = (newTractor.angle * Math.PI) / 180;
-      newTractor.x += Math.cos(rad) * moveDistance;
-      newTractor.y += Math.sin(rad) * moveDistance;
-    }
+      if (isTurning) {
+        const absDiff = Math.abs(diff);
+        const turnStep = newTractor.turnSpeed * deltaTime;
+        const alpha = Math.min(turnStep, absDiff) / absDiff;
+        newTractor.angle =
+          newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
+        moveDistance = newTractor.basespeed * deltaTime;
+      } else if (oldTractor.isMoving) {
+        moveDistance = newTractor.basespeed * deltaTime;
+      }
 
-    // Interaction Logic
+      if (moveDistance > 0) {
+        const rad = (newTractor.angle * Math.PI) / 180;
+        newTractor.x += Math.cos(rad) * moveDistance;
+        newTractor.y += Math.sin(rad) * moveDistance;
+      }
 
-    // Check Harvesting
-    if (oldTractor.isHarvestingOn) {
-      this.handleHarvesting(newTractor, newField);
-    } else if (oldTractor.isSeedingOn) {
-      this.handleSeeding(newTractor, newField);
+      // Interaction Logic
+
+      // Check Harvesting
+      if (oldTractor.isHarvestingOn) {
+        this.handleHarvesting(newTractor, newField);
+      } else if (oldTractor.isSeedingOn) {
+        this.handleSeeding(newTractor, newField);
+      }
     }
   }
 

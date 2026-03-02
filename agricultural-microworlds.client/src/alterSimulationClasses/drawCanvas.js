@@ -5,7 +5,7 @@
   GetCropState,
 } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
-import { VEHICLES } from "../States/StateClasses/TractorState";
+import { VEHICLES } from "../States/StateClasses/ImplementState";
 
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
@@ -118,8 +118,17 @@ export default class drawCanvas {
    * Keeps the camera centered on the vehicle while it is moving
    */
   calculateCamera() {
-    const tractorX = this.simulationState.tractorWorldX + 32;
-    const tractorY = this.simulationState.tractorWorldY + 32;
+    let activeVehicle = this.simulationState.vehicles?.find(
+      (v) => v.type === this.simulationState.activeVehicleType,
+    );
+
+    if (!activeVehicle && this.simulationState.vehicles?.length > 0) {
+      activeVehicle = this.simulationState.vehicles[0];
+    }
+    if (!activeVehicle) return;
+
+    const tractorX = activeVehicle.x + 32;
+    const tractorY = activeVehicle.y + 32;
 
     let targetX = tractorX - this.canvas.width / 2;
     let targetY = tractorY - this.canvas.height / 2;
@@ -146,7 +155,7 @@ export default class drawCanvas {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.drawField();
-    this.drawTractor();
+    this.drawVehicles();
 
     // Draw Night overlay if waiting
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
@@ -220,37 +229,42 @@ export default class drawCanvas {
   /**
    * Draws the on the canvas based on the information received from the timeStep event
    */
-  drawTractor() {
-    const screenX = this.simulationState.tractorWorldX - this.cameraX;
-    const screenY = this.simulationState.tractorWorldY - this.cameraY;
+  drawVehicles() {
+    if (!this.simulationState.vehicles) return;
 
-    const normalizedAngle = ((this.simulationState.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
+    this.simulationState.vehicles.forEach((vehicle) => {
+      const screenX = vehicle.x - this.cameraX;
+      const screenY = vehicle.y - this.cameraY;
 
-    const type = this.simulationState.vehicleType || VEHICLES.HARVESTER;
-    const sprite =
-      type === VEHICLES.SEEDER ? this.seederSprite : this.harvesterSprite;
+      const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
+      var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
-    this.ctx.restore();
+      const sprite =
+        vehicle.type === VEHICLES.SEEDER
+          ? this.seederSprite
+          : this.harvesterSprite;
 
-    // Debug info is allowed to fail silently if element is missing,
-    // but usually debug is in a separate panel not removed here.
-    const debugEl = document.getElementById("debug");
-    if (debugEl) {
-      debugEl.innerHTML =
-        `World Position: (${Math.round(this.simulationState.tractorWorldX)}, ${Math.round(this.simulationState.tractorWorldY)})<br>` +
-        `Camera Position: (${Math.round(this.simulationState.cameraX)}, ${Math.round(this.simulationState.cameraY)})<br>` +
-        `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-        `Angle: ${normalizedAngle}°<br>`;
-      `Vehicle Type: ${type}<br>`;
-    }
+      this.ctx.save();
+      this.ctx.translate(
+        screenX + this.FRAME_WIDTH / 2,
+        screenY + this.FRAME_HEIGHT / 2,
+      );
+      this.ctx.rotate(angleInRadians);
+      this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
+      this.ctx.restore();
+
+      // Debug info is allowed to fail silently if element is missing,
+      // but usually debug is in a separate panel not removed here.
+      const debugEl = document.getElementById("debug");
+      if (debugEl) {
+        debugEl.innerHTML =
+          `World Position: (${Math.round(vehicle.x)}, ${Math.round(vehicle.y)})<br>` +
+          `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
+          `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
+          `Angle: ${normalizedAngle}°<br>`;
+        `Vehicle Type: ${vehicle.type}<br>`;
+      }
+    });
   }
 
   /**

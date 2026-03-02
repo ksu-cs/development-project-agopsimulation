@@ -1,6 +1,6 @@
 import { javascriptGenerator } from "blockly/javascript";
 import { CROP_TYPES } from "../States/StateClasses/CropState";
-import { VEHICLES } from "../States/StateClasses/TractorState";
+import { VEHICLES } from "../States/StateClasses/ImplementState";
 
 javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
   const duration =
