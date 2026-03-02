@@ -198,13 +198,14 @@ export default class simulationEngine extends EventTarget {
         if (this.activeTask.type === "TIMER") {
           this.activeTask.timeLeft -= simDeltaTime;
           if (this.activeTask.timeLeft <= 0) {
-            if (nextStates.vehicles) nextStates.vehicles.forEach(v => v.isMoving = false);
+            if (nextStates.vehicles)
+              nextStates.vehicles.forEach((v) => (v.isMoving = false));
 
             this.resolveActiveTask();
           }
         } else if (this.activeTask.type === "TURN") {
           const activeType = this.stateManager.getState("activeVehicleType");
-          const v = nextStates.vehicles?.find(v => v.type == activeType);
+          const v = nextStates.vehicles?.find((v) => v.type == activeType);
           if (v) {
             const diff = Math.abs(v.goalAngle - v.angle);
             if (diff < 0.5) {
@@ -238,7 +239,7 @@ export default class simulationEngine extends EventTarget {
 
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
-        if (vehicles) vehicles.forEach(v => v.isMoving = false);
+        if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
         this.nightFadeProgress = -1.0;
       }
 
@@ -355,7 +356,7 @@ export default class simulationEngine extends EventTarget {
     const durationInSeconds = Number(weeks) * 7.0;
 
     const vehicles = this.stateManager.getState("vehicles");
-    if (vehicles) vehicles.forEach(v => v.isMoving = false);
+    if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
 
     this.nightFadeProgress = 0.5;
     return new Promise((resolve) => {
@@ -420,7 +421,7 @@ export default class simulationEngine extends EventTarget {
   CheckIfPlantInFront(type) {
     const vehicle = this.getActiveVehicle();
     if (!vehicle) return false;
-    
+
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
 
@@ -484,14 +485,11 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
   }
 
-  
   // Helper to get vehicle object that matches user selected vehicle
   getActiveVehicle() {
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
     if (!vehicles) return null;
-    return vehicles.find(v => v.type == activeVehicleType);
-
+    return vehicles.find((v) => v.type == activeVehicleType);
   }
-
 }

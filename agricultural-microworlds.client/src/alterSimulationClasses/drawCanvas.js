@@ -118,8 +118,9 @@ export default class drawCanvas {
    * Keeps the camera centered on the vehicle while it is moving
    */
   calculateCamera() {
-
-    let activeVehicle = this.simulationState.vehicles?.find(v => v.type === this.simulationState.activeVehicleType);
+    let activeVehicle = this.simulationState.vehicles?.find(
+      (v) => v.type === this.simulationState.activeVehicleType,
+    );
 
     if (!activeVehicle && this.simulationState.vehicles?.length > 0) {
       activeVehicle = this.simulationState.vehicles[0];
@@ -231,38 +232,39 @@ export default class drawCanvas {
   drawVehicles() {
     if (!this.simulationState.vehicles) return;
 
-    this.simulationState.vehicles.forEach(vehicle => {
+    this.simulationState.vehicles.forEach((vehicle) => {
       const screenX = vehicle.x - this.cameraX;
-    const screenY = vehicle.y - this.cameraY;
+      const screenY = vehicle.y - this.cameraY;
 
-    const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
-    var angleInRadians = (normalizedAngle * Math.PI) / 180;
+      const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
+      var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-    const sprite =
-      vehicle.type === VEHICLES.SEEDER ? this.seederSprite : this.harvesterSprite;
+      const sprite =
+        vehicle.type === VEHICLES.SEEDER
+          ? this.seederSprite
+          : this.harvesterSprite;
 
-    this.ctx.save();
-    this.ctx.translate(
-      screenX + this.FRAME_WIDTH / 2,
-      screenY + this.FRAME_HEIGHT / 2,
-    );
-    this.ctx.rotate(angleInRadians);
-    this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
-    this.ctx.restore();
+      this.ctx.save();
+      this.ctx.translate(
+        screenX + this.FRAME_WIDTH / 2,
+        screenY + this.FRAME_HEIGHT / 2,
+      );
+      this.ctx.rotate(angleInRadians);
+      this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
+      this.ctx.restore();
 
-    // Debug info is allowed to fail silently if element is missing,
-    // but usually debug is in a separate panel not removed here.
-    const debugEl = document.getElementById("debug");
-    if (debugEl) {
-      debugEl.innerHTML =
-        `World Position: (${Math.round(vehicle.x)}, ${Math.round(vehicle.y)})<br>` +
-        `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
-        `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-        `Angle: ${normalizedAngle}°<br>`;
-      `Vehicle Type: ${vehicle.type}<br>`;
-    }
+      // Debug info is allowed to fail silently if element is missing,
+      // but usually debug is in a separate panel not removed here.
+      const debugEl = document.getElementById("debug");
+      if (debugEl) {
+        debugEl.innerHTML =
+          `World Position: (${Math.round(vehicle.x)}, ${Math.round(vehicle.y)})<br>` +
+          `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
+          `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
+          `Angle: ${normalizedAngle}°<br>`;
+        `Vehicle Type: ${vehicle.type}<br>`;
+      }
     });
-    
   }
 
   /**

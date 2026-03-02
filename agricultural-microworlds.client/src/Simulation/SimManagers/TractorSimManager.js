@@ -27,36 +27,35 @@ export default class TractorSimManager extends SimManager {
       const newTractor = newVehicles[i];
 
       // Turning and Movement Logic
-    const diff = newTractor.goalAngle - newTractor.angle;
-    const isTurning = Math.abs(diff) > 0.1;
-    let moveDistance = 0;
+      const diff = newTractor.goalAngle - newTractor.angle;
+      const isTurning = Math.abs(diff) > 0.1;
+      let moveDistance = 0;
 
-    if (isTurning) {
-      const absDiff = Math.abs(diff);
-      const turnStep = newTractor.turnSpeed * deltaTime;
-      const alpha = Math.min(turnStep, absDiff) / absDiff;
-      newTractor.angle =
-        newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
-      moveDistance = newTractor.basespeed * deltaTime;
-    } else if (oldTractor.isMoving) {
-      moveDistance = newTractor.basespeed * deltaTime;
-    }
+      if (isTurning) {
+        const absDiff = Math.abs(diff);
+        const turnStep = newTractor.turnSpeed * deltaTime;
+        const alpha = Math.min(turnStep, absDiff) / absDiff;
+        newTractor.angle =
+          newTractor.angle * (1 - alpha) + newTractor.goalAngle * alpha;
+        moveDistance = newTractor.basespeed * deltaTime;
+      } else if (oldTractor.isMoving) {
+        moveDistance = newTractor.basespeed * deltaTime;
+      }
 
-    if (moveDistance > 0) {
-      const rad = (newTractor.angle * Math.PI) / 180;
-      newTractor.x += Math.cos(rad) * moveDistance;
-      newTractor.y += Math.sin(rad) * moveDistance;
-    }
+      if (moveDistance > 0) {
+        const rad = (newTractor.angle * Math.PI) / 180;
+        newTractor.x += Math.cos(rad) * moveDistance;
+        newTractor.y += Math.sin(rad) * moveDistance;
+      }
 
-    // Interaction Logic
+      // Interaction Logic
 
-    // Check Harvesting
-    if (oldTractor.isHarvestingOn) {
-      this.handleHarvesting(newTractor, newField);
-    } else if (oldTractor.isSeedingOn) {
-      this.handleSeeding(newTractor, newField);
-    }
-
+      // Check Harvesting
+      if (oldTractor.isHarvestingOn) {
+        this.handleHarvesting(newTractor, newField);
+      } else if (oldTractor.isSeedingOn) {
+        this.handleSeeding(newTractor, newField);
+      }
     }
   }
 
