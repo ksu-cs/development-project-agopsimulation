@@ -107,6 +107,11 @@ export default class drawCanvas {
 
     const gddEl = document.getElementById("gddText");
     if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
+
+    const rainEl = document.getElementById("rainText");
+    const r = this.simulationState?.cumulativeRain ?? 0;
+    if (rainEl)
+      rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
   }
 
   /**

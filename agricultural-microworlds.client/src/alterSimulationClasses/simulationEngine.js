@@ -267,8 +267,16 @@ export default class simulationEngine extends EventTarget {
       dateString = dateObj.toLocaleDateString();
     }
 
-    // Calculate GDD String
+    // Calculate strings
     const gddString = weather.cumulativeGDD.toFixed(2);
+
+    // pick the rain source from WeatherState
+    const rainValue =
+      weather.cumulativeRain ??
+      weather.cumulativePrecip ??
+      weather.cumulativePrecipitation ??
+      0;
+    const rainString = Number(rainValue).toFixed(2);
 
     const ts = new timeStepData(
       vehicles,
@@ -282,10 +290,12 @@ export default class simulationEngine extends EventTarget {
       this.COLS,
       dateString,
       gddString,
+      tractor.type || "tractor",
+      rainString,
     );
 
-    //default back to Harvester
-    ts.vehicleType = tractor.type || VEHICLES.HARVESTER;
+    //default back to tractor
+    ts.vehicleType = tractor.type || "tractor";
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -294,7 +304,6 @@ export default class simulationEngine extends EventTarget {
       }),
     );
   }
-
   // --- ASYNC COMMANDS ---
 
   /**
