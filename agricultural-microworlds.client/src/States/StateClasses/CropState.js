@@ -17,6 +17,12 @@ CROP_GDDS[CROP_TYPES.WHEAT] = 1000.0;
 CROP_GDDS[CROP_TYPES.CORN] = 1300.0;
 CROP_GDDS[CROP_TYPES.SOY] = 900.0;
 
+const CROP_YIELDSCORES = [];
+CROP_YIELDSCORES[CROP_TYPES.UNPLANTED] = 0;
+CROP_YIELDSCORES[CROP_TYPES.WHEAT] = 1;
+CROP_YIELDSCORES[CROP_TYPES.CORN] = 3;
+CROP_YIELDSCORES[CROP_TYPES.SOY] = 2;
+
 // State of crop at a snapshot
 export class CropState {
   constructor() {
@@ -47,6 +53,15 @@ export class CropState {
   changeCropType(cropType) {
     this.type = cropType;
     this.requiredGDD = CROP_GDDS[cropType];
+  }
+
+  /**
+   * Gets a crop's yield score.
+   * @returns {number} The crop's yield score.
+   */
+  getYieldScore() {
+    if (!this.isMature()) return 0;
+    return CROP_YIELDSCORES[this.type];
   }
 
   isGrowing() {

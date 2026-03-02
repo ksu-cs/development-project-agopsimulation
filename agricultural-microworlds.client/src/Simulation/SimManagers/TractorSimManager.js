@@ -67,8 +67,8 @@ export default class TractorSimManager extends SimManager {
         const crop = tile.cropState;
 
         if (crop.isMature()) {
+          tractor.yieldScore += crop.getYieldScore();
           crop.reset();
-          tractor.yieldScore += 1;
           return true;
         } else if (crop.isGrowing()) {
           crop.reset(); // Destroy if harvesting early
