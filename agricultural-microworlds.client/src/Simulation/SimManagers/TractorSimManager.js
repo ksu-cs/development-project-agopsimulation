@@ -19,7 +19,7 @@ export default class TractorSimManager extends SimManager {
     const oldVehicles = oldState.vehicles;
     const newVehicles = newState.vehicles;
     const newField = newState.field;
-
+  if (newState.isGameOver) return;
     if (!oldVehicles || !newVehicles || !newField) return;
 
     for (let i = 0; i < newVehicles.length; i++) {
@@ -57,6 +57,12 @@ export default class TractorSimManager extends SimManager {
         this.handleSeeding(newTractor, newField);
       }
     }
+        if (this.checkVehicleCollisions(newState))
+        {
+          newState.isGameOver = true;
+          return;
+        } 
+
   }
 
   handleHarvesting(tractor, field) {
@@ -181,4 +187,47 @@ export default class TractorSimManager extends SimManager {
 
     return null;
   }
+
+  // --- Collision settings (tune these) ---
+  SPRITE_SIZE = 64;
+  COLLISION_RADIUS = 28; // slightly smaller than 32 so it feels fair
+
+  areVehiclesColliding(a, b) {
+    // Circle collision using sprite centers
+    const ax = a.x + this.SPRITE_SIZE / 2;
+    const ay = a.y + this.SPRITE_SIZE / 2;
+    const bx = b.x + this.SPRITE_SIZE / 2;
+    const by = b.y + this.SPRITE_SIZE / 2;
+
+    const dx = ax - bx;
+    const dy = ay - by;
+
+    const r = this.COLLISION_RADIUS * 2;
+    return dx * dx + dy * dy <= r * r;
+  }
+
+  checkVehicleCollisions(newState) {
+    const vehicles = newState.vehicles;
+    if (!vehicles || vehicles.length < 2) return false;
+
+    for (let i = 0; i < vehicles.length; i++) {
+      for (let j = i + 1; j < vehicles.length; j++) {
+        if (this.areVehiclesColliding(vehicles[i], vehicles[j])) {
+          newState.isGameOver = true;
+          newState.gameOverMessage = "You crashed and failed.";
+
+          // Optional: freeze everything immediately
+          for (const v of vehicles) {
+            v.isMoving = false;
+            v.isHarvestingOn = false;
+            v.isSeedingOn = false;
+          }
+
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
 }

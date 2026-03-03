@@ -172,13 +172,17 @@ class SimulationControlsContainer extends Component {
   /**
    * The onClick Method for the stop button
    */
-  stopButtonOnClick() {
-    if (this.simulationEngine) {
-      this.simulationEngine.stopMovement();
-    }
-    const runButton = document.getElementById("runButton");
-    if (runButton) runButton.disabled = false;
+stopButtonOnClick() {
+  if (this.simulationEngine) {
+    this.simulationEngine.stopMovement();
+
+    this.simulationEngine.stateManager.commitState("isGameOver", false);
+    this.simulationEngine.stateManager.commitState("gameOverMessage", "");
   }
+
+  const runButton = document.getElementById("runButton");
+  if (runButton) runButton.disabled = false;
+}
 
   /**
    * Changes what needs it when the speed of the simulation changes
