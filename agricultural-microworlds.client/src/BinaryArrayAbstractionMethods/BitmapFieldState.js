@@ -12,6 +12,7 @@ const typeMap = {
 /**
  * Questions:
  *  - Keep it as a returning a dictionary or change it to return a json object??
+ *  - Destroy method?
  */
 
 /**
