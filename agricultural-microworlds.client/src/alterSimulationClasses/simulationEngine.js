@@ -14,10 +14,6 @@ import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import {
-  CreateBlankField,
-  InitializeField,
-} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import BitmapFieldState, {
   typeMap,
 } from "../BinaryArrayAbstractionMethods/BitmapFieldState";
