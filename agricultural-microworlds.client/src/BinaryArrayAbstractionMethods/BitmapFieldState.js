@@ -1,4 +1,4 @@
-const typeMap = {
+export const typeMap = {
   int8: Int8Array,
   uint8: Uint8Array,
   int16: Int16Array,
@@ -12,7 +12,6 @@ const typeMap = {
 /**
  * Questions:
  *  - Keep it as a returning a dictionary or change it to return a json object??
- *  - Destroy method?
  */
 
 /**
@@ -26,6 +25,8 @@ export default class BitmapFieldState {
    * @param {Object.<string, {size: number, type: string}>} fieldTileKey A dictionary that has the property name as the key and the value size (bytes) and it's type as the value. Should be sorted by value size
    */
   constructor(rows, columns, fieldTileKey) {
+    this.rows = rows;
+    this.columns = columns;
     this.width = columns;
     this.length = rows * columns;
     this.key = fieldTileKey;
@@ -103,7 +104,7 @@ export default class BitmapFieldState {
    * @returns {boolean} false if the operation failed, true if it was successful
    */
   setTile(x, y, tileState) {
-    Object.entries(this.fieldProps).forEach(([name, nameBufferArray]) => {
+    Object.entries(this.fieldProps).forEach(([name]) => {
       const value = tileState[name];
       let result = this.setVariable(name, value, x, y);
       if (!result) return false;
@@ -138,7 +139,7 @@ export default class BitmapFieldState {
   getTileAt(x, y) {
     /** @type {Object.<string, number}> */
     let tile = {};
-    Object.entries(this.fieldProps).forEach(([name, nameBufferArray]) => {
+    Object.entries(this.fieldProps).forEach(([name]) => {
       let result = this.GetVariableAt(x, y, name);
       if (!result) return null;
       tile[name] = result;
@@ -161,20 +162,6 @@ export default class BitmapFieldState {
     let value = nameBufferArray.arr[i];
 
     return value ? value : null;
-  }
-
-  /**
-   * Changes field tile variable to the specified value using bit shifting operations
-   * @param {number} i The index to start altering at in the array
-   * @param {number} size The size of the value
-   * @param {Uint8Array} arr The array to alter the values of
-   * @param {number} value The value to change to
-   */
-  #ChangeFieldTileVar(i, size, arr, value) {
-    // shift the bits of every 1 byte of the initial state value over and store it in the array
-    for (let j = 0; j < size; j++) {
-      arr[i + j] = (value >> ((size - j + 1) * 8)) & 0xff;
-    }
   }
 
   /**

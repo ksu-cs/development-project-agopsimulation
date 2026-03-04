@@ -140,7 +140,7 @@ export default class TractorSimManager extends SimManager {
         const didChange = actionCallback(tilesOver[i][0]);
 
         if (didChange) {
-          const totalTiles = field.length / TILE_BYTE_SIZE;
+          const totalTiles = field.length / TILE_BYTE_SIZE; //change here
           const width = Math.sqrt(totalTiles);
           ChangeFieldTile(
             field,
@@ -148,7 +148,7 @@ export default class TractorSimManager extends SimManager {
             tilesOver[i][1],
             tilesOver[i][2],
             width,
-          );
+          ); //change here
         }
       }
     }
@@ -175,7 +175,7 @@ export default class TractorSimManager extends SimManager {
       tileX >= 0 &&
       tileX < this.FIELD_COLS
     ) {
-      const targetCrop = GetFieldTile(field, tileX, tileY, width);
+      const targetCrop = GetFieldTile(field, tileX, tileY, width); //change here
       return [targetCrop, tileX, tileY];
     }
 

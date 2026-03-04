@@ -1,5 +1,6 @@
 import { StateManager } from "../States/StateManager";
 import {
+  CROP_GDDS,
   CROP_STAGES,
   CROP_TYPES,
   CropState,
@@ -17,6 +18,9 @@ import {
   CreateBlankField,
   InitializeField,
 } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+import BitmapFieldState, {
+  typeMap,
+} from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -107,7 +111,34 @@ export default class simulationEngine extends EventTarget {
     seeder.y = (this.ROWS * this.TILE_SIZE) / 2 + 50;
 
     // 3. Setup field
-    const field = CreateBlankField(this.ROWS, this.COLS);
+    /** @type {Object.<string, {size: number, type: string}>} */
+    const tileState = {
+      ["stage"]: {
+        size: 1,
+        type: typeMap.uint8,
+      },
+      ["type"]: {
+        size: 1,
+        type: typeMap.uint8,
+      },
+      ["currentGDD"]: {
+        size: 4,
+        type: typeMap.float32,
+      },
+      ["requiredGDD"]: {
+        size: 4,
+        type: typeMap.float32,
+      },
+      ["waterLevel"]: {
+        size: 4,
+        type: typeMap.float32,
+      },
+      ["minerals"]: {
+        size: 4,
+        type: typeMap.float32,
+      },
+    };
+    const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
 
     const initialTile = new FieldTileState();
     if (!initialTile.cropState) {
@@ -121,7 +152,16 @@ export default class simulationEngine extends EventTarget {
 
     initialTile.cropState = initialCrop;
 
-    InitializeField(field, initialTile);
+    /** @type {Object.<string, number>} */
+    const startingValues = {
+      ["stage"]: CROP_STAGES.MATURE,
+      ["type"]: CROP_TYPES.CORN,
+      ["currentGDD"]: 0,
+      ["requiredGDD"]: CROP_GDDS[CROP_TYPES.CORN],
+      ["waterLevel"]: 1000,
+      ["minerals"]: 1000,
+    };
+    field.InitializeField(startingValues);
 
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);

@@ -11,7 +11,7 @@ export const CROP_TYPES = {
   SOY: 3,
 };
 
-const CROP_GDDS = [];
+export const CROP_GDDS = [];
 CROP_GDDS[CROP_TYPES.UNPLANTED] = 0;
 CROP_GDDS[CROP_TYPES.WHEAT] = 1000.0;
 CROP_GDDS[CROP_TYPES.CORN] = 1300.0;
