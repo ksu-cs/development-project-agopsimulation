@@ -3,13 +3,11 @@ import {
   CROP_GDDS,
   CROP_STAGES,
   CROP_TYPES,
-  CropState,
 } from "../States/StateClasses/CropState";
 import ImplementState, {
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
-import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
@@ -111,27 +109,27 @@ export default class simulationEngine extends EventTarget {
     const tileState = {
       ["stage"]: {
         size: 1,
-        type: typeMap.uint8,
+        type: "uint8",
       },
       ["type"]: {
         size: 1,
-        type: typeMap.uint8,
+        type: "uint8",
       },
       ["currentGDD"]: {
         size: 4,
-        type: typeMap.float32,
+        type: "float32",
       },
       ["requiredGDD"]: {
         size: 4,
-        type: typeMap.float32,
+        type: "float32",
       },
       ["waterLevel"]: {
         size: 4,
-        type: typeMap.float32,
+        type: "float32",
       },
       ["minerals"]: {
         size: 4,
-        type: typeMap.float32,
+        type: "float32",
       },
     };
     const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
@@ -205,7 +203,6 @@ export default class simulationEngine extends EventTarget {
 
     // 2. Clone States
     for (const key in oldStates) {
-      //change here
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
       } else if (key === "field") {

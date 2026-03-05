@@ -1,10 +1,5 @@
 import SimManager from "../SimManager";
 import { CROP_STAGES } from "../../States/StateClasses/CropState";
-import {
-  ChangeFieldTile,
-  GetFieldTile,
-  TILE_BYTE_SIZE,
-} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import BitmapFieldState from "../../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 export default class CropManager extends SimManager {

@@ -79,7 +79,7 @@ export function changeCropType(cropType, tile) {
  * @returns {number} The crop's yield score.
  */
 export function getYieldScore(tile) {
-  if (!isMature()) return 0;
+  if (!isMature(tile)) return 0;
   return CROP_YIELDSCORES[tile["type"]];
 }
 
@@ -98,7 +98,7 @@ export function isGrowing(tile) {
  * @returns {boolean} a representation of whether it is in a growing stage
  */
 export function isMature(tile) {
-  return tile["stage"] === CROP_STAGES.MATURE;
+  return (tile["stage"] === CROP_STAGES.MATURE);
 }
 
 /**
@@ -130,7 +130,7 @@ export function plant(cropType, tile) {
   tile["stage"] = CROP_STAGES.SEEDED;
   tile["currentGDD"] = 0.0;
   if (cropType != tile["type"]) {
-    changeCropType(cropType);
+    changeCropType(cropType, tile);
   }
 }
 

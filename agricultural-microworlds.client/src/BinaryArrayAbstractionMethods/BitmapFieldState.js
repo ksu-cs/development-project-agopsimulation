@@ -35,7 +35,8 @@ export default class BitmapFieldState {
     Object.entries(fieldTileKey).forEach(([name, value]) => {
       let buffer = new ArrayBuffer(value.size * this.length);
 
-      const typeArray = typeMap[value.type.toLowerCase()];
+      const lowerCaseType = value.type.toLowerCase();
+      const typeArray = typeMap[lowerCaseType];
       let field = new typeArray(buffer);
 
       this.fieldProps[name] = {
@@ -69,12 +70,10 @@ export default class BitmapFieldState {
   clone() {
     let tileKey = {};
     Object.entries(this.fieldProps).forEach(([name, props]) => {
-      tileKey.push({
-        [name]: {
+      tileKey[name] = {
           size: props.size,
           type: props.type,
-        },
-      });
+        };
     });
     const newFieldState = new BitmapFieldState(
       this.rows,
@@ -120,7 +119,8 @@ export default class BitmapFieldState {
     for (let i = 0; i < this.length; i++) {
       let buffer = new ArrayBuffer(size * this.length);
 
-      const typeArray = typeMap[type.toLowerCase()];
+      const lowerCaseType = type.toLowerCase();
+      const typeArray = typeMap[lowerCaseType];
       let field = new typeArray(buffer);
 
       if (this.fieldProps[name]) return false;
@@ -173,7 +173,7 @@ export default class BitmapFieldState {
     let tile = {};
     Object.entries(this.fieldProps).forEach(([name]) => {
       let result = this.GetVariableAt(x, y, name);
-      if (!result) return null;
+      if (result === null || result === undefined) return null;
       tile[name] = result;
     });
     return tile;
@@ -193,7 +193,7 @@ export default class BitmapFieldState {
     let i = this.#GetTileIndex(x, y);
     let value = nameBufferArray.arr[i];
 
-    return value ? value : null;
+    return (value === undefined) ? null : value;
   }
 
   /**
