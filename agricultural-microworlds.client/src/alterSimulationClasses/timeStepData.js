@@ -6,6 +6,7 @@ export default class timeStepData {
   constructor(
     vehicles,
     activeVehicleType,
+    activeVehicleCamera,
     angle, // Tractor rotation (degrees)
     yieldScore, // Current yield score
     tractorWorldX, // Absolute X position in the world
@@ -20,6 +21,7 @@ export default class timeStepData {
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;
+    this.activeVehicleCamera = activeVehicleCamera;
     this.angle = angle;
     this.yieldScore = yieldScore;
     this.tractorWorldX = tractorWorldX;
