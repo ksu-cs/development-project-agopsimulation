@@ -20,6 +20,11 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine = null;
     this.drawCanvas = null;
 
+    // Harvester = 0, Seeder = 1
+    this.state = {
+      selectedVehicle: 0,
+    };
+
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
   }
@@ -73,7 +78,7 @@ class SimulationControlsContainer extends Component {
 
     this.simulationEngine.resetEverything();
 
-    // FIX: Apply the speed slider value immediately on Run
+    // Apply the speed slider value immediately on Run
     const speedSlider = document.getElementById("speedSlider");
     if (speedSlider) {
       this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
@@ -181,6 +186,17 @@ class SimulationControlsContainer extends Component {
   }
 
   /**
+   * onClick method for vehicle selection
+   * switches camera to follow selected vehicle
+   */
+  handleImplementSelect = (vehicleType) => {
+    this.setState({ selectedVehicle: vehicleType });
+    if (this.simulationEngine) {
+      this.simulationEngine.setMainVehicleCamera(vehicleType);
+    }
+  };
+
+  /**
    * Changes what needs it when the speed of the simulation changes
    */
   onSpeedChange = (e) => {
@@ -224,6 +240,34 @@ class SimulationControlsContainer extends Component {
               onChange={this.onSpeedChange}
               style={{ width: "100%" }}
             />
+          </div>
+
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: "5px",
+              fontWeight: "bold",
+            }}
+          >
+            Camera Following:{" "}
+            {this.state.selectedVehicle === 1 ? "Seeder" : "Harvester"}
+          </div>
+
+          <div className={styles.buttonGroup}>
+            <button
+              id="harvesterCameraButton"
+              className={styles.camera_btn}
+              onClick={() => this.handleImplementSelect(0)}
+            >
+              Harvester
+            </button>
+            <button
+              id="seederCameraButton"
+              className={styles.camera_btn}
+              onClick={() => this.handleImplementSelect(1)}
+            >
+              Seeder
+            </button>
           </div>
 
           <div className={styles.buttonGroup}>

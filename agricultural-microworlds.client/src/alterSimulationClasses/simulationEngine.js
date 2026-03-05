@@ -89,7 +89,7 @@ export default class simulationEngine extends EventTarget {
     }
     this.stateManager.initState("weather", weatherState);
 
-    // 2. Setup tractor
+    // This block of code is SUPPOSED to not do anything... whenever I comment it out, it breaks.
     const tractor = new ImplementState();
     tractor.x = -150;
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
@@ -161,7 +161,14 @@ export default class simulationEngine extends EventTarget {
 
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
+
+    const existingCamera = this.stateManager.getState("activeVehicleCamera");
+
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
+    this.stateManager.initState(
+      "activeVehicleCamera",
+      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
+    );
   }
 
   /**
@@ -293,6 +300,9 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
+    const activeVehicleCamera = this.stateManager.getState(
+      "activeVehicleCamera",
+    );
 
     if (!tractor || !field || !weather) return;
 
@@ -318,6 +328,7 @@ export default class simulationEngine extends EventTarget {
     const ts = new timeStepData(
       vehicles,
       activeVehicleType,
+      activeVehicleCamera,
       tractor.angle,
       tractor.yieldScore,
       tractor.x,
@@ -517,6 +528,12 @@ export default class simulationEngine extends EventTarget {
 
   setMainVehicleType(type) {
     this.stateManager.commitState("activeVehicleType", type);
+
+    this.timeStepEvent();
+  }
+
+  setMainVehicleCamera(type) {
+    this.stateManager.commitState("activeVehicleCamera", type);
 
     this.timeStepEvent();
   }

@@ -112,6 +112,13 @@ export default class drawCanvas {
     const r = this.simulationState?.cumulativeRain ?? 0;
     if (rainEl)
       rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
+
+    const activeVehicleEl = document.getElementById("activeVehicleText");
+    if (activeVehicleEl) {
+      const typeName =
+        this.simulationState.activeVehicleType === 1 ? "Seeder" : "Harvester";
+      activeVehicleEl.innerText = "Active Vehicle: " + typeName;
+    }
   }
 
   /**
@@ -119,7 +126,7 @@ export default class drawCanvas {
    */
   calculateCamera() {
     let activeVehicle = this.simulationState.vehicles?.find(
-      (v) => v.type === this.simulationState.activeVehicleType,
+      (v) => v.type === this.simulationState.activeVehicleCamera,
     );
 
     if (!activeVehicle && this.simulationState.vehicles?.length > 0) {
