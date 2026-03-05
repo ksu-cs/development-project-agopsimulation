@@ -1,5 +1,4 @@
-﻿import { GetCropState } from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
-import {
+﻿import {
   CROP_STAGES,
   CROP_TYPES,
   CropState,

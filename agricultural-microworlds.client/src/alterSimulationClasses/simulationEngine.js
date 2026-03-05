@@ -136,18 +136,6 @@ export default class simulationEngine extends EventTarget {
     };
     const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
 
-    const initialTile = new FieldTileState();
-    if (!initialTile.cropState) {
-      initialTile.cropState = new CropState();
-    }
-
-    const initialCrop = new CropState();
-    initialCrop.changeCropType(CROP_TYPES.CORN);
-    initialCrop.stage = CROP_STAGES.MATURE;
-    initialCrop.currentGDD = 0;
-
-    initialTile.cropState = initialCrop;
-
     /** @type {Object.<string, number>} */
     const startingValues = {
       ["stage"]: CROP_STAGES.MATURE,
@@ -217,6 +205,7 @@ export default class simulationEngine extends EventTarget {
 
     // 2. Clone States
     for (const key in oldStates) {
+      //change here
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
       } else if (key === "field") {

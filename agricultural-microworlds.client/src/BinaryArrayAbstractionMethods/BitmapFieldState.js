@@ -63,6 +63,38 @@ export default class BitmapFieldState {
   }
 
   /**
+   * Clones this field state and gives back a copy of it
+   * @returns {BitmapFieldState?} the cloned version of this field state, if the operation fails returns null
+   */
+  clone() {
+    let tileKey = {};
+    Object.entries(this.fieldProps).forEach(([name, props]) => {
+      tileKey.push({
+        [name]: {
+          size: props.size,
+          type: props.type,
+        },
+      });
+    });
+    const newFieldState = new BitmapFieldState(
+      this.rows,
+      this.columns,
+      tileKey,
+    );
+
+    Object.entries(this.fieldProps).forEach(([name, props]) => {
+      for (let i = 0; i < this.length; i++) {
+        const oldValue = props.arr[i];
+        const newProps = newFieldState.fieldProps[name];
+        if (!newProps) return null;
+        newProps.arr[i] = oldValue;
+      }
+    });
+
+    return newFieldState;
+  }
+
+  /**
    * Adds variables to each tile in the field
    * @param {Object.<string, {size: number, type: string}>} vars A dictionary of the names of the variables to add and there starting values
    * @returns {number} The number of variables that were added

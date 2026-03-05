@@ -1,14 +1,12 @@
 import SimManager from "../SimManager";
-import {
-  ChangeFieldTile,
-  GetFieldTile,
-  TILE_BYTE_SIZE,
-} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
 import BitmapFieldState from "../../BinaryArrayAbstractionMethods/BitmapFieldState";
 import {
-  CROP_GDDS,
-  CROP_STAGES,
-  CROP_TYPES,
+  getYieldScore,
+  isGrowing,
+  isMature,
+  isUnplanted,
+  plant,
+  reset,
 } from "../../States/StateClasses/CropState";
 
 export default class TractorSimManager extends SimManager {
@@ -70,14 +68,12 @@ export default class TractorSimManager extends SimManager {
       tractor,
       field,
       (tile) => {
-        const crop = tile.cropState;
-
-        if (crop.isMature()) {
-          tractor.yieldScore += crop.getYieldScore();
-          crop.reset();
+        if (isMature(tile)) {
+          tractor.yieldScore += getYieldScore(tile);
+          reset(tile);
           return true;
-        } else if (crop.isGrowing()) {
-          crop.reset(); // Destroy if harvesting early
+        } else if (isGrowing(tile)) {
+          reset(tile);
           return true;
         }
       },
@@ -90,10 +86,8 @@ export default class TractorSimManager extends SimManager {
       tractor,
       field,
       (tile) => {
-        const crop = tile.cropState;
-
-        if (crop.isUnplanted()) {
-          crop.plant(tractor.cropBeingPlanted);
+        if (isUnplanted(tile)) {
+          plant(tractor.cropBeingPlanted, tile);
           return true;
         }
       },
