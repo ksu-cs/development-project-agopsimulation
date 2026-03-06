@@ -95,7 +95,9 @@ export default class drawCanvas {
   updateUI() {
     const yieldEl = document.getElementById("scoreText");
     if (yieldEl)
-      yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
+      yieldEl.innerText =
+        "Yield: " +
+        this.simulationState.vehicles[VEHICLES.HARVESTER].yieldScore;
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
