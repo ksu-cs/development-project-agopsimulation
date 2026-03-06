@@ -71,9 +71,9 @@ export default class BitmapFieldState {
     let tileKey = {};
     Object.entries(this.fieldProps).forEach(([name, props]) => {
       tileKey[name] = {
-          size: props.size,
-          type: props.type,
-        };
+        size: props.size,
+        type: props.type,
+      };
     });
     const newFieldState = new BitmapFieldState(
       this.rows,
@@ -193,7 +193,7 @@ export default class BitmapFieldState {
     let i = this.#GetTileIndex(x, y);
     let value = nameBufferArray.arr[i];
 
-    return (value === undefined) ? null : value;
+    return value === undefined ? null : value;
   }
 
   /**

@@ -1,7 +1,4 @@
-﻿import {
-  CROP_STAGES,
-  CROP_TYPES,
-} from "../States/StateClasses/CropState";
+﻿import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
 import { VEHICLES } from "../States/StateClasses/ImplementState";
 
 /**

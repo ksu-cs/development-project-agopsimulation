@@ -98,7 +98,7 @@ export function isGrowing(tile) {
  * @returns {boolean} a representation of whether it is in a growing stage
  */
 export function isMature(tile) {
-  return (tile["stage"] === CROP_STAGES.MATURE);
+  return tile["stage"] === CROP_STAGES.MATURE;
 }
 
 /**

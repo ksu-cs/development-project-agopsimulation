@@ -32,7 +32,7 @@ export default class CropManager extends SimManager {
             fieldTile["currentGDD"] = fieldTile["requiredGDD"];
           }
 
-          currentField.setTile(j, i, fieldTile);
+          nextField.setTile(j, i, fieldTile);
         }
       }
     }
