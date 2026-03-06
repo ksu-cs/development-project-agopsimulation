@@ -12,9 +12,7 @@ import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import BitmapFieldState, {
-  typeMap,
-} from "../BinaryArrayAbstractionMethods/BitmapFieldState";
+import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.

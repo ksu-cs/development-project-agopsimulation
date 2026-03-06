@@ -142,7 +142,7 @@ export function plant(cropType, tile) {
 export function clone(tile) {
   let newCrop = {};
   Object.entries(tile).forEach(([name, value]) => {
-    newCrop.name = value;
+    newCrop[name] = value;
   });
   return newCrop;
 }
