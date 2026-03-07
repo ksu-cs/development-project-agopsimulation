@@ -17,8 +17,6 @@ import {
 } from "../src/States/StateClasses/CropState";
 import FieldTileState from "../src/States/StateClasses/FieldTileState";
 
-//import { expect, test } from "jest";
-
 test("CreateBlankField returns a Uint8Array with the correct values", () => {
   const width = 2;
   const height = 2;

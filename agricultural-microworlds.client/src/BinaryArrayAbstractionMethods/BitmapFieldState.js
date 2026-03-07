@@ -58,6 +58,7 @@ export default class BitmapFieldState {
       // traverses the data part of the array buffer value[0] is the amount of bytes per section
       for (let i = 0; i < this.length; i++) {
         const value = initialTileState[name];
+        if (value === null || value === undefined) break;
         variableField.arr[i] = value;
       }
     });
@@ -102,7 +103,7 @@ export default class BitmapFieldState {
     let count = 0;
     Object.entries(vars).forEach(([name, value]) => {
       let result = this.#AddVariable(name, value.size, value.type);
-      if (!result) count++;
+      if (result) count++;
     });
     return count;
   }
@@ -115,17 +116,18 @@ export default class BitmapFieldState {
    * @returns {boolean} true if operation was a success, false otherwise
    */
   #AddVariable(name, size, type) {
-    if (this.fieldProps[name]) return false;
+    if (this.fieldProps[name] !== undefined && this.fieldProps[name] !== null)
+      return false;
     for (let i = 0; i < this.length; i++) {
-      let buffer = new ArrayBuffer(size * this.length);
+      const buffer = new ArrayBuffer(size * this.length);
 
       const lowerCaseType = type.toLowerCase();
       const typeArray = typeMap[lowerCaseType];
-      let field = new typeArray(buffer);
+      const field = new typeArray(buffer);
 
-      if (this.fieldProps[name]) return false;
       this.fieldProps[name] = { arr: field, type: type, size: size };
     }
+    return true;
   }
 
   /**
