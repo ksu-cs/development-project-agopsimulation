@@ -1,10 +1,4 @@
-﻿import {
-  CreateBlankField,
-  InitializeField,
-  ChangeFieldTile,
-  GetCropState,
-} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
-import { CROP_STAGES, CropState } from "../States/StateClasses/CropState";
+﻿import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
 import { VEHICLES } from "../States/StateClasses/ImplementState";
 
 /**
@@ -71,7 +65,7 @@ export default class drawCanvas {
     this.imageCount = 7;
     this.isInitialized = false;
 
-    /** @type {CustomEvent} Holds the timeStepData to draw */
+    /** @type {timeStepData} Holds the timeStepData to draw */
     this.simulationState = null;
   }
 
@@ -82,6 +76,7 @@ export default class drawCanvas {
    * @param {timeStepData} simulationData Data needed to update what the simulation should look like
    */
   handleTimeStep(simulationData) {
+    /** @type {timeStepData} */
     this.simulationState = simulationData.detail;
 
     // 1. Update UI Elements
@@ -100,7 +95,9 @@ export default class drawCanvas {
   updateUI() {
     const yieldEl = document.getElementById("scoreText");
     if (yieldEl)
-      yieldEl.innerText = "Yield: " + this.simulationState.yieldScore;
+      yieldEl.innerText =
+        "Yield: " +
+        this.simulationState.vehicles[VEHICLES.HARVESTER].yieldScore;
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
@@ -185,11 +182,11 @@ export default class drawCanvas {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue;
 
-        const crop = GetCropState(this.simulationState.field, j, i, fieldWidth);
+        const crop = this.simulationState.field.getTileAt(j, i);
 
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;
-        switch (crop.stage) {
+        switch (crop["stage"]) {
           case CROP_STAGES.UNPLANTED:
             tileImage = this.dirtImage;
             break;
@@ -197,14 +194,14 @@ export default class drawCanvas {
             tileImage = this.seedImage;
             break;
           case CROP_STAGES.MATURE:
-            switch (crop.type) {
-              case 1:
+            switch (crop["type"]) {
+              case CROP_TYPES.WHEAT:
                 tileImage = this.wheatImage;
                 break;
-              case 2:
+              case CROP_TYPES.CORN:
                 tileImage = this.cornImage;
                 break;
-              case 3:
+              case CROP_TYPES.SOY:
                 tileImage = this.soybeanImage;
                 break;
               default:
