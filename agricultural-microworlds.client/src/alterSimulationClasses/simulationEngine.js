@@ -56,7 +56,7 @@ export default class simulationEngine extends EventTarget {
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
-    this.activeTask = null;
+    this.activeTasks = new Map();
 
     this.harvesterWorker = new Worker("WorkerHarvester.js");
     this.seederWorker = new Worker("WorkerSeeder.js");
@@ -172,7 +172,7 @@ export default class simulationEngine extends EventTarget {
   stopMovement() {
     this.isRunning = false;
     this.simulationSessionId++;
-    this.activeTask = null;
+    this.activeTasks.clear();
     this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
@@ -218,31 +218,60 @@ export default class simulationEngine extends EventTarget {
     }
 
     // 4. Handle Active Tasks
-    if (this.activeTask) {
-      if (this.activeTask.sessionId !== this.simulationSessionId) {
-        this.activeTask = null;
-      } else {
-        if (this.activeTask.type === "TIMER") {
-          this.activeTask.timeLeft -= simDeltaTime;
-          if (this.activeTask.timeLeft <= 0) {
-            if (nextStates.vehicles)
-              nextStates.vehicles.forEach((v) => (v.isMoving = false));
+    // if (this.activeTasks.foreach) {
+    //   if (this.activeTasks.sessionId !== this.simulationSessionId) {
+    //     this.activeTasks = null;
+    //   } else {
+    //     if (this.activeTasks.type === "TIMER") {
+    //       this.activeTasks.timeLeft -= simDeltaTime;
+    //       if (this.activeTasks.timeLeft <= 0) {
+    //         if (nextStates.vehicles)
+    //           nextStates.vehicles.forEach((v) => (v.isMoving = false));
 
-            this.resolveActiveTask();
-          }
-        } else if (this.activeTask.type === "TURN") {
-          const activeType = this.stateManager.getState("activeVehicleType");
-          const v = nextStates.vehicles?.find((v) => v.type == activeType);
-          if (v) {
-            const diff = Math.abs(v.goalAngle - v.angle);
-            if (diff < 0.5) {
-              v.angle = v.goalAngle;
-              this.resolveActiveTask();
+    //         this.resolveActiveTask();
+    //       }
+    //     } else if (this.activeTasks.type === "TURN") {
+    //       const activeType = this.stateManager.getState("activeVehicleType");
+    //       const v = nextStates.vehicles?.find((v) => v.type == activeType);
+    //       if (v) {
+    //         const diff = Math.abs(v.goalAngle - v.angle);
+    //         if (diff < 0.5) {
+    //           v.angle = v.goalAngle;
+    //           this.resolveActiveTask();
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+
+    this.activeTasks.forEach((task, vehicleType) => {
+      if (task.sessionId !== this.simulationSessionId) {
+        this.activeTasks.clear();
+      } else {
+        if (task.type === "TIMER") {
+          task.timeLeft -= simDeltaTime;
+          if (task.timeLeft <= 0) {
+            if (nextStates.vehicles) {
+              const vehicle = nextStates.vehicles.find((v) => (v.type == vehicleType));
+              if (vehicle) vehicle.isMoving = false;
             }
+              
+            this.resolveActiveTask(vehicleType);
+            
           }
+        } else if (task.type === "TURN") {
+            const v = nextStates.vehicles?.find((v) => v.type == vehicleType);
+            if (v) {
+              const diff = Math.abs(v.goalAngle - v.angle);
+              if (diff < 0.5) {
+                v.angle = v.goalAngle;
+                this.resolveActiveTask(vehicleType);
+              }
+            }
         }
       }
-    }
+
+    });
 
     // 5. Commit States
     for (const key in nextStates) {
@@ -258,15 +287,20 @@ export default class simulationEngine extends EventTarget {
   /**
    * Resolves the currently active task, if possible.
    */
-  resolveActiveTask() {
-    if (this.activeTask && this.activeTask.resolve) {
-      const resolve = this.activeTask.resolve;
-      const type = this.activeTask.type;
-      this.activeTask = null;
+  resolveActiveTask(vehicleType) {
+    const task = this.activeTasks.get(vehicleType);
+    if (task && task.resolve) {
+      const resolve = task.resolve;
+      const type = task.type;
+
+      this.activeTasks.delete(vehicleType);
 
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
-        if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+        if (vehicles) {
+          const v = vehicles.find((v) => (v.type == vehicleType));
+          if (v) v.isMoving == false;
+        }
         this.nightFadeProgress = -1.0;
       }
 
@@ -347,13 +381,19 @@ export default class simulationEngine extends EventTarget {
     const mySessionId = this.simulationSessionId;
     const vehicle = this.getActiveVehicle();
     if (vehicle) vehicle.isMoving = true;
+
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TIMER",
-        timeLeft: Number(durationInSeconds),
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TIMER",
+          timeLeft: Number(durationInSeconds),
+          resolve: resolve,
+          sessionId: mySessionId,
+        }, );
+      } else {
+        resolve();
+      }
+      
     });
   }
 
@@ -369,11 +409,15 @@ export default class simulationEngine extends EventTarget {
       vehicle.goalAngle += Number(angle);
     }
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TURN",
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TURN",
+          resolve: resolve,
+          sessionId: mySessionId,
+        },);
+      } else {
+        resolve();
+      }
     });
   }
 
@@ -386,17 +430,21 @@ export default class simulationEngine extends EventTarget {
     const mySessionId = this.simulationSessionId;
     const durationInSeconds = Number(weeks) * 7.0;
 
-    const vehicles = this.stateManager.getState("vehicles");
-    if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+    const vehicle = this.getActiveVehicle();
+    if (vehicle) vehicle.isMoving = false;
 
     this.nightFadeProgress = 0.5;
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TIMER",
-        timeLeft: durationInSeconds,
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TIMER",
+          timeLeft: durationInSeconds,
+          resolve: resolve,
+          sessionId: mySessionId,
+        },);
+      } else {
+        resolve();
+      }
     });
   }
 
@@ -504,7 +552,7 @@ export default class simulationEngine extends EventTarget {
 
   resetEverything() {
     this.simulationSessionId++;
-    this.activeTask = null;
+    this.activeTasks.clear();
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
