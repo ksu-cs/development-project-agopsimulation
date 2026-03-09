@@ -121,8 +121,6 @@ export default class TractorSimManager extends SimManager {
       const targetCrop = this.getTileAtLocation(checkX, checkY, field);
       if (targetCrop) yield targetCrop;
     }
-
-    return [];
   }
 
   /**
