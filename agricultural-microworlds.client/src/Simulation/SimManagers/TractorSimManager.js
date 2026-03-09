@@ -1,9 +1,13 @@
 import SimManager from "../SimManager";
+import BitmapFieldState from "../../BinaryArrayAbstractionMethods/BitmapFieldState";
 import {
-  ChangeFieldTile,
-  GetFieldTile,
-  TILE_BYTE_SIZE,
-} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+  getYieldScore,
+  isGrowing,
+  isMature,
+  isUnplanted,
+  plant,
+  reset,
+} from "../../States/StateClasses/CropState";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -64,14 +68,12 @@ export default class TractorSimManager extends SimManager {
       tractor,
       field,
       (tile) => {
-        const crop = tile.cropState;
-
-        if (crop.isMature()) {
-          tractor.yieldScore += crop.getYieldScore();
-          crop.reset();
+        if (isMature(tile)) {
+          tractor.yieldScore += getYieldScore(tile);
+          reset(tile);
           return true;
-        } else if (crop.isGrowing()) {
-          crop.reset(); // Destroy if harvesting early
+        } else if (isGrowing(tile)) {
+          reset(tile);
           return true;
         }
       },
@@ -84,10 +86,8 @@ export default class TractorSimManager extends SimManager {
       tractor,
       field,
       (tile) => {
-        const crop = tile.cropState;
-
-        if (crop.isUnplanted()) {
-          crop.plant(tractor.cropBeingPlanted);
+        if (isUnplanted(tile)) {
+          plant(tractor.cropBeingPlanted, tile);
           return true;
         }
       },
@@ -99,7 +99,7 @@ export default class TractorSimManager extends SimManager {
    * Gets all tiles that the tractor is currently over.
    * @param {any} tractor The tractor.
    * @param {any} field The crop field.
-   * @return {Array} Returns an array of all tiles the tractor is currently over.
+   * @return {any} Returns an array of all tiles the tractor is currently over.
    */
   getTilesCurrentlyOver(tractor, field, offset) {
     let tilesOver = [];
@@ -129,7 +129,7 @@ export default class TractorSimManager extends SimManager {
   /**
    * Gets all tiles that the tractor is currently over.
    * @param {any} tractor The tractor.
-   * @param {any} field The crop field.
+   * @param {BitmapFieldState} field The crop field.
    * @param {any} actionCallback The action to take on a valid tile.
    * */
   applyToolAction(tractor, field, actionCallback, offset) {
@@ -140,15 +140,7 @@ export default class TractorSimManager extends SimManager {
         const didChange = actionCallback(tilesOver[i][0]);
 
         if (didChange) {
-          const totalTiles = field.length / TILE_BYTE_SIZE;
-          const width = Math.sqrt(totalTiles);
-          ChangeFieldTile(
-            field,
-            tilesOver[i][0],
-            tilesOver[i][1],
-            tilesOver[i][2],
-            width,
-          );
+          field.setTile(tilesOver[i][1], tilesOver[i][2], tilesOver[i][0]);
         }
       }
     }
@@ -158,16 +150,12 @@ export default class TractorSimManager extends SimManager {
    * Gets a tile at a specific coordinate on the field
    * @param {number} x The x-coordinate.
    * @param {number} y The y-coordinate.
-   * @param {any} field The crop field.
-   * @returns {Array} An array of a field tile, and each of its proper coordinates.
+   * @param {BitmapFieldState} field The crop field.
+   * @returns {[targetCrop: Object.<string, number>, tileX: number, tileY: number]} An array of a field tile, and each of its proper coordinates.
    * */
   getTileAtLocation(x, y, field) {
     const tileX = Math.floor(x / this.TILE_WIDTH);
     const tileY = Math.floor(y / this.TILE_HEIGHT);
-
-    // Calculate dimensions
-    const totalTiles = field.length / TILE_BYTE_SIZE;
-    const width = Math.sqrt(totalTiles);
 
     if (
       tileY >= 0 &&
@@ -175,7 +163,7 @@ export default class TractorSimManager extends SimManager {
       tileX >= 0 &&
       tileX < this.FIELD_COLS
     ) {
-      const targetCrop = GetFieldTile(field, tileX, tileY, width);
+      const targetCrop = field.getTileAt(tileX, tileY);
       return [targetCrop, tileX, tileY];
     }
 

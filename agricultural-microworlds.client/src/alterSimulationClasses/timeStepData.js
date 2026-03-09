@@ -1,3 +1,5 @@
+import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
+
 /*
  * snap shot of simulation state at specific moment in time
  * Created by simulationEngine and sent to drawCanvas to render frame
@@ -27,6 +29,7 @@ export default class timeStepData {
     this.tractorWorldX = tractorWorldX;
     this.tractorWorldY = tractorWorldY;
     this.nightFadeProgress = nightFadeProgress;
+    /** @type {BitmapFieldState} */
     this.field = field;
     this.fieldWidth = fieldWidth;
     this.currentDate = currentDate;
