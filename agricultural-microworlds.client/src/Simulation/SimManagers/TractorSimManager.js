@@ -169,4 +169,44 @@ export default class TractorSimManager extends SimManager {
 
     return null;
   }
+
+// --- Collision settings (tune these) ---
+  SPRITE_SIZE = 64;
+  COLLISION_RADIUS = 28; // slightly smaller than 32 so it feels fair
+
+  areVehiclesColliding(a, b) {
+    // Circle collision using sprite centers
+    const ax = a.x + this.SPRITE_SIZE / 2;
+    const ay = a.y + this.SPRITE_SIZE / 2;
+    const bx = b.x + this.SPRITE_SIZE / 2;
+    const by = b.y + this.SPRITE_SIZE / 2;
+
+    const dx = ax - bx;
+    const dy = ay - by;
+
+    const r = this.COLLISION_RADIUS * 2;
+    return dx * dx + dy * dy <= r * r;
+  }
+
+  checkVehicleCollisions(newState) {
+    const vehicles = newState.vehicles;
+    if (!vehicles || vehicles.length < 2) return false;
+
+    for (let i = 0; i < vehicles.length; i++) {
+      for (let j = i + 1; j < vehicles.length; j++) {
+        if (this.areVehiclesColliding(vehicles[i], vehicles[j])) {
+          newState.isGameOver = true;
+          newState.gameOverMessage = "You crashed and failed.";
+          //stop sim here
+          
+
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
+
 }
