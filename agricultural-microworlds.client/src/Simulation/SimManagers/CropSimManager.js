@@ -1,17 +1,13 @@
 import SimManager from "../SimManager";
 import { CROP_STAGES } from "../../States/StateClasses/CropState";
-import {
-  ChangeFieldTile,
-  GetCropState,
-  GetFieldTile,
-  TILE_BYTE_SIZE,
-} from "../../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+import BitmapFieldState from "../../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 export default class CropManager extends SimManager {
   update(deltaTime, oldState, newState) {
     if (deltaTime <= 0) return;
 
     const weather = oldState.weather;
+    /** @type {BitmapFieldState} */
     const currentField = oldState.field;
     const nextField = newState.field;
 
@@ -23,29 +19,20 @@ export default class CropManager extends SimManager {
       return;
     }
 
-    const totalBytes = currentField.length;
-    const totalTiles = totalBytes / TILE_BYTE_SIZE;
-    const width = Math.sqrt(totalTiles);
+    for (let i = 0; i < currentField.rows; i++) {
+      for (let j = 0; j < currentField.columns; j++) {
+        /** @type {BitmapFieldState} */
+        const fieldTile = currentField.getTileAt(j, i);
 
-    const rows = width;
-    const cols = width;
+        if (fieldTile["stage"] == CROP_STAGES.SEEDED) {
+          fieldTile["currentGDD"] += gddToAdd;
 
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        const fieldTile = GetFieldTile(currentField, j, i, cols);
-        const cropObj = fieldTile.cropState;
-
-        if (cropObj.stage == CROP_STAGES.SEEDED) {
-          cropObj.currentGDD += gddToAdd;
-
-          if (cropObj.currentGDD >= cropObj.requiredGDD) {
-            cropObj.stage = CROP_STAGES.MATURE;
-            cropObj.currentGDD = cropObj.requiredGDD;
+          if (fieldTile["currentGDD"] >= fieldTile["requiredGDD"]) {
+            fieldTile["stage"] = CROP_STAGES.MATURE;
+            fieldTile["currentGDD"] = fieldTile["requiredGDD"];
           }
 
-          fieldTile.cropState = cropObj;
-
-          ChangeFieldTile(nextField, fieldTile, j, i, cols);
+          nextField.setTile(j, i, fieldTile);
         }
       }
     }

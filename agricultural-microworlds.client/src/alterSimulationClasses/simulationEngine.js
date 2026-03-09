@@ -1,22 +1,18 @@
 import { StateManager } from "../States/StateManager";
 import {
+  CROP_GDDS,
   CROP_STAGES,
   CROP_TYPES,
-  CropState,
 } from "../States/StateClasses/CropState";
 import ImplementState, {
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
-import FieldTileState from "../States/StateClasses/FieldTileState";
 import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
-import {
-  CreateBlankField,
-  InitializeField,
-} from "../BinaryArrayAbstractionMethods/BinaryFieldAbstraction";
+import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -89,7 +85,7 @@ export default class simulationEngine extends EventTarget {
     }
     this.stateManager.initState("weather", weatherState);
 
-    // 2. Setup tractor
+    // This block of code is SUPPOSED to not do anything... whenever I comment it out, it breaks.
     const tractor = new ImplementState();
     tractor.x = -150;
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
@@ -107,25 +103,56 @@ export default class simulationEngine extends EventTarget {
     seeder.y = (this.ROWS * this.TILE_SIZE) / 2 + 50;
 
     // 3. Setup field
-    const field = CreateBlankField(this.ROWS, this.COLS);
+    /** @type {Object.<string, {size: number, type: string}>} */
+    const tileState = {
+      ["stage"]: {
+        size: 1,
+        type: "uint8",
+      },
+      ["type"]: {
+        size: 1,
+        type: "uint8",
+      },
+      ["currentGDD"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["requiredGDD"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["waterLevel"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["minerals"]: {
+        size: 4,
+        type: "float32",
+      },
+    };
+    const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
 
-    const initialTile = new FieldTileState();
-    if (!initialTile.cropState) {
-      initialTile.cropState = new CropState();
-    }
-
-    const initialCrop = new CropState();
-    initialCrop.changeCropType(CROP_TYPES.CORN);
-    initialCrop.stage = CROP_STAGES.MATURE;
-    initialCrop.currentGDD = 0;
-
-    initialTile.cropState = initialCrop;
-
-    InitializeField(field, initialTile);
+    /** @type {Object.<string, number>} */
+    const startingValues = {
+      ["stage"]: CROP_STAGES.MATURE,
+      ["type"]: CROP_TYPES.CORN,
+      ["currentGDD"]: 0,
+      ["requiredGDD"]: CROP_GDDS[CROP_TYPES.CORN],
+      ["waterLevel"]: 1000,
+      ["minerals"]: 1000,
+    };
+    field.InitializeField(startingValues);
 
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
+
+    const existingCamera = this.stateManager.getState("activeVehicleCamera");
+
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
+    this.stateManager.initState(
+      "activeVehicleCamera",
+      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
+    );
   }
 
   /**
@@ -257,6 +284,9 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
+    const activeVehicleCamera = this.stateManager.getState(
+      "activeVehicleCamera",
+    );
 
     if (!tractor || !field || !weather) return;
 
@@ -282,6 +312,7 @@ export default class simulationEngine extends EventTarget {
     const ts = new timeStepData(
       vehicles,
       activeVehicleType,
+      activeVehicleCamera,
       tractor.angle,
       tractor.yieldScore,
       tractor.x,
@@ -482,6 +513,12 @@ export default class simulationEngine extends EventTarget {
 
   setMainVehicleType(type) {
     this.stateManager.commitState("activeVehicleType", type);
+
+    this.timeStepEvent();
+  }
+
+  setMainVehicleCamera(type) {
+    this.stateManager.commitState("activeVehicleCamera", type);
 
     this.timeStepEvent();
   }
