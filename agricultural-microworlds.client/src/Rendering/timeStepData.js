@@ -42,4 +42,8 @@ export default class timeStepData {
 /**
  * Change Plan:
  * Make this so it passes a prestored object in each of the managers it needs things from, then iterate through a given list of those objects to render things correctly
+ * Grouping:
+ *  - Vehicles: vehicles, active vehicle type, active vehicle camera, angle
+ *  - Stats: yieldScore, currentDate, cumulativeGDD, vehicleType, cumulativeRain
+ *  - field: field, fieldWidth
  */
