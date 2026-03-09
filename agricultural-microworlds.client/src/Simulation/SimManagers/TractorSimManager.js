@@ -102,7 +102,6 @@ export default class TractorSimManager extends SimManager {
    * @return {any} Returns an array of all tiles the tractor is currently over.
    */
   *getTilesCurrentlyOver(tractor, field, offset) {
-    let tilesOver = [];
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
@@ -120,10 +119,9 @@ export default class TractorSimManager extends SimManager {
       const checkY = frontY + pCos * offset;
 
       const targetCrop = this.getTileAtLocation(checkX, checkY, field);
+      console.log(targetCrop);
       if (targetCrop) yield targetCrop;
     }
-
-    return tilesOver;
   }
 
   /**
