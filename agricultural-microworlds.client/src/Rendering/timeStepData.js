@@ -1,9 +1,10 @@
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 
 /*
- * snap shot of simulation state at specific moment in time
+ * Snap shot of simulation state at specific moment in time
  * Created by simulationEngine and sent to drawCanvas to render frame
  */
+
 export default class timeStepData {
   constructor(
     vehicles,
@@ -38,3 +39,7 @@ export default class timeStepData {
     this.cumulativeRain = cumulativeRain;
   }
 }
+/**
+ * Change Plan:
+ * Make this so it passes a prestored object in each of the managers it needs things from, then iterate through a given list of those objects to render things correctly
+ */

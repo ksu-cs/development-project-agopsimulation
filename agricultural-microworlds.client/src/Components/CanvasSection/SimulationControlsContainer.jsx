@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
-import simulationEngine from "../../alterSimulationClasses/simulationEngine";
-import drawCanvas from "../../alterSimulationClasses/drawCanvas";
+import simulationEngine from "../../SimulationEngine/simulationEngine";
+import drawCanvas from "../../Rendering/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 
 /**
