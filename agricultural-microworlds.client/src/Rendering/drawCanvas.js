@@ -170,7 +170,8 @@ export default class drawCanvas {
   /**
    * Draws the field on the canvas based on the information received from the timeStep event
    */
-  drawField() { //?? field needs cameraX/Y calculated in the vehicle module how to get??
+  drawField() {
+    //?? field needs cameraX/Y calculated in the vehicle module how to get??
     const fieldWidth = this.simulationState.fieldWidth;
     const fieldHeight = this.simulationState.fieldWidth;
 
@@ -276,7 +277,8 @@ export default class drawCanvas {
   /**
    * Draws a representation of Night time on the canvas.
    */
-  drawNight() { //?? which module should this go in, new environment or weather, existing field??
+  drawNight() {
+    //?? which module should this go in, new environment or weather, existing field??
     this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
@@ -284,7 +286,7 @@ export default class drawCanvas {
   /**
    * Called everytime a necessary starting image loads, incrementing the load count, and initializing the field once ready for initialization.
    */
-  onImageLoad() { 
+  onImageLoad() {
     this.imageLoadCount++;
     if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
       console.log("All images loaded!");
@@ -296,7 +298,8 @@ export default class drawCanvas {
   /**
    * Sets all the sprite onload methods.
    */
-  setSpriteOnLoadMethods() { //?? split into the separate modules
+  setSpriteOnLoadMethods() {
+    //?? split into the separate modules
     this.harvesterSprite.onload = () => {
       console.log("Tractor sprite loaded!");
       this.onImageLoad();
