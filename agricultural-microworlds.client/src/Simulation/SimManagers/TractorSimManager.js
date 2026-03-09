@@ -119,9 +119,10 @@ export default class TractorSimManager extends SimManager {
       const checkY = frontY + pCos * offset;
 
       const targetCrop = this.getTileAtLocation(checkX, checkY, field);
-      console.log(targetCrop);
       if (targetCrop) yield targetCrop;
     }
+
+    return [];
   }
 
   /**
@@ -132,7 +133,9 @@ export default class TractorSimManager extends SimManager {
    * */
   applyToolAction(tractor, field, actionCallback, offset) {
     for (const targetCrop of this.getTilesCurrentlyOver(
-      (tractor, field, offset),
+      tractor,
+      field,
+      offset,
     )) {
       if (targetCrop) {
         const didChange = actionCallback(targetCrop[0]);
