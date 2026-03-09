@@ -153,6 +153,8 @@ export default class simulationEngine extends EventTarget {
       "activeVehicleCamera",
       existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
     );
+
+    this.stateManager.initState("isGameOver", false);
   }
 
   /**

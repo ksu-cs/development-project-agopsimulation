@@ -3,6 +3,7 @@ import styles from "../../Styles/index.module.css";
 import simulationEngine from "../../alterSimulationClasses/simulationEngine";
 import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
+import TractorSimManager from "../../Simulation/SimManagers/TractorSimManager";
 
 /**
  * @classdesc Creates the buttons and other UI components that can control the simulation, aside from the blocks.
@@ -180,7 +181,10 @@ class SimulationControlsContainer extends Component {
   stopButtonOnClick() {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
+      this.simulationEngine
+      this.simulationEngine.resetEverything();
     }
+    this.simulationEngine
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = false;
   }

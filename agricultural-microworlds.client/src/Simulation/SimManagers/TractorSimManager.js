@@ -24,6 +24,8 @@ export default class TractorSimManager extends SimManager {
     const newVehicles = newState.vehicles;
     const newField = newState.field;
 
+    if (newState.isGameOver) return;
+
     if (!oldVehicles || !newVehicles || !newField) return;
 
     for (let i = 0; i < newVehicles.length; i++) {
@@ -61,6 +63,13 @@ export default class TractorSimManager extends SimManager {
         this.handleSeeding(newTractor, newField);
       }
     }
+
+ if (this.checkVehicleCollisions(newState))
+        {
+          newState.isGameOver = true;
+          return;
+        } 
+
   }
 
   handleHarvesting(tractor, field) {
@@ -197,8 +206,6 @@ export default class TractorSimManager extends SimManager {
         if (this.areVehiclesColliding(vehicles[i], vehicles[j])) {
           newState.isGameOver = true;
           newState.gameOverMessage = "You crashed and failed.";
-          //stop sim here
-          
 
           return true;
         }
