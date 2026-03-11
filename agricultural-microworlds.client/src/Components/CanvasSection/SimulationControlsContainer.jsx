@@ -181,8 +181,6 @@ class SimulationControlsContainer extends Component {
   stopButtonOnClick() {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
-      this.simulationEngine
-      this.simulationEngine.resetEverything();
     }
     this.simulationEngine
     const runButton = document.getElementById("runButton");

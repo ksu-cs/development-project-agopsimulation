@@ -54,7 +54,7 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
-
+    this.isGameOver = false;
     // Active Task System to sync Logic with Physics
     this.activeTask = null;
 
@@ -186,6 +186,12 @@ export default class simulationEngine extends EventTarget {
    * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
   loop(timestamp) {
+    if(this.stateManager.states.isGameOver)
+      {
+       this.stopMovement();
+       return
+      }
+
     if (!this.isRunning) return;
 
     if (!timestamp) timestamp = performance.now();
