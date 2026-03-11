@@ -22,7 +22,7 @@ export default class simulationEngine extends EventTarget {
   /**
    * @constructor Defines and instances all constants, managers, and variables for the engine.
    */
-  constructor() {
+  constructor(canvasWidth, canvasHeight) {
     super();
 
     this.stateManager = new StateManager();
@@ -38,6 +38,9 @@ export default class simulationEngine extends EventTarget {
 
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
+
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
 
     // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
@@ -283,7 +286,14 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
-    const activeVehicleCamera = this.getManager(TractorManager).activeVehicleCamera;
+    /** @type {TractorManager} */
+    const tractorManager = this.getManager(TractorManager);
+    /** @type {VEHICLES} */
+    const activeVehicleCamera = tractorManager.activeVehicleCamera;
+    let activeVehicle = vehicles?.find(
+      (v) => v.type === activeVehicleCamera,
+    );
+    tractorManager.updateCameraCoordinates(activeVehicle, this.COLS, this.canvasWidth, this.canvasHeight);
 
     if (!tractor || !field || !weather) return;
 
@@ -309,7 +319,8 @@ export default class simulationEngine extends EventTarget {
     const ts = new timeStepData(
       vehicles,
       activeVehicleType,
-      activeVehicleCamera,
+      tractorManager.cameraX,
+      tractorManager.cameraY,
       tractor.angle,
       tractor.yieldScore,
       tractor.x,
@@ -333,6 +344,7 @@ export default class simulationEngine extends EventTarget {
       }),
     );
   }
+
   // --- ASYNC COMMANDS ---
 
   /**

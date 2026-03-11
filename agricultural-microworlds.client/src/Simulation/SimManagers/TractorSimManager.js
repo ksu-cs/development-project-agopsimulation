@@ -179,20 +179,18 @@ export default class TractorSimManager extends SimManager {
   /**
    * Calculates the camera coordinates for the active implement based on the information in that implement state
    * @param {ImplementState} implement The active implement that the camera is tracking
+   * @param {number} fieldWidth The width of the field
+   * @param {number} canvasWidth The width of the canvas
+   * @param {number} canvasHeight The height of the canvas
    */
-  updateCameraCoordinates(implement){
+  updateCameraCoordinates(implement, fieldWidth, canvasWidth, canvasHeight){
     if (!implement) return;
 
     const tractorX = implement.x + 32;
     const tractorY = implement.y + 32;
 
-    let canvasWidth;
-    let canvasHeight;
-
     let targetX = tractorX - canvasWidth;
     let targetY = tractorY - canvasHeight;
-
-    let fieldWidth;
 
     const maxCameraX = fieldWidth * this.TILE_WIDTH - canvasWidth;
     const maxCameraY = fieldWidth * this.TILE_WIDTH - canvasHeight;

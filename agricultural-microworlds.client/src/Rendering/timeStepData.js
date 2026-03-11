@@ -6,10 +6,29 @@ import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState"
  */
 
 export default class timeStepData {
+  /**
+   * All the data need to render a timestep in the simulation
+   * @param {*} vehicles 
+   * @param {*} activeVehicleType 
+   * @param {*} cameraX 
+   * @param {*} cameraY 
+   * @param {*} angle 
+   * @param {*} yieldScore 
+   * @param {*} tractorWorldX 
+   * @param {*} tractorWorldY 
+   * @param {*} nightFadeProgress 
+   * @param {*} field 
+   * @param {*} fieldWidth 
+   * @param {*} currentDate 
+   * @param {*} cumulativeGDD 
+   * @param {*} vehicleType 
+   * @param {*} cumulativeRain 
+   */
   constructor(
     vehicles,
     activeVehicleType,
-    activeVehicleCamera,
+    cameraX,
+    cameraY,
     angle, // Tractor rotation (degrees)
     yieldScore, // Current yield score
     tractorWorldX, // Absolute X position in the world
@@ -24,7 +43,8 @@ export default class timeStepData {
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;
-    this.activeVehicleCamera = activeVehicleCamera;
+    this.cameraX = cameraX;
+    this.cameraY = cameraY;
     this.angle = angle;
     this.yieldScore = yieldScore;
     this.tractorWorldX = tractorWorldX;

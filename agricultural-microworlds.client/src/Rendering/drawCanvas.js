@@ -20,10 +20,6 @@ export default class drawCanvas {
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;
 
-    // Camera State
-    this.cameraX = 0;
-    this.cameraY = 0;
-
     // Sprite setup
     this.seederSprite = new Image();
     this.harvesterSprite = new Image();
@@ -84,10 +80,7 @@ export default class drawCanvas {
     // 1. Update UI Elements
     this.updateUI();
 
-    // 2. Calculate Camera
-    this.calculateCamera();
-
-    // 3. Draw
+    // 2. Draw
     this.drawFieldAndTractor();
   }
 
@@ -122,40 +115,6 @@ export default class drawCanvas {
   // put in the update method of the debug class
 
   /**
-   * Keeps the camera centered on the vehicle while it is moving
-   */
-  calculateCamera() {
-    let activeVehicle = this.simulationState.vehicles?.find(
-      (v) => v.type === this.simulationState.activeVehicleCamera,
-    );
-
-    if (!activeVehicle && this.simulationState.vehicles?.length > 0) {
-      activeVehicle = this.simulationState.vehicles[0];
-    }
-    if (!activeVehicle) return;
-
-    const tractorX = activeVehicle.x + 32;
-    const tractorY = activeVehicle.y + 32;
-
-    let targetX = tractorX - this.canvas.width / 2;
-    let targetY = tractorY - this.canvas.height / 2;
-
-    const maxCameraX =
-      this.simulationState.fieldWidth * this.TILE_WIDTH - this.canvas.width;
-    const maxCameraY =
-      this.simulationState.fieldWidth * this.TILE_HEIGHT - this.canvas.height;
-
-    // Clamp to max
-    targetX = Math.min(targetX, maxCameraX);
-    targetY = Math.min(targetY, maxCameraY);
-
-    // Clamp to min
-    this.cameraX = Math.max(-150, targetX);
-    this.cameraY = Math.max(0, targetY);
-  }
-  //?? put in implement state, pass with implement render and field render, same with field width
-
-  /**
    * Calls the necessary draw methods in the correct order
    */
   drawFieldAndTractor() {
@@ -176,9 +135,11 @@ export default class drawCanvas {
     //?? field needs cameraX/Y calculated in the vehicle module how to get??
     const fieldWidth = this.simulationState.fieldWidth;
     const fieldHeight = this.simulationState.fieldWidth;
+    const cameraX = this.simulationState.cameraX;
+    const cameraY = this.simulationState.cameraY;
 
-    const startCol = Math.floor(this.cameraX / this.TILE_WIDTH);
-    const startRow = Math.floor(this.cameraY / this.TILE_HEIGHT);
+    const startCol = Math.floor(cameraX / this.TILE_WIDTH);
+    const startRow = Math.floor(cameraY / this.TILE_HEIGHT);
 
     const endRow = Math.min(fieldHeight, startRow + this.SCREEN_ROWS);
     const endCol = Math.min(fieldWidth, startCol + this.SCREEN_COLUMNS);
@@ -217,8 +178,8 @@ export default class drawCanvas {
         const tileWorldX = j * this.TILE_WIDTH;
         const tileWorldY = i * this.TILE_HEIGHT;
 
-        const tileScreenX = tileWorldX - this.cameraX;
-        const tileScreenY = tileWorldY - this.cameraY;
+        const tileScreenX = tileWorldX - cameraX;
+        const tileScreenY = tileWorldY - cameraY;
 
         this.ctx.drawImage(
           tileImage,
@@ -242,8 +203,8 @@ export default class drawCanvas {
     if (!this.simulationState.vehicles) return;
 
     this.simulationState.vehicles.forEach((vehicle) => {
-      const screenX = vehicle.x - this.cameraX;
-      const screenY = vehicle.y - this.cameraY;
+      const screenX = vehicle.x - this.simulationState.cameraX;
+      const screenY = vehicle.y - this.simulationState.cameraY;
 
       const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
       var angleInRadians = (normalizedAngle * Math.PI) / 180;
@@ -261,18 +222,6 @@ export default class drawCanvas {
       this.ctx.rotate(angleInRadians);
       this.ctx.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
       this.ctx.restore();
-
-      // Debug info is allowed to fail silently if element is missing,
-      // but usually debug is in a separate panel not removed here.
-      const debugEl = document.getElementById("debug");
-      if (debugEl) {
-        debugEl.innerHTML =
-          `World Position: (${Math.round(vehicle.x)}, ${Math.round(vehicle.y)})<br>` +
-          `Camera Position: (${Math.round(this.cameraX)}, ${Math.round(this.cameraY)})<br>` +
-          `Screen Position: (${Math.round(screenX)}, ${Math.round(screenY)})<br>` +
-          `Angle: ${normalizedAngle}°<br>`;
-        `Vehicle Type: ${vehicle.type}<br>`;
-      }
     });
   }
 
