@@ -1,6 +1,8 @@
 ﻿import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
 import { VEHICLES } from "../States/StateClasses/ImplementState";
 
+//move some constants to a separate file for multiple classes to use
+
 /**
  * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
  */

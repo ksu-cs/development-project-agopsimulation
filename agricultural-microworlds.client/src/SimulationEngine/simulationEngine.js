@@ -13,6 +13,7 @@ import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
+import SimManager from "../Simulation/SimManager";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -64,7 +65,7 @@ export default class simulationEngine extends EventTarget {
 
   /**
    * Returns a manager instance of a specific type.
-   * @param {type} type The type of manager to search for.
+   * @param {SimManager} type The type of manager to search for.
    */
   getManager(type) {
     return this.managers.find((m) => m instanceof type);
@@ -146,13 +147,11 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
 
-    const existingCamera = this.stateManager.getState("activeVehicleCamera");
+    const tractorSimManager = this.getManager(TractorManager);
+    const existingCamera = tractorSimManager.activeVehicleCamera;
+    tractorSimManager.activeVehicleCamera = (existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER);
 
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
-    this.stateManager.initState(
-      "activeVehicleCamera",
-      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
-    );
   }
 
   /**
@@ -284,9 +283,7 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
-    const activeVehicleCamera = this.stateManager.getState(
-      "activeVehicleCamera",
-    );
+    const activeVehicleCamera = this.getManager(TractorManager).activeVehicleCamera;
 
     if (!tractor || !field || !weather) return;
 
@@ -517,7 +514,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   setMainVehicleCamera(type) {
-    this.stateManager.commitState("activeVehicleCamera", type);
+    this.getManager(TractorManager).activeVehicleCamera = type;
 
     this.timeStepEvent();
   }
