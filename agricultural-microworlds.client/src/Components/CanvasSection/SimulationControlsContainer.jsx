@@ -198,16 +198,31 @@ class SimulationControlsContainer extends Component {
    */
   handleImplementSelect = (vehicleType) => {
 
-    // // Save current workspace to state
-    // const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
-    // const currentXmlText = Blockly.Xml.domToTxt(currentXmlDom);
+    // Save current workspace to state
+    const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
+    const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
 
-    // if (t)
-
-    this.setState({ selectedVehicle: vehicleType });
-    if (this.simulationEngine) {
-      this.simulationEngine.setMainVehicleCamera(vehicleType);
+    if (this.state.selectedVehicle == 0) {
+      this.setState({ harvesterXml: currentXmlText});
     }
+    else {
+      this.setState({ seederXml: currentXmlText});
+    }
+
+    // Load blocks for new tab
+    const nextXmlText = vehicleType == 0 ? this.state.harvesterXml : this.state.seederXml;
+
+    this.setState({ selectedVehicle: vehicleType }, () => { 
+
+      this.props.workspace.clear();
+      const nextXmlDom = Blockly.utils.xml.textToDom(nextXmlText);
+      Blockly.Xml.domToWorkspace(nextXmlDom, this.props.workspace);
+
+      if (this.simulationEngine) {
+        this.simulationEngine.setMainVehicleCamera(vehicleType);
+      }
+    });
+
   };
 
   /**
