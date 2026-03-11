@@ -3,6 +3,7 @@ import styles from "../../Styles/index.module.css";
 import simulationEngine from "../../alterSimulationClasses/simulationEngine";
 import drawCanvas from "../../alterSimulationClasses/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
+import * as Blockly from "blockly";
 
 /**
  * @classdesc Creates the buttons and other UI components that can control the simulation, aside from the blocks.
@@ -23,7 +24,13 @@ class SimulationControlsContainer extends Component {
     // Harvester = 0, Seeder = 1
     this.state = {
       selectedVehicle: 0,
+      harvesterXml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      seederXml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
     };
+
+    this.workers = [];
+    this.expectedWorkers = 0;
+    this.completedWorkers = 0;
 
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
@@ -190,6 +197,13 @@ class SimulationControlsContainer extends Component {
    * switches camera to follow selected vehicle
    */
   handleImplementSelect = (vehicleType) => {
+
+    // // Save current workspace to state
+    // const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
+    // const currentXmlText = Blockly.Xml.domToTxt(currentXmlDom);
+
+    // if (t)
+
     this.setState({ selectedVehicle: vehicleType });
     if (this.simulationEngine) {
       this.simulationEngine.setMainVehicleCamera(vehicleType);
