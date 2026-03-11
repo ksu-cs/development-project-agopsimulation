@@ -64,8 +64,6 @@ export default class TractorSimManager extends SimManager {
       } else if (oldTractor.isSeedingOn) {
         this.handleSeeding(newTractor, newField);
       }
-
-      this.updateCameraCoordinates(newState);
     }
   }
 
@@ -189,8 +187,8 @@ export default class TractorSimManager extends SimManager {
     const tractorX = implement.x + 32;
     const tractorY = implement.y + 32;
 
-    let targetX = tractorX - canvasWidth;
-    let targetY = tractorY - canvasHeight;
+    let targetX = tractorX - canvasWidth / 2;
+    let targetY = tractorY - canvasHeight / 2;
 
     const maxCameraX = fieldWidth * this.TILE_WIDTH - canvasWidth;
     const maxCameraY = fieldWidth * this.TILE_WIDTH - canvasHeight;
@@ -198,7 +196,7 @@ export default class TractorSimManager extends SimManager {
     targetX = Math.min(targetX, maxCameraX);
     targetY = Math.min(targetY, maxCameraY);
 
-    this.cameraX = Math.max(targetX, maxCameraX);
-    this.cameraY = Math.min(targetY, maxCameraY);
+    this.cameraX = Math.max(-150, targetX);
+    this.cameraY = Math.max(0, targetY);
   }
 }
