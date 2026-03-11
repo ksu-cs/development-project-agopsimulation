@@ -87,6 +87,17 @@ export default class drawCanvas {
 
     // 3. Draw
     this.drawFieldAndTractor();
+
+    // 4. Scene Colorize
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] *= 0.6; //R
+      data[i + 1] *= 0.6; //G
+      data[i + 2] = Math.min(data[i + 2] * 2, 255); //B
+    }
+
+    this.ctx.putImageData(imageData, 0, 0);
   }
 
   /**
