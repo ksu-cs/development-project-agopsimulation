@@ -89,15 +89,28 @@ export default class drawCanvas {
     this.drawFieldAndTractor();
 
     // 4. Scene Colorize
+
+    // Basic colorization option, using a rectangle draw. Much more optimal.
+    ///*
+    this.ctx.fillStyle = `rgba(0, 0, 150, ${0.25 + 0.25 * Math.sin(Math.PI * Date.now() / 1000)})`;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    //*/
+
+    // Functionality for full scene colorization. Likely more intensive.
+    /*
     const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
     const data = imageData.data;
+    const timeAlpha = 0.5 + 0.5 * Math.sin(Math.PI * Date.now() / 1000);
+    const rgMulti = 1.0 - 0.4*timeAlpha;
+    const bMulti = 1.0 + 1.0*timeAlpha;
     for (let i = 0; i < data.length; i += 4) {
-      data[i] *= 0.6; //R
-      data[i + 1] *= 0.6; //G
-      data[i + 2] = Math.min(data[i + 2] * 2, 255); //B
+      data[i] *= rgMulti; //R
+      data[i + 1] *= rgMulti; //G
+      data[i + 2] = Math.min(data[i + 2] * bMulti, 255); //B
     }
 
     this.ctx.putImageData(imageData, 0, 0);
+    */
   }
 
   /**
