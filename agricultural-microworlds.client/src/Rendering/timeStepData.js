@@ -1,4 +1,5 @@
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
+import RenderState from "./renderState";
 
 /*
  * Snap shot of simulation state at specific moment in time
@@ -23,6 +24,7 @@ export default class timeStepData {
    * @param {*} cumulativeGDD 
    * @param {*} vehicleType 
    * @param {*} cumulativeRain 
+   * @param {Object.<any, RenderState>} renderModules
    */
   constructor(
     vehicles,
@@ -40,6 +42,7 @@ export default class timeStepData {
     cumulativeGDD, // Growth Degree Days string
     vehicleType,
     cumulativeRain,
+    renderModules,
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;
@@ -57,6 +60,8 @@ export default class timeStepData {
     this.cumulativeGDD = cumulativeGDD;
     this.vehicleType = vehicleType;
     this.cumulativeRain = cumulativeRain;
+    /**@type {Object.<any, RenderState>} */
+    this.renderModules = renderModules;
   }
 }
 /**

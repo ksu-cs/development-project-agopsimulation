@@ -1,5 +1,6 @@
 ﻿import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
 import { VEHICLES } from "../States/StateClasses/ImplementState";
+import timeStepData from "./timeStepData";
 
 //move some constants to a separate file for multiple classes to use
 
@@ -74,14 +75,22 @@ export default class drawCanvas {
    * @param {timeStepData} simulationData Data needed to update what the simulation should look like
    */
   handleTimeStep(simulationData) {
-    /** @type {timeStepData} */
     this.simulationState = simulationData.detail;
+
+    this.renderAllModules();
 
     // 1. Update UI Elements
     this.updateUI();
 
     // 2. Draw
     this.drawFieldAndTractor();
+  }
+
+  renderAllModules(){
+    Object.entries(this.simulationState.renderModules).forEach( module => {
+      module.getRenderData();
+      // use render data to make a ctx.drawImage call, maybe a enum var aswell to specify which ctx method/overload should be called
+    })
   }
 
   /**
