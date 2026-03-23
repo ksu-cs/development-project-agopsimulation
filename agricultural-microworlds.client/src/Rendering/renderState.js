@@ -1,8 +1,7 @@
 export default class RenderState {
   /**
-   * Takes the update information given to the class, sanitizes that information
-   * @returns The needed information to call drawImage
+   * Renders the this item based on the information stored in the class
+   * @param {import("react").Context} context The context handed out by the top level renderer to allow this method to render
    */
-  getRenderData() {}
+  render(context) {}
 }
-//?? have ctx.drawImage in here or return the information to drawCanvas so only it has access to render

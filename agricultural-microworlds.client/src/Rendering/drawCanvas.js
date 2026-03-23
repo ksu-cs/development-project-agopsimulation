@@ -88,7 +88,7 @@ export default class drawCanvas {
 
   renderAllModules(){
     Object.entries(this.simulationState.renderModules).forEach( module => {
-      module.getRenderData();
+      module.render(this.ctx);
       // use render data to make a ctx.drawImage call, maybe a enum var aswell to specify which ctx method/overload should be called
     })
   }
