@@ -14,6 +14,7 @@ import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 import SimManager from "../Simulation/SimManager";
+import RenderStatState from "../Rendering/renderStatState";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -152,7 +153,8 @@ export default class simulationEngine extends EventTarget {
 
     const tractorSimManager = this.getManager(TractorManager);
     const existingCamera = tractorSimManager.activeVehicleCamera;
-    tractorSimManager.activeVehicleCamera = (existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER);
+    tractorSimManager.activeVehicleCamera =
+      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
 
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
   }
@@ -290,10 +292,13 @@ export default class simulationEngine extends EventTarget {
     const tractorManager = this.getManager(TractorManager);
     /** @type {VEHICLES} */
     const activeVehicleCamera = tractorManager.activeVehicleCamera;
-    let activeVehicle = vehicles?.find(
-      (v) => v.type === activeVehicleCamera,
+    let activeVehicle = vehicles?.find((v) => v.type === activeVehicleCamera);
+    tractorManager.updateCameraCoordinates(
+      activeVehicle,
+      this.COLS,
+      this.canvasWidth,
+      this.canvasHeight,
     );
-    tractorManager.updateCameraCoordinates(activeVehicle, this.COLS, this.canvasWidth, this.canvasHeight);
 
     if (!tractor || !field || !weather) return;
 
@@ -316,6 +321,15 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
+    const renderModules = [];
+    renderModules[0] = new RenderStatState(
+      vehicles[VEHICLES.HARVESTER].yieldScore,
+      dateString,
+      gddString,
+      rainString,
+      activeVehicleType,
+    );
+
     const ts = new timeStepData(
       vehicles,
       activeVehicleType,
@@ -332,6 +346,7 @@ export default class simulationEngine extends EventTarget {
       gddString,
       tractor.type || "tractor",
       rainString,
+      renderModules,
     );
 
     //default back to tractor

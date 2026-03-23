@@ -181,7 +181,7 @@ export default class TractorSimManager extends SimManager {
    * @param {number} canvasWidth The width of the canvas
    * @param {number} canvasHeight The height of the canvas
    */
-  updateCameraCoordinates(implement, fieldWidth, canvasWidth, canvasHeight){
+  updateCameraCoordinates(implement, fieldWidth, canvasWidth, canvasHeight) {
     if (!implement) return;
 
     const tractorX = implement.x + 32;

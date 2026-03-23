@@ -9,21 +9,21 @@ import RenderState from "./renderState";
 export default class timeStepData {
   /**
    * All the data need to render a timestep in the simulation
-   * @param {*} vehicles 
-   * @param {*} activeVehicleType 
-   * @param {*} cameraX 
-   * @param {*} cameraY 
-   * @param {*} angle 
-   * @param {*} yieldScore 
-   * @param {*} tractorWorldX 
-   * @param {*} tractorWorldY 
-   * @param {*} nightFadeProgress 
-   * @param {*} field 
-   * @param {*} fieldWidth 
-   * @param {*} currentDate 
-   * @param {*} cumulativeGDD 
-   * @param {*} vehicleType 
-   * @param {*} cumulativeRain 
+   * @param {*} vehicles
+   * @param {*} activeVehicleType
+   * @param {*} cameraX
+   * @param {*} cameraY
+   * @param {*} angle
+   * @param {*} yieldScore
+   * @param {*} tractorWorldX
+   * @param {*} tractorWorldY
+   * @param {*} nightFadeProgress
+   * @param {*} field
+   * @param {*} fieldWidth
+   * @param {*} currentDate
+   * @param {*} cumulativeGDD
+   * @param {*} vehicleType
+   * @param {*} cumulativeRain
    * @param {Object.<any, RenderState>} renderModules
    */
   constructor(

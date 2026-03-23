@@ -79,49 +79,16 @@ export default class drawCanvas {
 
     this.renderAllModules();
 
-    // 1. Update UI Elements
-    this.updateUI();
-
     // 2. Draw
     this.drawFieldAndTractor();
   }
 
-  renderAllModules(){
-    Object.entries(this.simulationState.renderModules).forEach( module => {
+  renderAllModules() {
+    Object.entries(this.simulationState.renderModules).forEach(([, module]) => {
       module.render(this.ctx);
       // use render data to make a ctx.drawImage call, maybe a enum var aswell to specify which ctx method/overload should be called
-    })
+    });
   }
-
-  /**
-   * Updates the UI elements that are affected by actions in the simulation world
-   */
-  updateUI() {
-    const yieldEl = document.getElementById("scoreText");
-    if (yieldEl)
-      yieldEl.innerText =
-        "Yield: " +
-        this.simulationState.vehicles[VEHICLES.HARVESTER].yieldScore;
-
-    const dateEl = document.getElementById("dateText");
-    if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
-
-    const gddEl = document.getElementById("gddText");
-    if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
-
-    const rainEl = document.getElementById("rainText");
-    const r = this.simulationState?.cumulativeRain ?? 0;
-    if (rainEl)
-      rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
-
-    const activeVehicleEl = document.getElementById("activeVehicleText");
-    if (activeVehicleEl) {
-      const typeName =
-        this.simulationState.activeVehicleType === 1 ? "Seeder" : "Harvester";
-      activeVehicleEl.innerText = "Active Vehicle: " + typeName;
-    }
-  }
-  // put in the update method of the debug class
 
   /**
    * Calls the necessary draw methods in the correct order
