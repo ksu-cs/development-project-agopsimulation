@@ -5,7 +5,7 @@ export default class WeatherState {
 
     // Time Tracking
     this.currentDayIndex = 0;
-    this.timeAccumulator = 0; // Counts up to 1.0 (1 second = 1 day)
+    this.timeAccumulator = 5; // Counts up to 24.0 (1 second = 1 hour)
     this.speedMultiplier = 1; // Controls simulation speed
 
     // GDD Tracking

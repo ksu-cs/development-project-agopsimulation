@@ -52,7 +52,6 @@ export default class simulationEngine extends EventTarget {
     this.lastFrameTime = 0;
     this.animationId = -1;
     this.isRunning = false;
-    this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
@@ -173,7 +172,6 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTask = null;
-    this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
   }
@@ -267,7 +265,6 @@ export default class simulationEngine extends EventTarget {
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
         if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
-        this.nightFadeProgress = -1.0;
       }
 
       resolve();
@@ -317,7 +314,7 @@ export default class simulationEngine extends EventTarget {
       tractor.yieldScore,
       tractor.x,
       tractor.y,
-      this.nightFadeProgress,
+      weather.timeAccumulator,
       field,
       this.COLS,
       dateString,
@@ -389,7 +386,6 @@ export default class simulationEngine extends EventTarget {
     const vehicles = this.stateManager.getState("vehicles");
     if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
 
-    this.nightFadeProgress = 0.5;
     return new Promise((resolve) => {
       this.activeTask = {
         type: "TIMER",
