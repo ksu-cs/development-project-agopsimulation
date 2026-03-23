@@ -54,7 +54,7 @@ export default class WeatherManager extends SimManager {
     weatherState.gddToApplyThisFrame = 0;
     weatherState.rainToApplyThisFrame = 0;
 
-    weatherState.timeAccumulator = 0.0;
+    weatherState.timeAccumulator = 5.0; // Start at 6 A.M.
 
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
   }
@@ -68,8 +68,8 @@ export default class WeatherManager extends SimManager {
 
     weather.timeAccumulator += deltaTime;
 
-    if (weather.timeAccumulator >= 1.0) {
-      weather.timeAccumulator -= 1.0;
+    if (weather.timeAccumulator >= 24.0) {
+      weather.timeAccumulator -= 24.0;
       this.advanceDay(weather, weather); // update in place
     }
 
