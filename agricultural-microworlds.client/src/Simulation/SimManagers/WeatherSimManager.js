@@ -66,11 +66,14 @@ export default class WeatherManager extends SimManager {
     weather.gddToApplyThisFrame = 0;
     weather.rainToApplyThisFrame = 0;
 
+    const prev = weather.timeAccumulator;
     weather.timeAccumulator += deltaTime;
 
+    if (prev < 23.0 && weather.timeAccumulator >= 23.0) {
+      this.advanceDay(weather, weather);
+    }
     if (weather.timeAccumulator >= 24.0) {
       weather.timeAccumulator -= 24.0;
-      this.advanceDay(weather, weather); // update in place
     }
 
     // Mirror cumulative values to top-level for UI
