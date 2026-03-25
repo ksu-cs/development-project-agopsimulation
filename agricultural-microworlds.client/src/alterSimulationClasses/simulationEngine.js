@@ -193,7 +193,7 @@ export default class simulationEngine extends EventTarget {
 
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
-    const speedMult = weather ? weather.speedMultiplier : 1;
+    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult;
 
@@ -265,6 +265,9 @@ export default class simulationEngine extends EventTarget {
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
         if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+
+        const weather = this.stateManager.getState("weather");
+        if (weather) weather.isWaiting = false;
       }
 
       resolve();
@@ -381,10 +384,13 @@ export default class simulationEngine extends EventTarget {
    */
   async waitXWeeks(weeks) {
     const mySessionId = this.simulationSessionId;
-    const durationInSeconds = Number(weeks) * 7.0;
+    const durationInSeconds = Number(weeks) * 24.0 * 7.0;
 
     const vehicles = this.stateManager.getState("vehicles");
     if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+
+    const weather = this.stateManager.getState("weather");
+    if (weather) weather.isWaiting = true;
 
     return new Promise((resolve) => {
       this.activeTask = {
