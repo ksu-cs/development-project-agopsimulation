@@ -16,12 +16,12 @@ export default class RenderImplementState extends RenderState {
     super(paths, paths.length);
   }
 
-  render(context, simulationState) {
-    if (!simulationState.vehicles) return;
+  render(context, data) {
+    if (!data.vehicles) return;
 
-    simulationState.vehicles.forEach((vehicle) => {
-      const screenX = vehicle.x - simulationState.cameraX;
-      const screenY = vehicle.y - simulationState.cameraY;
+    data.vehicles.forEach((vehicle) => {
+      const screenX = vehicle.x - data.cameraX;
+      const screenY = vehicle.y - data.cameraY;
 
       const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
       var angleInRadians = (normalizedAngle * Math.PI) / 180;

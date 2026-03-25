@@ -15,6 +15,7 @@ import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 import SimManager from "../Simulation/SimManager";
 import RenderStatState from "../Rendering/renderStatState";
+import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -321,8 +322,7 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
-    const renderModules = [];
-    renderModules[0] = new RenderStatState(
+    const statData = new RenderStatState(
       vehicles[VEHICLES.HARVESTER].yieldScore,
       dateString,
       gddString,
@@ -330,27 +330,40 @@ export default class simulationEngine extends EventTarget {
       activeVehicleType,
     );
 
+    const fieldData = {
+      fieldWidth: this.COLS,
+      fieldHeight: this.ROWS,
+      cameraX: tractorManager.cameraX,
+      cameraY: tractorManager.cameraY,
+      canvasWidth: this.canvasWidth,
+      canvasHeight: this.canvasHeight,
+      field: field,
+    };
+
+    const vehicleData = {
+      vehicles: vehicles,
+      cameraX: tractorManager.cameraX,
+      cameraY: tractorManager.cameraY,
+    };
+
+    const dayCycleData = {
+      nightFadeProgress: this.nightFadeProgress,
+      canvasWidth: this.canvasWidth,
+      canvasHeight: this.canvasHeight,
+    };
+
+    const renderModules = {
+      [RENDER_MODULE_KEYS.FIELD]: fieldData,
+      [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
+      [RENDER_MODULE_KEYS.STATS]: statData,
+      [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+    };
+
     const ts = new timeStepData(
-      vehicles,
-      activeVehicleType,
-      tractorManager.cameraX,
-      tractorManager.cameraY,
-      tractor.angle,
-      tractor.yieldScore,
-      tractor.x,
-      tractor.y,
       this.nightFadeProgress,
-      field,
-      this.COLS,
-      dateString,
-      gddString,
-      tractor.type || "tractor",
       rainString,
       renderModules,
     );
-
-    //default back to tractor
-    ts.vehicleType = tractor.type || "tractor";
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {

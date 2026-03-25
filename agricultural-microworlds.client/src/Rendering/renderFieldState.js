@@ -21,27 +21,21 @@ export default class RenderFieldState extends RenderState {
     };
     super(paths, paths.length);
   }
-  render(context, simulationState) {
-    context.fillStyle = "#4a3b2c";
-    context.fillRect(
-      0,
-      0,
-      simulationState.canvasWidth,
-      simulationState.canvasHeight,
-    );
 
-    const fieldWidth = simulationState.fieldWidth;
-    const fieldHeight = simulationState.fieldWidth;
-    const cameraX = simulationState.cameraX;
-    const cameraY = simulationState.cameraY;
+  render(context, data) {
+    context.fillStyle = "#4a3b2c";
+    context.fillRect(0, 0, data.canvasWidth, data.canvasHeight);
+
+    const fieldWidth = data.fieldWidth;
+    const fieldHeight = data.fieldWidth;
+    const cameraX = data.cameraX;
+    const cameraY = data.cameraY;
 
     const startCol = Math.floor(cameraX / TILE_WIDTH);
     const startRow = Math.floor(cameraY / TILE_HEIGHT);
 
-    const SCREEN_ROWS =
-      Math.floor(simulationState.canvasWidth / TILE_HEIGHT) + 2;
-    const SCREEN_COLUMNS =
-      Math.floor(simulationState.canvasHeight / TILE_WIDTH) + 2;
+    const SCREEN_ROWS = Math.floor(data.canvasWidth / TILE_HEIGHT) + 2;
+    const SCREEN_COLUMNS = Math.floor(data.canvasHeight / TILE_WIDTH) + 2;
 
     const endRow = Math.min(fieldHeight, startRow + SCREEN_ROWS);
     const endCol = Math.min(fieldWidth, startCol + SCREEN_COLUMNS);
@@ -50,7 +44,7 @@ export default class RenderFieldState extends RenderState {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue;
 
-        const crop = simulationState.field.getTileAt(j, i);
+        const crop = data.field.getTileAt(j, i);
 
         // Determine tile image based on crop image
         let tileImage = this.dirtImage;

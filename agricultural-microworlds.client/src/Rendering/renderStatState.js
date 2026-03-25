@@ -5,25 +5,24 @@ export default class RenderStatState extends RenderState {
     super();
   }
 
-  render(simulationState) {
+  render(data) {
     const yieldEl = document.getElementById("scoreText");
-    if (yieldEl) yieldEl.innerText = "Yield: " + simulationState.yieldScore;
+    if (yieldEl) yieldEl.innerText = "Yield: " + data.yieldScore;
 
     const dateEl = document.getElementById("dateText");
-    if (dateEl) dateEl.innerText = "Date: " + simulationState.currentDate;
+    if (dateEl) dateEl.innerText = "Date: " + data.currentDate;
 
     const gddEl = document.getElementById("gddText");
-    if (gddEl) gddEl.innerText = "GDD: " + simulationState.cumulativeGDD;
+    if (gddEl) gddEl.innerText = "GDD: " + data.cumulativeGDD;
 
     const rainEl = document.getElementById("rainText");
-    const r = simulationState.cumulativeRain ?? 0;
+    const r = data.cumulativeRain ?? 0;
     if (rainEl)
       rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
 
     const activeVehicleEl = document.getElementById("activeVehicleText");
     if (activeVehicleEl) {
-      const typeName =
-        simulationState.activeVehicleType === 1 ? "Seeder" : "Harvester";
+      const typeName = data.activeVehicleType === 1 ? "Seeder" : "Harvester";
       activeVehicleEl.innerText = "Active Vehicle: " + typeName;
     }
   }

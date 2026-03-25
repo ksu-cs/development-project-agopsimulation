@@ -1,5 +1,4 @@
-﻿import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
-import { VEHICLES } from "../States/StateClasses/ImplementState";
+﻿import RenderDayCycleState from "./renderDayCycleState";
 import RenderDebugState from "./renderDebugState";
 import RenderFieldState from "./renderFieldState";
 import RenderImplementState from "./renderImplementState";
@@ -33,6 +32,7 @@ export default class drawCanvas {
       [RENDER_MODULE_KEYS.IMPLEMENTS]: new RenderImplementState(),
       [RENDER_MODULE_KEYS.STATS]: new RenderStatState(),
       [RENDER_MODULE_KEYS.WEATHER]: new RenderWeatherState(),
+      [RENDER_MODULE_KEYS.DAY_CYCLE]: new RenderDayCycleState(),
       [RENDER_MODULE_KEYS.DEBUG]: new RenderDebugState(),
     };
   }
@@ -47,9 +47,6 @@ export default class drawCanvas {
     this.simulationState = simulationData.detail;
 
     this.renderAllModules();
-
-    // 2. Draw
-    this.drawFieldAndTractor();
   }
 
   renderAllModules() {
@@ -58,22 +55,5 @@ export default class drawCanvas {
         this.renderModules[key].render(this.ctx, data);
       },
     );
-  }
-
-  /**
-   * Calls the necessary draw methods in the correct order
-   */
-  drawFieldAndTractor() {
-    // Draw Night overlay if waiting
-    if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
-  }
-
-  /**
-   * Draws a representation of Night time on the canvas.
-   */
-  drawNight() {
-    //?? which module should this go in, new environment or weather, existing field??
-    this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }

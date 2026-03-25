@@ -11,5 +11,6 @@ export const RENDER_MODULE_KEYS = {
   IMPLEMENTS: "implements",
   STATS: "stats",
   WEATHER: "weather",
+  DAY_CYCLE: "dayCycle",
   DEBUG: "debug",
 };
