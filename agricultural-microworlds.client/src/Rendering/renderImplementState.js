@@ -1,4 +1,5 @@
 import { VEHICLES } from "../States/StateClasses/ImplementState";
+import { FRAME_HEIGHT, FRAME_WIDTH } from "./renderingConstants";
 import RenderState from "./renderState";
 
 const IMAGE_KEYS = {
@@ -14,6 +15,7 @@ export default class RenderImplementState extends RenderState {
     };
     super(paths, paths.length);
   }
+
   render(context, simulationState) {
     if (!simulationState.vehicles) return;
 
@@ -30,12 +32,9 @@ export default class RenderImplementState extends RenderState {
           : this.harvesterSprite;
 
       context.save();
-      context.translate(
-        screenX + this.FRAME_WIDTH / 2,
-        screenY + this.FRAME_HEIGHT / 2,
-      );
+      context.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);
       context.rotate(angleInRadians);
-      context.drawImage(sprite, -this.FRAME_WIDTH / 2, -this.FRAME_HEIGHT / 2);
+      context.drawImage(sprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
       context.restore();
     });
   }

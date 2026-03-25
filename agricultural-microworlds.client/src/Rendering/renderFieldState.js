@@ -1,4 +1,5 @@
 import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
+import { TILE_BASE_SIZE, TILE_HEIGHT, TILE_WIDTH } from "./renderingConstants";
 import RenderState from "./renderState";
 
 const IMAGE_KEYS = {
@@ -34,11 +35,16 @@ export default class RenderFieldState extends RenderState {
     const cameraX = simulationState.cameraX;
     const cameraY = simulationState.cameraY;
 
-    const startCol = Math.floor(cameraX / this.TILE_WIDTH);
-    const startRow = Math.floor(cameraY / this.TILE_HEIGHT);
+    const startCol = Math.floor(cameraX / TILE_WIDTH);
+    const startRow = Math.floor(cameraY / TILE_HEIGHT);
 
-    const endRow = Math.min(fieldHeight, startRow + this.SCREEN_ROWS);
-    const endCol = Math.min(fieldWidth, startCol + this.SCREEN_COLUMNS);
+    const SCREEN_ROWS =
+      Math.floor(simulationState.canvasWidth / TILE_HEIGHT) + 2;
+    const SCREEN_COLUMNS =
+      Math.floor(simulationState.canvasHeight / TILE_WIDTH) + 2;
+
+    const endRow = Math.min(fieldHeight, startRow + SCREEN_ROWS);
+    const endCol = Math.min(fieldWidth, startCol + SCREEN_COLUMNS);
 
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
@@ -71,8 +77,8 @@ export default class RenderFieldState extends RenderState {
             }
             break;
         }
-        const tileWorldX = j * this.TILE_WIDTH;
-        const tileWorldY = i * this.TILE_HEIGHT;
+        const tileWorldX = j * TILE_WIDTH;
+        const tileWorldY = i * TILE_HEIGHT;
 
         const tileScreenX = tileWorldX - cameraX;
         const tileScreenY = tileWorldY - cameraY;
@@ -81,12 +87,12 @@ export default class RenderFieldState extends RenderState {
           tileImage,
           0,
           0,
-          this.TILE_BASE_SIZE,
-          this.TILE_BASE_SIZE,
+          TILE_BASE_SIZE,
+          TILE_BASE_SIZE,
           Math.floor(tileScreenX),
           Math.floor(tileScreenY),
-          this.TILE_WIDTH,
-          this.TILE_HEIGHT,
+          TILE_WIDTH,
+          TILE_HEIGHT,
         );
       }
     }

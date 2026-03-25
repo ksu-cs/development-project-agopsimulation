@@ -42,7 +42,7 @@ export default class timeStepData {
     cumulativeGDD, // Growth Degree Days string
     vehicleType,
     cumulativeRain,
-    renderModules,
+    renderModuleData,
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;
@@ -61,7 +61,7 @@ export default class timeStepData {
     this.vehicleType = vehicleType;
     this.cumulativeRain = cumulativeRain;
     /**@type {Object.<any, RenderState>} */
-    this.renderModules = renderModules;
+    this.renderModuleData = renderModuleData;
   }
 }
 /**
