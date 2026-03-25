@@ -21,17 +21,6 @@ export default class drawCanvas {
     this.canvas.width = canvasWidth;
     this.canvas.height = canvasHeight;
 
-    // Sprite setup
-    this.seederSprite = new Image();
-    this.harvesterSprite = new Image();
-    this.seederSprite = new Image();
-    this.harvesterSprite = new Image();
-    this.wheatImage = new Image();
-    this.cornImage = new Image();
-    this.soybeanImage = new Image();
-    this.seedImage = new Image();
-    this.dirtImage = new Image();
-
     // Game asset constants
     this.FRAME_WIDTH = 64;
     this.FRAME_HEIGHT = 64;
@@ -49,20 +38,6 @@ export default class drawCanvas {
     this.SCREEN_COLUMNS = Math.floor(this.canvas.width / this.TILE_WIDTH) + 2;
     this.rows = this.SCREEN_ROWS * this.WORLD_HEIGHT_IN_SCREENS;
     this.columns = this.SCREEN_COLUMNS * this.WORLD_WIDTH_IN_SCREENS;
-
-    // Paths for the images
-    this.seederSprite.src = "./src/assets/seeder.png";
-    this.harvesterSprite.src = "./src/assets/combine-harvester.png";
-    this.wheatImage.src = "./src/assets/wheat.png";
-    this.seedImage.src = "./src/assets/T2D_Planted_Placeholder.png";
-    this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
-    this.cornImage.src = "./src/assets/corn.png";
-    this.soybeanImage.src = "./src/assets/soybean.png";
-
-    // Image initialization
-    this.imageLoadCount = 0;
-    this.imageCount = 7;
-    this.isInitialized = false;
 
     /** @type {timeStepData} Holds the timeStepData to draw */
     this.simulationState = null;
@@ -208,73 +183,5 @@ export default class drawCanvas {
     //?? which module should this go in, new environment or weather, existing field??
     this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  /**
-   * Called everytime a necessary starting image loads, incrementing the load count, and initializing the field once ready for initialization.
-   */
-  onImageLoad() {
-    this.imageLoadCount++;
-    if (this.imageLoadCount === this.imageCount && !this.isInitialized) {
-      console.log("All images loaded!");
-      this.isInitialized = true;
-      this.drawFieldAndTractor();
-    }
-  }
-
-  /**
-   * Sets all the sprite onload methods.
-   */
-  setSpriteOnLoadMethods() {
-    //?? split into the separate modules
-    this.harvesterSprite.onload = () => {
-      console.log("Tractor sprite loaded!");
-      this.onImageLoad();
-    };
-    this.harvesterSprite.onerror = () => {
-      console.error("Failed to load tractor sprite!");
-    };
-    this.seederSprite.onload = () => {
-      console.log("Seeder sprite loaded!");
-      this.onImageLoad();
-    };
-    this.seederSprite.onerror = () => {
-      console.error("Failed to load seeder sprite!");
-    };
-    this.dirtImage.onload = () => {
-      console.log("DirtImage loaded!");
-      this.onImageLoad();
-    };
-    this.dirtImage.onerror = () => {
-      console.error("failed to load DirtImage");
-    };
-    this.seedImage.onload = () => {
-      console.log("SeedImage loaded!");
-      this.onImageLoad();
-    };
-    this.seedImage.onerror = () => {
-      console.error("failed to load SeedImage");
-    };
-    this.wheatImage.onload = () => {
-      console.log("WheatImage loaded!");
-      this.onImageLoad();
-    };
-    this.wheatImage.onerror = () => {
-      console.error("failed to load WheatImage");
-    };
-    this.cornImage.onload = () => {
-      console.log("CornImage loaded!");
-      this.onImageLoad();
-    };
-    this.cornImage.onerror = () => {
-      console.error("failed to load CornImage");
-    };
-    this.soybeanImage.onload = () => {
-      console.log("SoybeanImage loaded!");
-      this.onImageLoad();
-    };
-    this.soybeanImage.onerror = () => {
-      console.error("failed to load SoybeanImage");
-    };
   }
 }
