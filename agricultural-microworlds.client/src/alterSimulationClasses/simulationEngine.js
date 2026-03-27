@@ -55,10 +55,7 @@ export default class simulationEngine extends EventTarget {
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
-    this.activeTask = null;
-
-    this.harvesterWorker = new Worker("WorkerHarvester.js");
-    this.seederWorker = new Worker("WorkerSeeder.js");
+    this.activeTasks = new Map();
   }
 
   /**
@@ -171,7 +168,8 @@ export default class simulationEngine extends EventTarget {
   stopMovement() {
     this.isRunning = false;
     this.simulationSessionId++;
-    this.activeTask = null;
+    this.activeTasks.clear();
+    this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
   }
@@ -215,32 +213,34 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
-    // 4. Handle Active Tasks
-    if (this.activeTask) {
-      if (this.activeTask.sessionId !== this.simulationSessionId) {
-        this.activeTask = null;
+    this.activeTasks.forEach((task, vehicleType) => {
+      if (task.sessionId !== this.simulationSessionId) {
+        this.activeTasks.clear();
       } else {
-        if (this.activeTask.type === "TIMER") {
-          this.activeTask.timeLeft -= simDeltaTime;
-          if (this.activeTask.timeLeft <= 0) {
-            if (nextStates.vehicles)
-              nextStates.vehicles.forEach((v) => (v.isMoving = false));
+        if (task.type === "TIMER") {
+          task.timeLeft -= simDeltaTime;
+          if (task.timeLeft <= 0) {
+            if (nextStates.vehicles) {
+              const vehicle = nextStates.vehicles.find(
+                (v) => v.type == vehicleType,
+              );
+              if (vehicle) vehicle.isMoving = false;
+            }
 
-            this.resolveActiveTask();
+            this.resolveActiveTask(vehicleType);
           }
-        } else if (this.activeTask.type === "TURN") {
-          const activeType = this.stateManager.getState("activeVehicleType");
-          const v = nextStates.vehicles?.find((v) => v.type == activeType);
+        } else if (task.type === "TURN") {
+          const v = nextStates.vehicles?.find((v) => v.type == vehicleType);
           if (v) {
             const diff = Math.abs(v.goalAngle - v.angle);
             if (diff < 0.5) {
               v.angle = v.goalAngle;
-              this.resolveActiveTask();
+              this.resolveActiveTask(vehicleType);
             }
           }
         }
       }
-    }
+    });
 
     // 5. Commit States
     for (const key in nextStates) {
@@ -256,18 +256,21 @@ export default class simulationEngine extends EventTarget {
   /**
    * Resolves the currently active task, if possible.
    */
-  resolveActiveTask() {
-    if (this.activeTask && this.activeTask.resolve) {
-      const resolve = this.activeTask.resolve;
-      const type = this.activeTask.type;
-      this.activeTask = null;
+  resolveActiveTask(vehicleType) {
+    const task = this.activeTasks.get(vehicleType);
+    if (task && task.resolve) {
+      const resolve = task.resolve;
+      const type = task.type;
+
+      this.activeTasks.delete(vehicleType);
 
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
-        if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
-
-        const weather = this.stateManager.getState("weather");
-        if (weather) weather.isWaiting = false;
+        if (vehicles) {
+          const v = vehicles.find((v) => v.type == vehicleType);
+          if (v) v.isMoving == false;
+        }
+        this.nightFadeProgress = -1.0;
       }
 
       resolve();
@@ -343,17 +346,22 @@ export default class simulationEngine extends EventTarget {
    * @param {number} durationInSeconds The length of time the tractor should be moving for.
    * @returns {Promise} Returns a new Promise to handle tractor movement.
    */
-  async moveForward(durationInSeconds) {
+  async moveForward(durationInSeconds, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
-    const vehicle = this.getActiveVehicle();
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = true;
+
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TIMER",
-        timeLeft: Number(durationInSeconds),
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TIMER",
+          timeLeft: Number(durationInSeconds),
+          resolve: resolve,
+          sessionId: mySessionId,
+        });
+      } else {
+        resolve();
+      }
     });
   }
 
@@ -362,18 +370,22 @@ export default class simulationEngine extends EventTarget {
    * @param {number} angle The amount, in degrees, that the tractor should turn.
    * @returns {Promise} Returns a new Promise to handle tractor turning.
    */
-  async turnXDegrees(angle) {
+  async turnXDegrees(angle, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
-    const vehicle = this.getActiveVehicle();
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) {
       vehicle.goalAngle += Number(angle);
     }
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TURN",
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TURN",
+          resolve: resolve,
+          sessionId: mySessionId,
+        });
+      } else {
+        resolve();
+      }
     });
   }
 
@@ -382,23 +394,25 @@ export default class simulationEngine extends EventTarget {
    * @param {number} weeks How many weeks the tractor should wait for.
    * @returns {Promise} Returns a new Promise to wait a certain amount of time.
    */
-  async waitXWeeks(weeks) {
+  async waitXWeeks(weeks, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const durationInSeconds = Number(weeks) * 24.0 * 7.0;
 
-    const vehicles = this.stateManager.getState("vehicles");
-    if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle) vehicle.isMoving = false;
 
-    const weather = this.stateManager.getState("weather");
-    if (weather) weather.isWaiting = true;
-
+    this.nightFadeProgress = 0.5;
     return new Promise((resolve) => {
-      this.activeTask = {
-        type: "TIMER",
-        timeLeft: durationInSeconds,
-        resolve: resolve,
-        sessionId: mySessionId,
-      };
+      if (vehicle) {
+        this.activeTasks.set(vehicle.type, {
+          type: "TIMER",
+          timeLeft: durationInSeconds,
+          resolve: resolve,
+          sessionId: mySessionId,
+        });
+      } else {
+        resolve();
+      }
     });
   }
 
@@ -406,8 +420,8 @@ export default class simulationEngine extends EventTarget {
    * Toggles harvesting for the tractor on or off.
    * @param {boolean} isOn Whether or not harvesting should be enabled.
    */
-  toggleHarvesting(isOn) {
-    const vehicle = this.getActiveVehicle();
+  toggleHarvesting(isOn, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.HARVESTER) {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
@@ -419,8 +433,8 @@ export default class simulationEngine extends EventTarget {
    * Toggles seeding for the tractor on or off.
    * @param {boolean} isOn Whether or not seeding should be enabled.
    */
-  toggleSeeding(isOn) {
-    const vehicle = this.getActiveVehicle();
+  toggleSeeding(isOn, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
@@ -432,8 +446,8 @@ export default class simulationEngine extends EventTarget {
    * Switches the crop being planted by the seeder.
    * @param {CROP_TYPES} crop - The type of crop to plant
    */
-  switchCropBeingPlanted(crop) {
-    const vehicle = this.getActiveVehicle();
+  switchCropBeingPlanted(crop, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.cropBeingPlanted = crop;
   }
 
@@ -451,8 +465,8 @@ export default class simulationEngine extends EventTarget {
    * @param {any} type The type of tile to search for.
    * @returns {boolean} Whether or not a tile was found in front of the tractor.
    */
-  CheckIfPlantInFront(type) {
-    const vehicle = this.getActiveVehicle();
+  CheckIfPlantInFront(type, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
     if (!vehicle) return false;
 
     const field = this.stateManager.getState("field");
@@ -506,9 +520,53 @@ export default class simulationEngine extends EventTarget {
       await weatherMgr.loadWeatherData(this.stateManager, station, start);
   }
 
+  /**
+   * Handles commands sent from workers
+   */
+  async handleWorkerMessage(data, worker) {
+    if (!this.isRunning) return;
+
+    const { command, args, vehicleType, requestId } = data;
+
+    // Route the string command to the actual simulation API
+    switch (command) {
+      case "moveForward":
+        await this.moveForward(args[0], vehicleType);
+        break;
+      case "turnXDegrees":
+        await this.turnXDegrees(args[0], vehicleType);
+        break;
+      case "waitXWeeks":
+        await this.waitXWeeks(args[0], vehicleType);
+        break;
+      case "toggleHarvesting":
+        this.toggleHarvesting(args[0], vehicleType);
+        break;
+      case "toggleSeeding":
+        this.toggleSeeding(args[0], vehicleType);
+        break;
+      case "switchCropBeingPlanted":
+        this.switchCropBeingPlanted(args[0], vehicleType);
+        break;
+      default:
+        console.warn("Unknown worker command:", command);
+        break;
+    }
+
+    // Once the await finishes (the timer expires or turn completes),
+    // send a message back to the worker to let it resume executing its code.
+    if (worker) {
+      worker.postMessage({
+        type: "RESPONSE",
+        requestId: requestId,
+        result: true,
+      });
+    }
+  }
+
   resetEverything() {
     this.simulationSessionId++;
-    this.activeTask = null;
+    this.activeTasks.clear();
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
@@ -532,5 +590,19 @@ export default class simulationEngine extends EventTarget {
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
     if (!vehicles) return null;
     return vehicles.find((v) => v.type == activeVehicleType);
+  }
+
+  /**
+   * Helper to get target vehicle for indiviudal code
+   * targetType: vehicleType of vehicle targeted
+   */
+  getTargetVehicle(targetType) {
+    const vehicleType =
+      targetType !== undefined
+        ? targetType
+        : this.stateManager.getState("activeVehicleType");
+    const vehicles = this.stateManager.getState("vehicles");
+    if (!vehicles) return null;
+    return vehicles.find((v) => v.type == vehicleType);
   }
 }
