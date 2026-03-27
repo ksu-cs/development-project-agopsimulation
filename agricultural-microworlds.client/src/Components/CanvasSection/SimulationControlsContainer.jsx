@@ -24,8 +24,10 @@ class SimulationControlsContainer extends Component {
     // Harvester = 0, Seeder = 1
     this.state = {
       selectedVehicle: 0,
-      harvesterXml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
-      seederXml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      harvesterXml:
+        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      seederXml:
+        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
     };
 
     this.workers = [];
@@ -165,8 +167,8 @@ class SimulationControlsContainer extends Component {
   //         try {
   //           const run = new Function(
   //             "simulationMethods",
-  //             `return (async () => { 
-  //                             ${codeSegments[i]} 
+  //             `return (async () => {
+  //                             ${codeSegments[i]}
   //                         })();`,
   //           );
   //           await run(this.simulationEngine);
@@ -249,7 +251,7 @@ class SimulationControlsContainer extends Component {
         if (e.data.type === "COMMAND") {
           this.simulationEngine.handleWorkerMessage(
             { ...e.data, vehicleType: vType },
-            worker
+            worker,
           );
         } else if (e.data.type === "DONE") {
           this.completedWorkers++;
@@ -262,8 +264,8 @@ class SimulationControlsContainer extends Component {
     };
 
     // 0 = HARVESTER, 1 = SEEDER
-    spawnWorker(harvesterCode, 0); 
-    spawnWorker(seederCode, 1); 
+    spawnWorker(harvesterCode, 0);
+    spawnWorker(seederCode, 1);
 
     if (this.expectedWorkers > 0) {
       this.simulationEngine.startMoving();
@@ -277,7 +279,7 @@ class SimulationControlsContainer extends Component {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
     }
-    
+
     // Immediately kill all background workers
     this.workers.forEach((w) => w.terminate());
     this.workers = [];
@@ -291,23 +293,21 @@ class SimulationControlsContainer extends Component {
    * switches camera to follow selected vehicle
    */
   handleImplementSelect = (vehicleType) => {
-
     // Save current workspace to state
     const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
 
     if (this.state.selectedVehicle == 0) {
-      this.setState({ harvesterXml: currentXmlText});
-    }
-    else {
-      this.setState({ seederXml: currentXmlText});
+      this.setState({ harvesterXml: currentXmlText });
+    } else {
+      this.setState({ seederXml: currentXmlText });
     }
 
     // Load blocks for new tab
-    const nextXmlText = vehicleType == 0 ? this.state.harvesterXml : this.state.seederXml;
+    const nextXmlText =
+      vehicleType == 0 ? this.state.harvesterXml : this.state.seederXml;
 
-    this.setState({ selectedVehicle: vehicleType }, () => { 
-
+    this.setState({ selectedVehicle: vehicleType }, () => {
       this.props.workspace.clear();
       const nextXmlDom = Blockly.utils.xml.textToDom(nextXmlText);
       Blockly.Xml.domToWorkspace(nextXmlDom, this.props.workspace);
@@ -316,7 +316,6 @@ class SimulationControlsContainer extends Component {
         this.simulationEngine.setMainVehicleCamera(vehicleType);
       }
     });
-
   };
 
   createWorkerBlob(userCode) {

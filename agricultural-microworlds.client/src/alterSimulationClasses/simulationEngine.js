@@ -249,25 +249,25 @@ export default class simulationEngine extends EventTarget {
           task.timeLeft -= simDeltaTime;
           if (task.timeLeft <= 0) {
             if (nextStates.vehicles) {
-              const vehicle = nextStates.vehicles.find((v) => (v.type == vehicleType));
+              const vehicle = nextStates.vehicles.find(
+                (v) => v.type == vehicleType,
+              );
               if (vehicle) vehicle.isMoving = false;
             }
-              
+
             this.resolveActiveTask(vehicleType);
-            
           }
         } else if (task.type === "TURN") {
-            const v = nextStates.vehicles?.find((v) => v.type == vehicleType);
-            if (v) {
-              const diff = Math.abs(v.goalAngle - v.angle);
-              if (diff < 0.5) {
-                v.angle = v.goalAngle;
-                this.resolveActiveTask(vehicleType);
-              }
+          const v = nextStates.vehicles?.find((v) => v.type == vehicleType);
+          if (v) {
+            const diff = Math.abs(v.goalAngle - v.angle);
+            if (diff < 0.5) {
+              v.angle = v.goalAngle;
+              this.resolveActiveTask(vehicleType);
             }
+          }
         }
       }
-
     });
 
     // 5. Commit States
@@ -295,7 +295,7 @@ export default class simulationEngine extends EventTarget {
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
         if (vehicles) {
-          const v = vehicles.find((v) => (v.type == vehicleType));
+          const v = vehicles.find((v) => v.type == vehicleType);
           if (v) v.isMoving == false;
         }
         this.nightFadeProgress = -1.0;
@@ -386,11 +386,10 @@ export default class simulationEngine extends EventTarget {
           timeLeft: Number(durationInSeconds),
           resolve: resolve,
           sessionId: mySessionId,
-        }, );
+        });
       } else {
         resolve();
       }
-      
     });
   }
 
@@ -411,7 +410,7 @@ export default class simulationEngine extends EventTarget {
           type: "TURN",
           resolve: resolve,
           sessionId: mySessionId,
-        },);
+        });
       } else {
         resolve();
       }
@@ -438,7 +437,7 @@ export default class simulationEngine extends EventTarget {
           timeLeft: durationInSeconds,
           resolve: resolve,
           sessionId: mySessionId,
-        },);
+        });
       } else {
         resolve();
       }
@@ -559,37 +558,37 @@ export default class simulationEngine extends EventTarget {
 
     // Route the string command to the actual simulation API
     switch (command) {
-        case "moveForward":
-            await this.moveForward(args[0], vehicleType);
-            break;
-        case "turnXDegrees":
-            await this.turnXDegrees(args[0], vehicleType);
-            break;
-        case "waitXWeeks":
-            await this.waitXWeeks(args[0], vehicleType);
-            break;
-        case "toggleHarvesting":
-            this.toggleHarvesting(args[0], vehicleType);
-            break;
-        case "toggleSeeding":
-            this.toggleSeeding(args[0], vehicleType);
-            break;
-        case "switchCropBeingPlanted":
-            this.switchCropBeingPlanted(args[0], vehicleType);
-            break;
-        default:
-            console.warn("Unknown worker command:", command);
-            break;
+      case "moveForward":
+        await this.moveForward(args[0], vehicleType);
+        break;
+      case "turnXDegrees":
+        await this.turnXDegrees(args[0], vehicleType);
+        break;
+      case "waitXWeeks":
+        await this.waitXWeeks(args[0], vehicleType);
+        break;
+      case "toggleHarvesting":
+        this.toggleHarvesting(args[0], vehicleType);
+        break;
+      case "toggleSeeding":
+        this.toggleSeeding(args[0], vehicleType);
+        break;
+      case "switchCropBeingPlanted":
+        this.switchCropBeingPlanted(args[0], vehicleType);
+        break;
+      default:
+        console.warn("Unknown worker command:", command);
+        break;
     }
 
-    // Once the await finishes (the timer expires or turn completes), 
+    // Once the await finishes (the timer expires or turn completes),
     // send a message back to the worker to let it resume executing its code.
     if (worker) {
-        worker.postMessage({ 
-            type: 'RESPONSE', 
-            requestId: requestId, 
-            result: true 
-        });
+      worker.postMessage({
+        type: "RESPONSE",
+        requestId: requestId,
+        result: true,
+      });
     }
   }
 
@@ -626,10 +625,12 @@ export default class simulationEngine extends EventTarget {
    * targetType: vehicleType of vehicle targeted
    */
   getTargetVehicle(targetType) {
-    const vehicleType = targetType !== undefined ? targetType : this.stateManager.getState("activeVehicleType");
+    const vehicleType =
+      targetType !== undefined
+        ? targetType
+        : this.stateManager.getState("activeVehicleType");
     const vehicles = this.stateManager.getState("vehicles");
     if (!vehicles) return null;
     return vehicles.find((v) => v.type == vehicleType);
   }
-
 }
