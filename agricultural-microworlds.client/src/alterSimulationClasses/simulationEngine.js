@@ -213,33 +213,6 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
-    // 4. Handle Active Tasks
-    // if (this.activeTasks.foreach) {
-    //   if (this.activeTasks.sessionId !== this.simulationSessionId) {
-    //     this.activeTasks = null;
-    //   } else {
-    //     if (this.activeTasks.type === "TIMER") {
-    //       this.activeTasks.timeLeft -= simDeltaTime;
-    //       if (this.activeTasks.timeLeft <= 0) {
-    //         if (nextStates.vehicles)
-    //           nextStates.vehicles.forEach((v) => (v.isMoving = false));
-
-    //         this.resolveActiveTask();
-    //       }
-    //     } else if (this.activeTasks.type === "TURN") {
-    //       const activeType = this.stateManager.getState("activeVehicleType");
-    //       const v = nextStates.vehicles?.find((v) => v.type == activeType);
-    //       if (v) {
-    //         const diff = Math.abs(v.goalAngle - v.angle);
-    //         if (diff < 0.5) {
-    //           v.angle = v.goalAngle;
-    //           this.resolveActiveTask();
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
     this.activeTasks.forEach((task, vehicleType) => {
       if (task.sessionId !== this.simulationSessionId) {
         this.activeTasks.clear();
