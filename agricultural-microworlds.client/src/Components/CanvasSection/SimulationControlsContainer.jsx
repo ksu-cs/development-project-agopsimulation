@@ -182,7 +182,7 @@ class SimulationControlsContainer extends Component {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
     }
-    this.simulationEngine
+    this.simulationEngine;
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = false;
   }

@@ -64,11 +64,9 @@ export default class TractorSimManager extends SimManager {
       }
     }
 
- if (this.checkVehicleCollisions(newState))
-        {
-          return;
-        } 
-
+    if (this.checkVehicleCollisions(newState)) {
+      return;
+    }
   }
 
   handleHarvesting(tractor, field) {
@@ -178,60 +176,56 @@ export default class TractorSimManager extends SimManager {
     return null;
   }
 
-// --- Collision settings (tune these) ---
+  // --- Collision settings (tune these) ---
   SPRITE_SIZE = 64;
   COLLISION_RADIUS = 28; // slightly smaller than 32 so it feels fair
 
-areVehiclesColliding(a, b) {
-  const ax = a.x + this.SPRITE_SIZE / 2;
-  const ay = a.y + this.SPRITE_SIZE / 2;
-  const bx = b.x + this.SPRITE_SIZE / 2;
-  const by = b.y + this.SPRITE_SIZE / 2;
+  areVehiclesColliding(a, b) {
+    const ax = a.x + this.SPRITE_SIZE / 2;
+    const ay = a.y + this.SPRITE_SIZE / 2;
+    const bx = b.x + this.SPRITE_SIZE / 2;
+    const by = b.y + this.SPRITE_SIZE / 2;
 
-  const dx = ax - bx;
-  const dy = ay - by;
+    const dx = ax - bx;
+    const dy = ay - by;
 
-  const distanceSq = dx * dx + dy * dy;
-  const radius = this.COLLISION_RADIUS * 2;
+    const distanceSq = dx * dx + dy * dy;
+    const radius = this.COLLISION_RADIUS * 2;
 
-  if (distanceSq <= radius * radius) {
-    return {
-      collided: true,
-      x: (ax + bx) / 2,
-      y: (ay + by) / 2
-    };
+    if (distanceSq <= radius * radius) {
+      return {
+        collided: true,
+        x: (ax + bx) / 2,
+        y: (ay + by) / 2,
+      };
+    }
+
+    return { collided: false };
   }
 
-  return { collided: false };
-}
+  checkVehicleCollisions(newState) {
+    const vehicles = newState.vehicles;
+    if (!vehicles || vehicles.length < 2) return false;
 
-checkVehicleCollisions(newState) {
-  const vehicles = newState.vehicles;
-  if (!vehicles || vehicles.length < 2) return false;
+    // Don't re-trigger crash if already happened
+    if (newState.isGameOver) return true;
 
-  // Don't re-trigger crash if already happened
-  if (newState.isGameOver) return true;
+    for (let i = 0; i < vehicles.length; i++) {
+      for (let j = i + 1; j < vehicles.length; j++) {
+        const result = this.areVehiclesColliding(vehicles[i], vehicles[j]);
 
-  for (let i = 0; i < vehicles.length; i++) {
-    for (let j = i + 1; j < vehicles.length; j++) {
+        if (result.collided) {
+          newState.isGameOver = true;
+          newState.crash = {
+            x: result.x,
+            y: result.y,
+          };
 
-      const result = this.areVehiclesColliding(vehicles[i], vehicles[j]);
-
-      if (result.collided) {
-        newState.isGameOver = true;
-        newState.crash = {
-          x: result.x,
-          y: result.y
-        };
-
-        return true;
+          return true;
+        }
       }
     }
+
+    return false;
   }
-
-  return false;
-}
-
-
-
 }

@@ -187,7 +187,6 @@ export default class simulationEngine extends EventTarget {
    * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
   loop(timestamp) {
-
     if (!this.isRunning) return;
 
     if (!timestamp) timestamp = performance.now();
@@ -258,10 +257,9 @@ export default class simulationEngine extends EventTarget {
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
 
-    if(this.stateManager.states.isGameOver)
-      {
-       this.stopMovement();
-      }
+    if (this.stateManager.states.isGameOver) {
+      this.stopMovement();
+    }
   }
 
   /**
@@ -334,8 +332,7 @@ export default class simulationEngine extends EventTarget {
       tractor.type || "tractor",
       rainString,
       this.stateManager.getState("isGameOver"),
-      this.stateManager.getState("crash")
-
+      this.stateManager.getState("crash"),
     );
 
     //default back to tractor

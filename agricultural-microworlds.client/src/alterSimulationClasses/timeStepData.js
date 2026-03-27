@@ -21,7 +21,7 @@ export default class timeStepData {
     vehicleType,
     cumulativeRain,
     isGameOver,
-    crash
+    crash,
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;

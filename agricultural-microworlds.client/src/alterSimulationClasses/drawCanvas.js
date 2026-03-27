@@ -274,25 +274,25 @@ export default class drawCanvas {
   }
   drawCrash() {
     console.log(this.simulationState.crash);
-  if (!this.simulationState?.isGameOver) return;
-  if (!this.simulationState?.crash) return;
+    if (!this.simulationState?.isGameOver) return;
+    if (!this.simulationState?.crash) return;
 
-  const crashX = this.simulationState.crash.x;
-  const crashY = this.simulationState.crash.y;
+    const crashX = this.simulationState.crash.x;
+    const crashY = this.simulationState.crash.y;
 
-  const screenX = crashX - this.cameraX;
-  const screenY = crashY - this.cameraY;
+    const screenX = crashX - this.cameraX;
+    const screenY = crashY - this.cameraY;
 
-  const size = 40;
+    const size = 40;
 
-  this.ctx.drawImage(
-    this.crashSprite,
-    screenX - size / 2,
-    screenY - size / 2,
-    size,
-    size
-  );
-}
+    this.ctx.drawImage(
+      this.crashSprite,
+      screenX - size / 2,
+      screenY - size / 2,
+      size,
+      size,
+    );
+  }
 
   /**
    * Draws a representation of Night time on the canvas.
@@ -373,6 +373,6 @@ export default class drawCanvas {
     };
     this.crashSprite.onerror = () => {
       console.error("failed to load Crash sprite");
-};
+    };
   }
 }
