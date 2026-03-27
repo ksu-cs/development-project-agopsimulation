@@ -89,6 +89,9 @@ export default class drawCanvas {
 
     // 3. Draw
     this.drawFieldAndTractor();
+
+    // 4. Scene Colorize
+    this.drawTimeColorize();
   }
 
   /**
@@ -103,6 +106,22 @@ export default class drawCanvas {
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + this.simulationState.currentDate;
+
+    const timeEl = document.getElementById("timeText");
+    if (timeEl) {
+      // Format the current time into hours, minutes, and AM/PM.
+      const totalHours =
+        1 + Math.floor(this.simulationState.currentTime % 12.0);
+      const totalMinutes = Math.floor(
+        60 * (this.simulationState.currentTime % 1.0),
+      );
+
+      const formattedHours = totalHours.toString().padStart(2, "0");
+      const formattedMinutes = totalMinutes.toString().padStart(2, "0");
+      const formattedMeridiem =
+        this.simulationState.currentTime % 23.0 >= 11.0 ? "P.M." : "A.M.";
+      timeEl.innerText = `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
+    }
 
     const gddEl = document.getElementById("gddText");
     if (gddEl) gddEl.innerText = "GDD: " + this.simulationState.cumulativeGDD;
@@ -293,11 +312,44 @@ export default class drawCanvas {
   }
 
   /**
-   * Draws a representation of Night time on the canvas.
+   * Draws a representation of the current time of day on the canvas.
    */
-  drawNight() {
-    this.ctx.fillStyle = `rgba(15, 15, 75, 0.5)`;
+  drawTimeColorize() {
+    // Basic colorization option, using a rectangle draw. Formula for the color should be expanded to account for seasons / weather.
+    let nightAlpha = 0.0;
+    if (this.simulationState.currentTime < 12)
+      nightAlpha =
+        1.0 -
+        Math.min(
+          Math.max(this.simulationState.currentTime - 5.0, 0.0) / 4.0,
+          1.0,
+        );
+    else
+      nightAlpha =
+        1.0 -
+        Math.min(
+          Math.max(22.0 - this.simulationState.currentTime, 0.0) / 4.0,
+          1.0,
+        );
+
+    this.ctx.fillStyle = `rgba(0, 0, 150, ${0.45 * nightAlpha})`;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Functionality for full scene colorization. Likely more intensive.
+    /*
+    const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+    const data = imageData.data;
+    const timeAlpha = 0.5 + 0.5 * Math.sin(Math.PI * Date.now() / 1000);
+    const rgMulti = 1.0 - 0.4*timeAlpha;
+    const bMulti = 1.0 + 1.0*timeAlpha;
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] *= rgMulti; //R
+      data[i + 1] *= rgMulti; //G
+      data[i + 2] = Math.min(data[i + 2] * bMulti, 255); //B
+    }
+
+    this.ctx.putImageData(imageData, 0, 0);
+    */
   }
 
   /**

@@ -25,6 +25,9 @@ class CanvasContainer extends Component {
             <p className={styles.statText} id="dateText">
               Date: --
             </p>
+            <p className={styles.statText} id="timeText">
+              Time: 6:00 A.M.
+            </p>
             <p className={styles.statText} id="scoreText">
               Yield: 0
             </p>
