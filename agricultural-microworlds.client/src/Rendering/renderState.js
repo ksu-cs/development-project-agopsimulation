@@ -10,6 +10,8 @@ export default class RenderState {
     /** @type {{[key: string] : Image}} */
     this.images = {};
 
+    if (!imagePaths) return;
+
     Object.entries(imagePaths).forEach(([key, path]) => {
       this.images[key] = new Image();
       this.images[key].src = path;

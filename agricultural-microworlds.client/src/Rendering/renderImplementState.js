@@ -28,8 +28,8 @@ export default class RenderImplementState extends RenderState {
 
       const sprite =
         vehicle.type === VEHICLES.SEEDER
-          ? this.seederSprite
-          : this.harvesterSprite;
+          ? this.images[IMAGE_KEYS.HARVESTER]
+          : this.images[IMAGE_KEYS.SEEDER];
 
       context.save();
       context.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);

@@ -11,9 +11,10 @@ export default class timeStepData {
    * @param {*} cumulativeRain
    * @param {Object.<any, RenderState>} renderModules
    */
-  constructor(cumulativeRain, renderModuleData) {
+  constructor(cumulativeRain, renderModuleData, currentTime) {
     this.cumulativeRain = cumulativeRain;
     /**@type {Object.<any, RenderState>} */
     this.renderModuleData = renderModuleData;
+    this.currentTime = currentTime;
   }
 }

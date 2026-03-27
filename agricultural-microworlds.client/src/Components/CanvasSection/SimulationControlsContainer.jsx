@@ -38,13 +38,12 @@ class SimulationControlsContainer extends Component {
     const canvasWidth = 500;
     const canvasHeight = 500;
     this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
-    this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
+    this.drawCanvas = new drawCanvas(canvas);
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
 
     this.simulationEngine.timeStepEvent();
-    this.drawCanvas.setSpriteOnLoadMethods();
 
     await this.simulationEngine.loadStations();
     await this.simulationEngine.fetchData();

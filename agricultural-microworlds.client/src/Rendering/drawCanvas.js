@@ -21,7 +21,6 @@ export default class drawCanvas {
    */
   constructor(canvasRef) {
     this.canvas = canvasRef;
-    /** @type {Context} */
     this.ctx = this.canvas.getContext("2d");
 
     /** @type {timeStepData} Holds the timeStepData to draw */
@@ -47,11 +46,15 @@ export default class drawCanvas {
     this.simulationState = simulationData.detail;
 
     this.renderAllModules();
+
+    // 4. Scene Colorize
+    this.drawTimeColorize();
   }
 
   renderAllModules() {
     Object.entries(this.simulationState.renderModuleData).forEach(
       ([key, data]) => {
+        console.log(this.renderModules[key]);
         this.renderModules[key].render(this.ctx, data);
       },
     );

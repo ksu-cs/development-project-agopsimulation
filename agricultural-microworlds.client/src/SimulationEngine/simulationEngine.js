@@ -360,9 +360,9 @@ export default class simulationEngine extends EventTarget {
     };
 
     const ts = new timeStepData(
-      weather.timeAccumulator,
       rainString,
       renderModules,
+      weather.timeAccumulator,
     );
 
     this.dispatchEvent(

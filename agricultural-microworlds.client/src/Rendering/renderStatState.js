@@ -12,6 +12,22 @@ export default class RenderStatState extends RenderState {
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + data.currentDate;
 
+    const timeEl = document.getElementById("timeText");
+    if (timeEl) {
+      // Format the current time into hours, minutes, and AM/PM.
+      const totalHours =
+        1 + Math.floor(this.simulationState.currentTime % 12.0);
+      const totalMinutes = Math.floor(
+        60 * (this.simulationState.currentTime % 1.0),
+      );
+
+      const formattedHours = totalHours.toString().padStart(2, "0");
+      const formattedMinutes = totalMinutes.toString().padStart(2, "0");
+      const formattedMeridiem =
+        this.simulationState.currentTime % 23.0 >= 11.0 ? "P.M." : "A.M.";
+      timeEl.innerText = `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
+    }
+
     const gddEl = document.getElementById("gddText");
     if (gddEl) gddEl.innerText = "GDD: " + data.cumulativeGDD;
 

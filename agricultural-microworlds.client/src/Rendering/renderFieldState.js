@@ -47,27 +47,27 @@ export default class RenderFieldState extends RenderState {
         const crop = data.field.getTileAt(j, i);
 
         // Determine tile image based on crop image
-        let tileImage = this.dirtImage;
+        let tileImage = this.images[IMAGE_KEYS.DIRT];
         switch (crop["stage"]) {
           case CROP_STAGES.UNPLANTED:
-            tileImage = this.dirtImage;
+            tileImage = this.images[IMAGE_KEYS.DIRT];
             break;
           case CROP_STAGES.SEEDED:
-            tileImage = this.seedImage;
+            tileImage = this.images[IMAGE_KEYS.SEED];
             break;
           case CROP_STAGES.MATURE:
             switch (crop["type"]) {
               case CROP_TYPES.WHEAT:
-                tileImage = this.wheatImage;
+                tileImage = this.images[IMAGE_KEYS.WHEAT];
                 break;
               case CROP_TYPES.CORN:
-                tileImage = this.cornImage;
+                tileImage = this.images[IMAGE_KEYS.CORN];
                 break;
               case CROP_TYPES.SOY:
-                tileImage = this.soybeanImage;
+                tileImage = this.images[IMAGE_KEYS.SOY];
                 break;
               default:
-                tileImage = this.wheatImage;
+                tileImage = this.images[IMAGE_KEYS.WHEAT];
             }
             break;
         }
@@ -77,6 +77,7 @@ export default class RenderFieldState extends RenderState {
         const tileScreenX = tileWorldX - cameraX;
         const tileScreenY = tileWorldY - cameraY;
 
+        console.log(context);
         context.drawImage(
           tileImage,
           0,
