@@ -79,7 +79,6 @@ export default class drawCanvas {
    */
   handleTimeStep(simulationData) {
     /** @type {timeStepData} */
-    console.log("detail =", simulationData.detail);
     this.simulationState = simulationData.detail;
 
     // 1. Update UI Elements
@@ -273,7 +272,6 @@ export default class drawCanvas {
     });
   }
   drawCrash() {
-    console.log(this.simulationState.crash);
     if (!this.simulationState?.isGameOver) return;
     if (!this.simulationState?.crash) return;
 
