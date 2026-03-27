@@ -13,7 +13,7 @@ export default class timeStepData {
     yieldScore, // Current yield score
     tractorWorldX, // Absolute X position in the world
     tractorWorldY, // Absolute Y position in the world
-    nightFadeProgress, // Controls darkness overlay during wait X weeks block (0.0 to 1.0)
+    currentTime, // A range of 0 - 24 for the current time of day.
     field, // 2D array of CropStates (Dirt, Seed, Wheat)
     fieldWidth,
     currentDate, // Date string ("1/1/2024")
@@ -28,7 +28,7 @@ export default class timeStepData {
     this.yieldScore = yieldScore;
     this.tractorWorldX = tractorWorldX;
     this.tractorWorldY = tractorWorldY;
-    this.nightFadeProgress = nightFadeProgress;
+    this.currentTime = currentTime;
     /** @type {BitmapFieldState} */
     this.field = field;
     this.fieldWidth = fieldWidth;

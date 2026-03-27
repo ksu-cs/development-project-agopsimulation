@@ -52,7 +52,6 @@ export default class simulationEngine extends EventTarget {
     this.lastFrameTime = 0;
     this.animationId = -1;
     this.isRunning = false;
-    this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
 
     // Active Task System to sync Logic with Physics
@@ -192,7 +191,7 @@ export default class simulationEngine extends EventTarget {
 
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
-    const speedMult = weather ? weather.speedMultiplier : 1;
+    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult;
 
@@ -348,7 +347,7 @@ export default class simulationEngine extends EventTarget {
       tractor.yieldScore,
       tractor.x,
       tractor.y,
-      this.nightFadeProgress,
+      weather.timeAccumulator,
       field,
       this.COLS,
       dateString,
@@ -424,7 +423,7 @@ export default class simulationEngine extends EventTarget {
    */
   async waitXWeeks(weeks, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
-    const durationInSeconds = Number(weeks) * 7.0;
+    const durationInSeconds = Number(weeks) * 24.0 * 7.0;
 
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = false;
