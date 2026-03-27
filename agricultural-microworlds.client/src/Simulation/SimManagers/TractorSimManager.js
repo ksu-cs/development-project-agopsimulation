@@ -105,8 +105,7 @@ export default class TractorSimManager extends SimManager {
    * @param {any} field The crop field.
    * @return {any} Returns an array of all tiles the tractor is currently over.
    */
-  getTilesCurrentlyOver(tractor, field, offset) {
-    let tilesOver = [];
+  *getTilesCurrentlyOver(tractor, field, offset) {
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
@@ -124,10 +123,8 @@ export default class TractorSimManager extends SimManager {
       const checkY = frontY + pCos * offset;
 
       const targetCrop = this.getTileAtLocation(checkX, checkY, field);
-      if (targetCrop) tilesOver.push(targetCrop, targetCrop);
+      if (targetCrop) yield targetCrop;
     }
-
-    return tilesOver;
   }
 
   /**
@@ -137,14 +134,16 @@ export default class TractorSimManager extends SimManager {
    * @param {any} actionCallback The action to take on a valid tile.
    * */
   applyToolAction(tractor, field, actionCallback, offset) {
-    let tilesOver = this.getTilesCurrentlyOver(tractor, field, offset);
-
-    for (let i = 0; i < tilesOver.length; i++) {
-      if (tilesOver[i]) {
-        const didChange = actionCallback(tilesOver[i][0]);
+    for (const targetCrop of this.getTilesCurrentlyOver(
+      tractor,
+      field,
+      offset,
+    )) {
+      if (targetCrop) {
+        const didChange = actionCallback(targetCrop[0]);
 
         if (didChange) {
-          field.setTile(tilesOver[i][1], tilesOver[i][2], tilesOver[i][0]);
+          field.setTile(targetCrop[1], targetCrop[2], targetCrop[0]);
         }
       }
     }
