@@ -55,6 +55,7 @@ export default class simulationEngine extends EventTarget {
     this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
     this.isGameOver = false;
+    this.crash = null;
     // Active Task System to sync Logic with Physics
     this.activeTask = null;
 
@@ -186,11 +187,6 @@ export default class simulationEngine extends EventTarget {
    * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
   loop(timestamp) {
-    if(this.stateManager.states.isGameOver)
-      {
-       this.stopMovement();
-       return
-      }
 
     if (!this.isRunning) return;
 
@@ -261,6 +257,11 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
+
+    if(this.stateManager.states.isGameOver)
+      {
+       this.stopMovement();
+      }
   }
 
   /**
@@ -332,6 +333,9 @@ export default class simulationEngine extends EventTarget {
       gddString,
       tractor.type || "tractor",
       rainString,
+      this.stateManager.getState("isGameOver"),
+      this.stateManager.getState("crash")
+
     );
 
     //default back to tractor

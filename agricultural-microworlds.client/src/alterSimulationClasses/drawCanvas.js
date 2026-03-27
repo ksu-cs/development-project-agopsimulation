@@ -32,6 +32,7 @@ export default class drawCanvas {
     this.soybeanImage = new Image();
     this.seedImage = new Image();
     this.dirtImage = new Image();
+    this.crashSprite = new Image();
 
     // Game asset constants
     this.FRAME_WIDTH = 64;
@@ -59,10 +60,11 @@ export default class drawCanvas {
     this.dirtImage.src = "./src/assets/T2D_Dirt_Placeholder.png";
     this.cornImage.src = "./src/assets/corn.png";
     this.soybeanImage.src = "./src/assets/soybean.png";
+    this.crashSprite.src = "./src/assets/crash_sprite_overlay.png";
 
     // Image initialization
     this.imageLoadCount = 0;
-    this.imageCount = 7;
+    this.imageCount = 8;
     this.isInitialized = false;
 
     /** @type {timeStepData} Holds the timeStepData to draw */
@@ -77,6 +79,7 @@ export default class drawCanvas {
    */
   handleTimeStep(simulationData) {
     /** @type {timeStepData} */
+    console.log("detail =", simulationData.detail);
     this.simulationState = simulationData.detail;
 
     // 1. Update UI Elements
@@ -160,7 +163,7 @@ export default class drawCanvas {
 
     this.drawField();
     this.drawVehicles();
-
+    this.drawCrash();
     // Draw Night overlay if waiting
     if (this.simulationState.nightFadeProgress >= 0.0) this.drawNight();
   }
@@ -235,7 +238,6 @@ export default class drawCanvas {
    */
   drawVehicles() {
     if (!this.simulationState.vehicles) return;
-
     this.simulationState.vehicles.forEach((vehicle) => {
       const screenX = vehicle.x - this.cameraX;
       const screenY = vehicle.y - this.cameraY;
@@ -270,6 +272,27 @@ export default class drawCanvas {
       }
     });
   }
+  drawCrash() {
+    console.log(this.simulationState.crash);
+  if (!this.simulationState?.isGameOver) return;
+  if (!this.simulationState?.crash) return;
+
+  const crashX = this.simulationState.crash.x;
+  const crashY = this.simulationState.crash.y;
+
+  const screenX = crashX - this.cameraX;
+  const screenY = crashY - this.cameraY;
+
+  const size = 40;
+
+  this.ctx.drawImage(
+    this.crashSprite,
+    screenX - size / 2,
+    screenY - size / 2,
+    size,
+    size
+  );
+}
 
   /**
    * Draws a representation of Night time on the canvas.
@@ -344,5 +367,12 @@ export default class drawCanvas {
     this.soybeanImage.onerror = () => {
       console.error("failed to load SoybeanImage");
     };
+    this.crashSprite.onload = () => {
+      console.log("Crash sprite loaded!");
+      this.onImageLoad();
+    };
+    this.crashSprite.onerror = () => {
+      console.error("failed to load Crash sprite");
+};
   }
 }
