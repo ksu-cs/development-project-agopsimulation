@@ -5,7 +5,8 @@ export default class RenderStatState extends RenderState {
     super();
   }
 
-  render(data) {
+  render(context, data) {
+    console.log("in statState: ", data);
     const yieldEl = document.getElementById("scoreText");
     if (yieldEl) yieldEl.innerText = "Yield: " + data.yieldScore;
 
@@ -16,15 +17,15 @@ export default class RenderStatState extends RenderState {
     if (timeEl) {
       // Format the current time into hours, minutes, and AM/PM.
       const totalHours =
-        1 + Math.floor(this.simulationState.currentTime % 12.0);
+        1 + Math.floor(data.currentTime % 12.0);
       const totalMinutes = Math.floor(
-        60 * (this.simulationState.currentTime % 1.0),
+        60 * (data.currentTime % 1.0),
       );
 
       const formattedHours = totalHours.toString().padStart(2, "0");
       const formattedMinutes = totalMinutes.toString().padStart(2, "0");
       const formattedMeridiem =
-        this.simulationState.currentTime % 23.0 >= 11.0 ? "P.M." : "A.M.";
+        data.currentTime % 23.0 >= 11.0 ? "P.M." : "A.M.";
       timeEl.innerText = `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
     }
 

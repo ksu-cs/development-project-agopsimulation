@@ -322,13 +322,16 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
-    const statData = new RenderStatState(
-      vehicles[VEHICLES.HARVESTER].yieldScore,
-      dateString,
-      gddString,
+    const currentTime = weather.timeAccumulator;
+
+    const statData = {
+      yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
+      currentDate: dateString,
+      cumulativeGDD: gddString,
       rainString,
       activeVehicleType,
-    );
+      currentTime
+    };
 
     const fieldData = {
       fieldWidth: this.COLS,
@@ -347,7 +350,7 @@ export default class simulationEngine extends EventTarget {
     };
 
     const dayCycleData = {
-      nightFadeProgress: this.nightFadeProgress,
+      currentTime,
       canvasWidth: this.canvasWidth,
       canvasHeight: this.canvasHeight,
     };
@@ -361,8 +364,7 @@ export default class simulationEngine extends EventTarget {
 
     const ts = new timeStepData(
       rainString,
-      renderModules,
-      weather.timeAccumulator,
+      renderModules
     );
 
     this.dispatchEvent(

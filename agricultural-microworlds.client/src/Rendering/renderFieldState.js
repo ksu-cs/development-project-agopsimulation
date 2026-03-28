@@ -77,7 +77,6 @@ export default class RenderFieldState extends RenderState {
         const tileScreenX = tileWorldX - cameraX;
         const tileScreenY = tileWorldY - cameraY;
 
-        console.log(context);
         context.drawImage(
           tileImage,
           0,

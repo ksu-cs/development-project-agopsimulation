@@ -46,15 +46,11 @@ export default class drawCanvas {
     this.simulationState = simulationData.detail;
 
     this.renderAllModules();
-
-    // 4. Scene Colorize
-    this.drawTimeColorize();
   }
 
   renderAllModules() {
     Object.entries(this.simulationState.renderModuleData).forEach(
       ([key, data]) => {
-        console.log(this.renderModules[key]);
         this.renderModules[key].render(this.ctx, data);
       },
     );
