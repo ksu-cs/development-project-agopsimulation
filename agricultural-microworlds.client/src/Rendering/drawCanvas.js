@@ -53,7 +53,16 @@ export default class drawCanvas {
   renderAllModules() {
     Object.entries(this.simulationState.renderModuleData).forEach(
       ([key, data]) => {
-        this.renderModules[key].render(this.ctx, data);
+        const module = this.renderModules[key];
+        if (
+          module &&
+          module.imageCount &&
+          module.imageLoadCount < module.imageCount
+        ) {
+          console.log(`Skipping render of ${key} until images load`);
+          return;
+        }
+        module.render(this.ctx, data);
       },
     );
   }

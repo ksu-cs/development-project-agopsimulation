@@ -43,6 +43,18 @@ class SimulationControlsContainer extends Component {
       this.drawCanvas.handleTimeStep(e),
     );
 
+    const checkLoaded = setInterval(() => {
+      const modules = Object.values(this.drawCanvas.renderModules);
+      const allReady = modules.every(
+        (m) => !m.imageCount || m.imageLoadCount >= m.imageCount,
+      );
+      if (allReady) {
+        clearInterval(checkLoaded);
+        // force initial draw with current engine state
+        this.drawCanvas.renderAllModules();
+      }
+    }, 100);
+
     this.simulationEngine.timeStepEvent();
 
     await this.simulationEngine.loadStations();

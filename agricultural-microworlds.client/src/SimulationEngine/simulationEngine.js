@@ -330,7 +330,7 @@ export default class simulationEngine extends EventTarget {
       cumulativeGDD: gddString,
       rainString,
       activeVehicleType,
-      currentTime
+      currentTime,
     };
 
     const fieldData = {
@@ -356,16 +356,13 @@ export default class simulationEngine extends EventTarget {
     };
 
     const renderModules = {
+      [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
-      [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
     };
 
-    const ts = new timeStepData(
-      rainString,
-      renderModules
-    );
+    const ts = new timeStepData(rainString, renderModules);
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {

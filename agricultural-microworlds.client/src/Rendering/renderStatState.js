@@ -2,7 +2,7 @@ import RenderState from "./renderState";
 
 export default class RenderStatState extends RenderState {
   constructor() {
-    super();
+    super({}, 0);
   }
 
   render(context, data) {
@@ -15,11 +15,8 @@ export default class RenderStatState extends RenderState {
     const timeEl = document.getElementById("timeText");
     if (timeEl) {
       // Format the current time into hours, minutes, and AM/PM.
-      const totalHours =
-        1 + Math.floor(data.currentTime % 12.0);
-      const totalMinutes = Math.floor(
-        60 * (data.currentTime % 1.0),
-      );
+      const totalHours = 1 + Math.floor(data.currentTime % 12.0);
+      const totalMinutes = Math.floor(60 * (data.currentTime % 1.0));
 
       const formattedHours = totalHours.toString().padStart(2, "0");
       const formattedMinutes = totalMinutes.toString().padStart(2, "0");
