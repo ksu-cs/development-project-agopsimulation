@@ -6,7 +6,6 @@ export default class RenderStatState extends RenderState {
   }
 
   render(context, data) {
-    console.log("in statState: ", data);
     const yieldEl = document.getElementById("scoreText");
     if (yieldEl) yieldEl.innerText = "Yield: " + data.yieldScore;
 

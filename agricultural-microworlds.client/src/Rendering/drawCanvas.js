@@ -19,9 +19,11 @@ export default class drawCanvas {
    * @param {int} canvasWidth The width to set the canvas to
    * @param {int} canvasHeight The height to set the canvas to
    */
-  constructor(canvasRef) {
+  constructor(canvasRef, canvasWidth, canvasHeight) {
     this.canvas = canvasRef;
     this.ctx = this.canvas.getContext("2d");
+    this.canvas.width = canvasWidth;
+    this.canvas.height = canvasHeight;
 
     /** @type {timeStepData} Holds the timeStepData to draw */
     this.simulationState = null;
