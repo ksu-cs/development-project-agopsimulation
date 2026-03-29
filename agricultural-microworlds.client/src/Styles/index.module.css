@@ -69,25 +69,22 @@
 }
 
 .statText {
-  left: 20px;
   color: black;
   font-weight: bold;
   font-size: 15px;
   background: rgba(255, 255, 255, 0.7);
   padding: 5px 10px;
   border-radius: 5px;
-  z-index: 10;
   margin: 0px;
 }
 
 .statTextContainer {
-  left: 20px;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   flex: 1;
   flex-grow: 1;
-  top: 5px;
-  position: absolute;
+  margin-left: 20px;
 }
 
 .weatherDataContainer {
