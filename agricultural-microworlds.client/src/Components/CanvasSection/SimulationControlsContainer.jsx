@@ -58,12 +58,13 @@ class SimulationControlsContainer extends Component {
       const allReady = modules.every(
         (m) => !m.imageCount || m.imageLoadCount >= m.imageCount,
       );
+      console.log("interval over");
       if (allReady) {
         clearInterval(checkLoaded);
         // force initial draw with current engine state
         this.drawCanvas.renderAllModules();
       }
-    }, 100);
+    }, 250);
 
     this.simulationEngine.timeStepEvent();
 

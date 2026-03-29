@@ -29,6 +29,7 @@ export default class RenderState {
    * @param {import("react").Context} context The context handed out by the top level renderer to allow this method to render
    * @param {Object} mouduleData The data needed to render this module
    */
+  // eslint-disable-next-line no-unused-vars
   render(context, mouduleData) {}
 
   #onImageLoad() {

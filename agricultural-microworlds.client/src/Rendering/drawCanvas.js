@@ -5,7 +5,7 @@ import RenderImplementState from "./renderImplementState";
 import { RENDER_MODULE_KEYS } from "./renderingConstants";
 import RenderStatState from "./renderStatState";
 import RenderWeatherState from "./renderWeatherState";
-import timeStepData from "./timeStepData";
+/** @typedef {import("./timeStepData").timeStepData} timeStepData */
 
 //move some constants to a separate file for multiple classes to use
 

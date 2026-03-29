@@ -357,7 +357,7 @@ export default class simulationEngine extends EventTarget {
       cameraX: tractorManager.cameraX,
       cameraY: tractorManager.cameraY,
       isGameOver: this.stateManager.getState("isGameOver"),
-      crashed: this.stateManager.getState("crash")
+      crashed: this.stateManager.getState("crash"),
     };
 
     const dayCycleData = {

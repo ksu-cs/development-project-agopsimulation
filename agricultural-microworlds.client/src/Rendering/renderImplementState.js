@@ -43,7 +43,6 @@ export default class RenderImplementState extends RenderState {
     if (!data?.isGameOver) return;
     if (!data?.crashed) return;
 
-
     const crashX = data.crashed.x;
     const crashY = data.crashed.y;
 
