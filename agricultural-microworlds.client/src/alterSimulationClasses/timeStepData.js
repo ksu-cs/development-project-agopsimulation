@@ -20,6 +20,8 @@ export default class timeStepData {
     cumulativeGDD, // Growth Degree Days string
     vehicleType,
     cumulativeRain,
+    isGameOver,
+    crash,
   ) {
     this.vehicles = vehicles;
     this.activeVehicleType = activeVehicleType;
@@ -36,5 +38,7 @@ export default class timeStepData {
     this.cumulativeGDD = cumulativeGDD;
     this.vehicleType = vehicleType;
     this.cumulativeRain = cumulativeRain;
+    this.isGameOver = isGameOver;
+    this.crash = crash;
   }
 }
