@@ -59,7 +59,8 @@ export default class simulationEngine extends EventTarget {
     this.animationId = -1;
     this.isRunning = false;
     this.simulationSessionId = 0;
-
+    this.isGameOver = false;
+    this.crash = null;
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
   }
@@ -154,6 +155,7 @@ export default class simulationEngine extends EventTarget {
       existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
 
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
+    this.stateManager.initState("isGameOver", false);
   }
 
   /**
@@ -256,6 +258,10 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
+
+    if (this.stateManager.states.isGameOver) {
+      this.stopMovement();
+    }
   }
 
   /**
@@ -365,7 +371,9 @@ export default class simulationEngine extends EventTarget {
       [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
     };
 
-    const ts = new timeStepData(rainString, renderModules);
+    const ts = new timeStepData(rainString, renderModules,
+      this.stateManager.getState("isGameOver"),
+      this.stateManager.getState("crash"),);
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {

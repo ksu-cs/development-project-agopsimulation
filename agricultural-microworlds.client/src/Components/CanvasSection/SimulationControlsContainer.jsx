@@ -3,6 +3,7 @@ import styles from "../../Styles/index.module.css";
 import simulationEngine from "../../SimulationEngine/simulationEngine";
 import drawCanvas from "../../Rendering/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
+import TractorSimManager from "../../Simulation/SimManagers/TractorSimManager";
 import * as Blockly from "blockly";
 
 /**
@@ -168,6 +169,7 @@ class SimulationControlsContainer extends Component {
     if (this.simulationEngine) {
       this.simulationEngine.stopMovement();
     }
+    this.simulationEngine;
 
     // Immediately kill all background workers
     this.workers.forEach((w) => w.terminate());
