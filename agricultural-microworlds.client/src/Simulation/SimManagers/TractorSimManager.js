@@ -18,6 +18,8 @@ export default class TractorSimManager extends SimManager {
     this.HEADER_OFFSET = 20;
     this.HEADER_WIDTH = 64;
     this.FIELD_COLS = 300;
+    this.SPRITE_SIZE = 64;
+    this.COLLISION_RADIUS = 28;
     this.cameraX = 0;
     this.cameraY = 0;
     this.activeVehicleCamera = VEHICLES.HARVESTER;
@@ -111,7 +113,7 @@ export default class TractorSimManager extends SimManager {
    * @param {any} field The crop field.
    * @return {any} Returns an array of all tiles the tractor is currently over.
    */
-  *getTilesCurrentlyOver(tractor, field, offset) {
+  getTilesCurrentlyOver(tractor, field, offset) {
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
@@ -204,10 +206,6 @@ export default class TractorSimManager extends SimManager {
     this.cameraX = Math.max(-150, targetX);
     this.cameraY = Math.max(0, targetY);
   }
-
-  // --- Collision settings (tune these) ---
-  SPRITE_SIZE = 64;
-  COLLISION_RADIUS = 28; // slightly smaller than 32 so it feels fair
 
   areVehiclesColliding(a, b) {
     const ax = a.x + this.SPRITE_SIZE / 2;

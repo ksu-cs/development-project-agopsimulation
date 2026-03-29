@@ -356,6 +356,8 @@ export default class simulationEngine extends EventTarget {
       vehicles: vehicles,
       cameraX: tractorManager.cameraX,
       cameraY: tractorManager.cameraY,
+      isGameOver: this.stateManager.getState("isGameOver"),
+      crashed: this.stateManager.getState("crash")
     };
 
     const dayCycleData = {
@@ -371,9 +373,7 @@ export default class simulationEngine extends EventTarget {
       [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
     };
 
-    const ts = new timeStepData(rainString, renderModules,
-      this.stateManager.getState("isGameOver"),
-      this.stateManager.getState("crash"),);
+    const ts = new timeStepData(rainString, renderModules);
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {

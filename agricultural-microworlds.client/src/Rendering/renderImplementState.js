@@ -5,6 +5,7 @@ import RenderState from "./renderState";
 const IMAGE_KEYS = {
   HARVESTER: "harvester",
   SEEDER: "seeder",
+  CRASH: "crash",
 };
 
 export default class RenderImplementState extends RenderState {
@@ -12,6 +13,7 @@ export default class RenderImplementState extends RenderState {
     const paths = {
       [IMAGE_KEYS.HARVESTER]: "./src/assets/combine-harvester.png",
       [IMAGE_KEYS.SEEDER]: "./src/assets/seeder.png",
+      [IMAGE_KEYS.CRASH]: "./src/assets/crash_sprite_overlay.png",
     };
     super(paths, paths.length);
   }
@@ -37,5 +39,25 @@ export default class RenderImplementState extends RenderState {
       context.drawImage(sprite, -FRAME_WIDTH / 2, -FRAME_HEIGHT / 2);
       context.restore();
     });
+
+    if (!data?.isGameOver) return;
+    if (!data?.crash) return;
+
+
+    const crashX = data.crash.x;
+    const crashY = data.crash.y;
+
+    const screenX = crashX - data.cameraX;
+    const screenY = crashY - data.cameraY;
+
+    const size = 40;
+
+    this.ctx.drawImage(
+      this.images[IMAGE_KEYS.CRASH],
+      screenX - size / 2,
+      screenY - size / 2,
+      size,
+      size,
+    );
   }
 }
