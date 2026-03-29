@@ -41,18 +41,18 @@ export default class RenderImplementState extends RenderState {
     });
 
     if (!data?.isGameOver) return;
-    if (!data?.crash) return;
+    if (!data?.crashed) return;
 
 
-    const crashX = data.crash.x;
-    const crashY = data.crash.y;
+    const crashX = data.crashed.x;
+    const crashY = data.crashed.y;
 
     const screenX = crashX - data.cameraX;
     const screenY = crashY - data.cameraY;
 
     const size = 40;
 
-    this.ctx.drawImage(
+    context.drawImage(
       this.images[IMAGE_KEYS.CRASH],
       screenX - size / 2,
       screenY - size / 2,

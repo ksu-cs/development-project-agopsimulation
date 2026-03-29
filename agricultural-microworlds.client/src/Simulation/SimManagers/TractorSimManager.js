@@ -113,7 +113,7 @@ export default class TractorSimManager extends SimManager {
    * @param {any} field The crop field.
    * @return {any} Returns an array of all tiles the tractor is currently over.
    */
-  getTilesCurrentlyOver(tractor, field, offset) {
+  *getTilesCurrentlyOver(tractor, field, offset) {
     const centerX = tractor.x + 32;
     const centerY = tractor.y + 32;
     const rad = (tractor.angle * Math.PI) / 180;
