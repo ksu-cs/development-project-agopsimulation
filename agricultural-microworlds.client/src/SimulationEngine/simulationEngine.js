@@ -176,7 +176,6 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
-    this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
   }
@@ -281,7 +280,9 @@ export default class simulationEngine extends EventTarget {
           const v = vehicles.find((v) => v.type == vehicleType);
           if (v) v.isMoving == false;
         }
-        this.nightFadeProgress = -1.0;
+
+        const weather = this.stateManager.getState("weather");
+        if (weather) weather.isWaiting = false;
       }
 
       resolve();
@@ -445,7 +446,9 @@ export default class simulationEngine extends EventTarget {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = false;
 
-    this.nightFadeProgress = 0.5;
+    const weather = this.stateManager.getState("weather");
+    if (weather) weather.isWaiting = true;
+
     return new Promise((resolve) => {
       if (vehicle) {
         this.activeTasks.set(vehicle.type, {
