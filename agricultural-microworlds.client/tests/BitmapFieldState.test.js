@@ -5,8 +5,6 @@ import {
   CROP_TYPES,
 } from "../src/States/StateClasses/CropState";
 
-//import {test, expect} from "jest";
-
 function CreateFieldState(rows, cols) {
   const tileKey = {
     ["stage"]: {

@@ -8,6 +8,7 @@ import {
   plant,
   reset,
 } from "../../States/StateClasses/CropState";
+import { VEHICLES } from "../../States/StateClasses/ImplementState";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -17,6 +18,11 @@ export default class TractorSimManager extends SimManager {
     this.HEADER_OFFSET = 20;
     this.HEADER_WIDTH = 64;
     this.FIELD_COLS = 300;
+    this.SPRITE_SIZE = 64;
+    this.COLLISION_RADIUS = 28;
+    this.cameraX = 0;
+    this.cameraY = 0;
+    this.activeVehicleCamera = VEHICLES.HARVESTER;
   }
 
   update(deltaTime, oldState, newState) {
@@ -175,9 +181,31 @@ export default class TractorSimManager extends SimManager {
     return null;
   }
 
-  // --- Collision settings (tune these) ---
-  SPRITE_SIZE = 64;
-  COLLISION_RADIUS = 28; // slightly smaller than 32 so it feels fair
+  /**
+   * Calculates the camera coordinates for the active implement based on the information in that implement state
+   * @param {ImplementState} implement The active implement that the camera is tracking
+   * @param {number} fieldWidth The width of the field
+   * @param {number} canvasWidth The width of the canvas
+   * @param {number} canvasHeight The height of the canvas
+   */
+  updateCameraCoordinates(implement, fieldWidth, canvasWidth, canvasHeight) {
+    if (!implement) return;
+
+    const tractorX = implement.x + 32;
+    const tractorY = implement.y + 32;
+
+    let targetX = tractorX - canvasWidth / 2;
+    let targetY = tractorY - canvasHeight / 2;
+
+    const maxCameraX = fieldWidth * this.TILE_WIDTH - canvasWidth;
+    const maxCameraY = fieldWidth * this.TILE_WIDTH - canvasHeight;
+
+    targetX = Math.min(targetX, maxCameraX);
+    targetY = Math.min(targetY, maxCameraY);
+
+    this.cameraX = Math.max(-150, targetX);
+    this.cameraY = Math.max(0, targetY);
+  }
 
   areVehiclesColliding(a, b) {
     const ax = a.x + this.SPRITE_SIZE / 2;

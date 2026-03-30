@@ -1,7 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
-import simulationEngine from "../../alterSimulationClasses/simulationEngine";
-import drawCanvas from "../../alterSimulationClasses/drawCanvas";
+import simulationEngine from "../../SimulationEngine/simulationEngine";
+import drawCanvas from "../../Rendering/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 import TractorSimManager from "../../Simulation/SimManagers/TractorSimManager";
 import * as Blockly from "blockly";
@@ -53,8 +53,20 @@ class SimulationControlsContainer extends Component {
       this.drawCanvas.handleTimeStep(e),
     );
 
+    const checkLoaded = setInterval(() => {
+      const modules = Object.values(this.drawCanvas.renderModules);
+      const allReady = modules.every(
+        (m) => !m.imageCount || m.imageLoadCount >= m.imageCount,
+      );
+      console.log("interval over");
+      if (allReady) {
+        clearInterval(checkLoaded);
+        // force initial draw with current engine state
+        this.drawCanvas.renderAllModules();
+      }
+    }, 250);
+
     this.simulationEngine.timeStepEvent();
-    this.drawCanvas.setSpriteOnLoadMethods();
 
     await this.simulationEngine.loadStations();
     await this.simulationEngine.fetchData();

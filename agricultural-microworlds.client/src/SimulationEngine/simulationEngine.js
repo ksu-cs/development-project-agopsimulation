@@ -8,11 +8,14 @@ import ImplementState, {
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
-import timeStepData from "./timeStepData";
+import timeStepData from "../Rendering/timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
+import SimManager from "../Simulation/SimManager";
+import RenderStatState from "../Rendering/renderStatState";
+import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -21,7 +24,7 @@ export default class simulationEngine extends EventTarget {
   /**
    * @constructor Defines and instances all constants, managers, and variables for the engine.
    */
-  constructor() {
+  constructor(canvasWidth, canvasHeight) {
     super();
 
     this.stateManager = new StateManager();
@@ -37,6 +40,9 @@ export default class simulationEngine extends EventTarget {
 
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
+
+    this.canvasWidth = canvasWidth;
+    this.canvasHeight = canvasHeight;
 
     // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
@@ -61,7 +67,7 @@ export default class simulationEngine extends EventTarget {
 
   /**
    * Returns a manager instance of a specific type.
-   * @param {type} type The type of manager to search for.
+   * @param {SimManager} type The type of manager to search for.
    */
   getManager(type) {
     return this.managers.find((m) => m instanceof type);
@@ -143,14 +149,12 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
 
-    const existingCamera = this.stateManager.getState("activeVehicleCamera");
+    const tractorSimManager = this.getManager(TractorManager);
+    const existingCamera = tractorSimManager.activeVehicleCamera;
+    tractorSimManager.activeVehicleCamera =
+      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
 
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
-    this.stateManager.initState(
-      "activeVehicleCamera",
-      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
-    );
-
     this.stateManager.initState("isGameOver", false);
   }
 
@@ -294,8 +298,16 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
-    const activeVehicleCamera = this.stateManager.getState(
-      "activeVehicleCamera",
+    /** @type {TractorManager} */
+    const tractorManager = this.getManager(TractorManager);
+    /** @type {VEHICLES} */
+    const activeVehicleCamera = tractorManager.activeVehicleCamera;
+    let activeVehicle = vehicles?.find((v) => v.type === activeVehicleCamera);
+    tractorManager.updateCameraCoordinates(
+      activeVehicle,
+      this.COLS,
+      this.canvasWidth,
+      this.canvasHeight,
     );
 
     if (!tractor || !field || !weather) return;
@@ -319,27 +331,49 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
-    const ts = new timeStepData(
-      vehicles,
-      activeVehicleType,
-      activeVehicleCamera,
-      tractor.angle,
-      tractor.yieldScore,
-      tractor.x,
-      tractor.y,
-      weather.timeAccumulator,
-      field,
-      this.COLS,
-      dateString,
-      gddString,
-      tractor.type || "tractor",
-      rainString,
-      this.stateManager.getState("isGameOver"),
-      this.stateManager.getState("crash"),
-    );
+    const currentTime = weather.timeAccumulator;
 
-    //default back to tractor
-    ts.vehicleType = tractor.type || "tractor";
+    const statData = {
+      yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
+      currentDate: dateString,
+      cumulativeGDD: gddString,
+      rainString,
+      activeVehicleType,
+      currentTime,
+    };
+
+    const fieldData = {
+      fieldWidth: this.COLS,
+      fieldHeight: this.ROWS,
+      cameraX: tractorManager.cameraX,
+      cameraY: tractorManager.cameraY,
+      canvasWidth: this.canvasWidth,
+      canvasHeight: this.canvasHeight,
+      field: field,
+    };
+
+    const vehicleData = {
+      vehicles: vehicles,
+      cameraX: tractorManager.cameraX,
+      cameraY: tractorManager.cameraY,
+      isGameOver: this.stateManager.getState("isGameOver"),
+      crashed: this.stateManager.getState("crash"),
+    };
+
+    const dayCycleData = {
+      currentTime,
+      canvasWidth: this.canvasWidth,
+      canvasHeight: this.canvasHeight,
+    };
+
+    const renderModules = {
+      [RENDER_MODULE_KEYS.STATS]: statData,
+      [RENDER_MODULE_KEYS.FIELD]: fieldData,
+      [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
+      [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+    };
+
+    const ts = new timeStepData(rainString, renderModules);
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -348,6 +382,7 @@ export default class simulationEngine extends EventTarget {
       }),
     );
   }
+
   // --- ASYNC COMMANDS ---
 
   /**
@@ -588,7 +623,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   setMainVehicleCamera(type) {
-    this.stateManager.commitState("activeVehicleCamera", type);
+    this.getManager(TractorManager).activeVehicleCamera = type;
 
     this.timeStepEvent();
   }
