@@ -219,6 +219,7 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
+    // Iterate over all tasks in Map
     this.activeTasks.forEach((task, vehicleType) => {
       if (task.sessionId !== this.simulationSessionId) {
         this.activeTasks.clear();
@@ -393,11 +394,16 @@ export default class simulationEngine extends EventTarget {
    */
   async moveForward(durationInSeconds, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
+
+    // Identify which vehicle worker is controlling
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = true;
 
+
+    // this promise is to handleWorkerMessage
     return new Promise((resolve) => {
       if (vehicle) {
+        // Store task to Map
         this.activeTasks.set(vehicle.type, {
           type: "TIMER",
           timeLeft: Number(durationInSeconds),
@@ -573,6 +579,7 @@ export default class simulationEngine extends EventTarget {
   async handleWorkerMessage(data, worker) {
     if (!this.isRunning) return;
 
+    // Unpack data sent from worker
     const { command, args, vehicleType, requestId } = data;
 
     // Route the string command to the actual simulation API

@@ -109,6 +109,8 @@ class SimulationControlsContainer extends Component {
     // Helper to generate code in the background safely
     const generateHeadlessCode = (xmlText) => {
       if (!xmlText || !xmlText.includes("xmlns")) return "";
+
+      // create a Blockly workspace to translate XML into javascritpt without needing them on screen
       const headless = new Blockly.Workspace();
       try {
         const dom = Blockly.utils.xml.textToDom(xmlText);
@@ -131,26 +133,37 @@ class SimulationControlsContainer extends Component {
     this.expectedWorkers = 0;
     this.completedWorkers = 0;
 
+    // Spawns worker
     const spawnWorker = (userCode, vType) => {
       if (!userCode.trim()) return;
 
       this.expectedWorkers++;
+
+      // create worker and script using code
       const blob = this.createWorkerBlob(userCode);
+
+      // background thread using url
       const worker = new Worker(URL.createObjectURL(blob));
 
+      // set up listener to hear messages back
       worker.onmessage = (e) => {
         if (e.data.type === "COMMAND") {
+          // worker sends commands to move
+          // simulationEngine handles it
           this.simulationEngine.handleWorkerMessage(
             { ...e.data, vehicleType: vType },
             worker,
           );
         } else if (e.data.type === "DONE") {
+          // when worker is finished with code, it signals that it is done
           this.completedWorkers++;
           if (this.completedWorkers === this.expectedWorkers) {
             this.stopButtonOnClick(); // Auto-stop when both finish
           }
         }
       };
+
+      // store worker in array for termination when stopping
       this.workers.push(worker);
     };
 
@@ -210,6 +223,13 @@ class SimulationControlsContainer extends Component {
     });
   };
 
+  /**
+   * communicate with main thread
+   * simulationMethods acts as methods of simulationEngine as workers cannot see it
+   * then executes generated Blockly code using methods
+   * @param {*} userCode 
+   * @returns Blob (Binary Large Object) with the JavaScript code that the background worker needs to run
+   */
   createWorkerBlob(userCode) {
     const workerScript = `
       const simulationMethods = {
