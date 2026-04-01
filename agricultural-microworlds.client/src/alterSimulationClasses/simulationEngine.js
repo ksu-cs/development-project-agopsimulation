@@ -8,14 +8,11 @@ import ImplementState, {
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
-import timeStepData from "../Rendering/timeStepData";
+import timeStepData from "./timeStepData";
 import WeatherManager from "../Simulation/SimManagers/WeatherSimManager";
 import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
-import SimManager from "../Simulation/SimManager";
-import RenderStatState from "../Rendering/renderStatState";
-import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -24,7 +21,7 @@ export default class simulationEngine extends EventTarget {
   /**
    * @constructor Defines and instances all constants, managers, and variables for the engine.
    */
-  constructor(canvasWidth, canvasHeight) {
+  constructor() {
     super();
 
     this.stateManager = new StateManager();
@@ -41,9 +38,6 @@ export default class simulationEngine extends EventTarget {
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
 
-    this.canvasWidth = canvasWidth;
-    this.canvasHeight = canvasHeight;
-
     // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
       new WeatherManager(),
@@ -58,16 +52,19 @@ export default class simulationEngine extends EventTarget {
     this.lastFrameTime = 0;
     this.animationId = -1;
     this.isRunning = false;
+    this.nightFadeProgress = -1.0; // -1.0 = Day, 0.0+ = Night
     this.simulationSessionId = 0;
-    this.isGameOver = false;
-    this.crash = null;
+
     // Active Task System to sync Logic with Physics
-    this.activeTasks = new Map();
+    this.activeTask = null;
+
+    this.harvesterWorker = new Worker("WorkerHarvester.js");
+    this.seederWorker = new Worker("WorkerSeeder.js");
   }
 
   /**
    * Returns a manager instance of a specific type.
-   * @param {SimManager} type The type of manager to search for.
+   * @param {type} type The type of manager to search for.
    */
   getManager(type) {
     return this.managers.find((m) => m instanceof type);
@@ -149,13 +146,13 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
 
-    const tractorSimManager = this.getManager(TractorManager);
-    const existingCamera = tractorSimManager.activeVehicleCamera;
-    tractorSimManager.activeVehicleCamera =
-      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
+    const existingCamera = this.stateManager.getState("activeVehicleCamera");
 
     this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
-    this.stateManager.initState("isGameOver", false);
+    this.stateManager.initState(
+      "activeVehicleCamera",
+      existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER,
+    );
   }
 
   /**
@@ -163,9 +160,13 @@ export default class simulationEngine extends EventTarget {
    */
   startMoving() {
     if (!this.isRunning) {
+      if (this.stateManager.getState("isGameOver")) {
+        this.clearCrashAndResetState();
+      }
+
       this.isRunning = true;
       this.lastFrameTime = performance.now();
-      this.loop();
+      this.animationId = requestAnimationFrame(this.loop.bind(this));
     }
   }
 
@@ -175,7 +176,8 @@ export default class simulationEngine extends EventTarget {
   stopMovement() {
     this.isRunning = false;
     this.simulationSessionId++;
-    this.activeTasks.clear();
+    this.activeTask = null;
+    this.nightFadeProgress = -1.0;
     cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
   }
@@ -197,7 +199,7 @@ export default class simulationEngine extends EventTarget {
 
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
-    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+    const speedMult = weather ? weather.speedMultiplier : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult;
 
@@ -219,34 +221,32 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
-    this.activeTasks.forEach((task, vehicleType) => {
-      if (task.sessionId !== this.simulationSessionId) {
-        this.activeTasks.clear();
+    // 4. Handle Active Tasks
+    if (this.activeTask) {
+      if (this.activeTask.sessionId !== this.simulationSessionId) {
+        this.activeTask = null;
       } else {
-        if (task.type === "TIMER") {
-          task.timeLeft -= simDeltaTime;
-          if (task.timeLeft <= 0) {
-            if (nextStates.vehicles) {
-              const vehicle = nextStates.vehicles.find(
-                (v) => v.type == vehicleType,
-              );
-              if (vehicle) vehicle.isMoving = false;
-            }
+        if (this.activeTask.type === "TIMER") {
+          this.activeTask.timeLeft -= simDeltaTime;
+          if (this.activeTask.timeLeft <= 0) {
+            if (nextStates.vehicles)
+              nextStates.vehicles.forEach((v) => (v.isMoving = false));
 
-            this.resolveActiveTask(vehicleType);
+            this.resolveActiveTask();
           }
-        } else if (task.type === "TURN") {
-          const v = nextStates.vehicles?.find((v) => v.type == vehicleType);
+        } else if (this.activeTask.type === "TURN") {
+          const activeType = this.stateManager.getState("activeVehicleType");
+          const v = nextStates.vehicles?.find((v) => v.type == activeType);
           if (v) {
             const diff = Math.abs(v.goalAngle - v.angle);
             if (diff < 0.5) {
               v.angle = v.goalAngle;
-              this.resolveActiveTask(vehicleType);
+              this.resolveActiveTask();
             }
           }
         }
       }
-    });
+    }
 
     // 5. Commit States
     for (const key in nextStates) {
@@ -257,34 +257,21 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
 
     this.animationId = requestAnimationFrame(this.loop.bind(this));
-
-    if (this.stateManager.states.isGameOver) {
-      this.stopMovement();
-      this.dispatchEvent(new CustomEvent("simulationCrashed"));
-      return;
-    }
   }
 
   /**
    * Resolves the currently active task, if possible.
    */
-  resolveActiveTask(vehicleType) {
-    const task = this.activeTasks.get(vehicleType);
-    if (task && task.resolve) {
-      const resolve = task.resolve;
-      const type = task.type;
-
-      this.activeTasks.delete(vehicleType);
+  resolveActiveTask() {
+    if (this.activeTask && this.activeTask.resolve) {
+      const resolve = this.activeTask.resolve;
+      const type = this.activeTask.type;
+      this.activeTask = null;
 
       if (type === "TIMER") {
         const vehicles = this.stateManager.getState("vehicles");
-        if (vehicles) {
-          const v = vehicles.find((v) => v.type == vehicleType);
-          if (v) v.isMoving == false;
-        }
-
-        const weather = this.stateManager.getState("weather");
-        if (weather) weather.isWaiting = false;
+        if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
+        this.nightFadeProgress = -1.0;
       }
 
       resolve();
@@ -301,16 +288,8 @@ export default class simulationEngine extends EventTarget {
 
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
-    /** @type {TractorManager} */
-    const tractorManager = this.getManager(TractorManager);
-    /** @type {VEHICLES} */
-    const activeVehicleCamera = tractorManager.activeVehicleCamera;
-    let activeVehicle = vehicles?.find((v) => v.type === activeVehicleCamera);
-    tractorManager.updateCameraCoordinates(
-      activeVehicle,
-      this.COLS,
-      this.canvasWidth,
-      this.canvasHeight,
+    const activeVehicleCamera = this.stateManager.getState(
+      "activeVehicleCamera",
     );
 
     if (!tractor || !field || !weather) return;
@@ -334,49 +313,25 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
-    const currentTime = weather.timeAccumulator;
-
-    const statData = {
-      yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
-      currentDate: dateString,
-      cumulativeGDD: gddString,
-      rainString,
+    const ts = new timeStepData(
+      vehicles,
       activeVehicleType,
-      currentTime,
-    };
+      activeVehicleCamera,
+      tractor.angle,
+      tractor.yieldScore,
+      tractor.x,
+      tractor.y,
+      this.nightFadeProgress,
+      field,
+      this.COLS,
+      dateString,
+      gddString,
+      tractor.type || "tractor",
+      rainString,
+    );
 
-    const fieldData = {
-      fieldWidth: this.COLS,
-      fieldHeight: this.ROWS,
-      cameraX: tractorManager.cameraX,
-      cameraY: tractorManager.cameraY,
-      canvasWidth: this.canvasWidth,
-      canvasHeight: this.canvasHeight,
-      field: field,
-    };
-
-    const vehicleData = {
-      vehicles: vehicles,
-      cameraX: tractorManager.cameraX,
-      cameraY: tractorManager.cameraY,
-      isGameOver: this.stateManager.getState("isGameOver"),
-      crashed: this.stateManager.getState("crash"),
-    };
-
-    const dayCycleData = {
-      currentTime,
-      canvasWidth: this.canvasWidth,
-      canvasHeight: this.canvasHeight,
-    };
-
-    const renderModules = {
-      [RENDER_MODULE_KEYS.STATS]: statData,
-      [RENDER_MODULE_KEYS.FIELD]: fieldData,
-      [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
-      [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
-    };
-
-    const ts = new timeStepData(rainString, renderModules);
+    //default back to tractor
+    ts.vehicleType = tractor.type || "tractor";
 
     this.dispatchEvent(
       new CustomEvent("simulationEngineCreated", {
@@ -385,7 +340,6 @@ export default class simulationEngine extends EventTarget {
       }),
     );
   }
-
   // --- ASYNC COMMANDS ---
 
   /**
@@ -393,22 +347,17 @@ export default class simulationEngine extends EventTarget {
    * @param {number} durationInSeconds The length of time the tractor should be moving for.
    * @returns {Promise} Returns a new Promise to handle tractor movement.
    */
-  async moveForward(durationInSeconds, targetVehicleType) {
+  async moveForward(durationInSeconds) {
     const mySessionId = this.simulationSessionId;
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+    const vehicle = this.getActiveVehicle();
     if (vehicle) vehicle.isMoving = true;
-
     return new Promise((resolve) => {
-      if (vehicle) {
-        this.activeTasks.set(vehicle.type, {
-          type: "TIMER",
-          timeLeft: Number(durationInSeconds),
-          resolve: resolve,
-          sessionId: mySessionId,
-        });
-      } else {
-        resolve();
-      }
+      this.activeTask = {
+        type: "TIMER",
+        timeLeft: Number(durationInSeconds),
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
     });
   }
 
@@ -417,22 +366,18 @@ export default class simulationEngine extends EventTarget {
    * @param {number} angle The amount, in degrees, that the tractor should turn.
    * @returns {Promise} Returns a new Promise to handle tractor turning.
    */
-  async turnXDegrees(angle, targetVehicleType) {
+  async turnXDegrees(angle) {
     const mySessionId = this.simulationSessionId;
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+    const vehicle = this.getActiveVehicle();
     if (vehicle) {
       vehicle.goalAngle += Number(angle);
     }
     return new Promise((resolve) => {
-      if (vehicle) {
-        this.activeTasks.set(vehicle.type, {
-          type: "TURN",
-          resolve: resolve,
-          sessionId: mySessionId,
-        });
-      } else {
-        resolve();
-      }
+      this.activeTask = {
+        type: "TURN",
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
     });
   }
 
@@ -441,27 +386,21 @@ export default class simulationEngine extends EventTarget {
    * @param {number} weeks How many weeks the tractor should wait for.
    * @returns {Promise} Returns a new Promise to wait a certain amount of time.
    */
-  async waitXWeeks(weeks, targetVehicleType) {
+  async waitXWeeks(weeks) {
     const mySessionId = this.simulationSessionId;
-    const durationInSeconds = Number(weeks) * 24.0 * 7.0;
+    const durationInSeconds = Number(weeks) * 7.0;
 
-    const vehicle = this.getTargetVehicle(targetVehicleType);
-    if (vehicle) vehicle.isMoving = false;
+    const vehicles = this.stateManager.getState("vehicles");
+    if (vehicles) vehicles.forEach((v) => (v.isMoving = false));
 
-    const weather = this.stateManager.getState("weather");
-    if (weather) weather.isWaiting = true;
-
+    this.nightFadeProgress = 0.5;
     return new Promise((resolve) => {
-      if (vehicle) {
-        this.activeTasks.set(vehicle.type, {
-          type: "TIMER",
-          timeLeft: durationInSeconds,
-          resolve: resolve,
-          sessionId: mySessionId,
-        });
-      } else {
-        resolve();
-      }
+      this.activeTask = {
+        type: "TIMER",
+        timeLeft: durationInSeconds,
+        resolve: resolve,
+        sessionId: mySessionId,
+      };
     });
   }
 
@@ -469,8 +408,8 @@ export default class simulationEngine extends EventTarget {
    * Toggles harvesting for the tractor on or off.
    * @param {boolean} isOn Whether or not harvesting should be enabled.
    */
-  toggleHarvesting(isOn, targetVehicleType) {
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+  toggleHarvesting(isOn) {
+    const vehicle = this.getActiveVehicle();
     if (vehicle && vehicle.type === VEHICLES.HARVESTER) {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
@@ -482,8 +421,8 @@ export default class simulationEngine extends EventTarget {
    * Toggles seeding for the tractor on or off.
    * @param {boolean} isOn Whether or not seeding should be enabled.
    */
-  toggleSeeding(isOn, targetVehicleType) {
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+  toggleSeeding(isOn) {
+    const vehicle = this.getActiveVehicle();
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
@@ -495,8 +434,8 @@ export default class simulationEngine extends EventTarget {
    * Switches the crop being planted by the seeder.
    * @param {CROP_TYPES} crop - The type of crop to plant
    */
-  switchCropBeingPlanted(crop, targetVehicleType) {
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+  switchCropBeingPlanted(crop) {
+    const vehicle = this.getActiveVehicle();
     if (vehicle) vehicle.cropBeingPlanted = crop;
   }
 
@@ -514,19 +453,17 @@ export default class simulationEngine extends EventTarget {
    * @param {any} type The type of tile to search for.
    * @returns {boolean} Whether or not a tile was found in front of the tractor.
    */
-  CheckIfPlantInFront(type, targetVehicleType) {
-    const vehicle = this.getTargetVehicle(targetVehicleType);
+  CheckIfPlantInFront(type) {
+    const vehicle = this.getActiveVehicle();
     if (!vehicle) return false;
 
     const field = this.stateManager.getState("field");
     const tractorManager = this.getManager(TractorManager);
 
-    for (const targetCrop of tractorManager.getTilesCurrentlyOver(
-      vehicle,
-      field,
-      tractorManager.HEADER_OFFSET,
-    )) {
-      if (targetCrop[0] && targetCrop[0].stage == type) {
+    let tilesOver = tractorManager.getTilesCurrentlyOver(vehicle, field);
+    for (let i = 0; i < tilesOver.length; i++) {
+      const cropState = tilesOver[i][0].cropState;
+      if (cropState && tilesOver[i][0].stage == type) {
         return true;
       }
     }
@@ -568,54 +505,26 @@ export default class simulationEngine extends EventTarget {
     if (weatherMgr)
       await weatherMgr.loadWeatherData(this.stateManager, station, start);
   }
+  clearCrashAndResetState() {
+    // kill old Blockly/task session
+    this.simulationSessionId++;
+    this.activeTask = null;
+    this.nightFadeProgress = -1.0;
 
-  /**
-   * Handles commands sent from workers
-   */
-  async handleWorkerMessage(data, worker) {
-    if (!this.isRunning) return;
+    // rebuild world
+    this.initializeStates();
 
-    const { command, args, vehicleType, requestId } = data;
+    // FORCE overwrite crash-related flags after initializeStates
+    this.stateManager.commitState("isGameOver", false);
+    this.stateManager.commitState("crash", null);
 
-    // Route the string command to the actual simulation API
-    switch (command) {
-      case "moveForward":
-        await this.moveForward(args[0], vehicleType);
-        break;
-      case "turnXDegrees":
-        await this.turnXDegrees(args[0], vehicleType);
-        break;
-      case "waitXWeeks":
-        await this.waitXWeeks(args[0], vehicleType);
-        break;
-      case "toggleHarvesting":
-        this.toggleHarvesting(args[0], vehicleType);
-        break;
-      case "toggleSeeding":
-        this.toggleSeeding(args[0], vehicleType);
-        break;
-      case "switchCropBeingPlanted":
-        this.switchCropBeingPlanted(args[0], vehicleType);
-        break;
-      default:
-        console.warn("Unknown worker command:", command);
-        break;
-    }
-
-    // Once the await finishes (the timer expires or turn completes),
-    // send a message back to the worker to let it resume executing its code.
-    if (worker) {
-      worker.postMessage({
-        type: "RESPONSE",
-        requestId: requestId,
-        result: true,
-      });
-    }
+    // optional: redraw immediately
+    this.timeStepEvent();
   }
 
   resetEverything() {
     this.simulationSessionId++;
-    this.activeTasks.clear();
+    this.activeTask = null;
     this.stopMovement();
     this.initializeStates();
     this.timeStepEvent();
@@ -628,7 +537,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   setMainVehicleCamera(type) {
-    this.getManager(TractorManager).activeVehicleCamera = type;
+    this.stateManager.commitState("activeVehicleCamera", type);
 
     this.timeStepEvent();
   }
@@ -639,19 +548,5 @@ export default class simulationEngine extends EventTarget {
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
     if (!vehicles) return null;
     return vehicles.find((v) => v.type == activeVehicleType);
-  }
-
-  /**
-   * Helper to get target vehicle for indiviudal code
-   * targetType: vehicleType of vehicle targeted
-   */
-  getTargetVehicle(targetType) {
-    const vehicleType =
-      targetType !== undefined
-        ? targetType
-        : this.stateManager.getState("activeVehicleType");
-    const vehicles = this.stateManager.getState("vehicles");
-    if (!vehicles) return null;
-    return vehicles.find((v) => v.type == vehicleType);
   }
 }
