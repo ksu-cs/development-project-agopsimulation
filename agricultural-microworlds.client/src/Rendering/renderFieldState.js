@@ -1,6 +1,11 @@
 import { CROP_STAGES, CROP_TYPES } from "../States/StateClasses/CropState";
 import { TILE_BASE_SIZE, TILE_HEIGHT, TILE_WIDTH } from "./renderingConstants";
 import RenderState from "./renderState";
+import dirtImage from "@/assets/T2D_Dirt_Placeholder.png";
+import seedImage from "@/assets/T2D_Planted_Placeholder.png";
+import wheatImage from "@/assets/wheat.png";
+import cornImage from "@/assets/corn.png";
+import soyImage from "@/assets/soybean.png";
 
 const IMAGE_KEYS = {
   DIRT: "dirt",
@@ -13,11 +18,11 @@ const IMAGE_KEYS = {
 export default class RenderFieldState extends RenderState {
   constructor() {
     const paths = {
-      [IMAGE_KEYS.DIRT]: "./src/assets/T2D_Dirt_Placeholder.png",
-      [IMAGE_KEYS.SEED]: "./src/assets/T2D_Planted_Placeholder.png",
-      [IMAGE_KEYS.WHEAT]: "./src/assets/wheat.png",
-      [IMAGE_KEYS.CORN]: "./src/assets/corn.png",
-      [IMAGE_KEYS.SOY]: "./src/assets/soybean.png",
+      [IMAGE_KEYS.DIRT]: dirtImage,
+      [IMAGE_KEYS.SEED]: seedImage,
+      [IMAGE_KEYS.WHEAT]: wheatImage,
+      [IMAGE_KEYS.CORN]: cornImage,
+      [IMAGE_KEYS.SOY]: soyImage,
     };
     super(paths, paths.length);
   }

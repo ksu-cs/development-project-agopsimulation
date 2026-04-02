@@ -1,6 +1,9 @@
 import { VEHICLES } from "../States/StateClasses/ImplementState";
 import { FRAME_HEIGHT, FRAME_WIDTH } from "./renderingConstants";
 import RenderState from "./renderState";
+import harvesterImage from "@/assets/combine-harvester.png";
+import seederImage from "@/assets/seeder.png";
+import crashImage from "@/assets/crash_sprite_overlay.png";
 
 const IMAGE_KEYS = {
   HARVESTER: "harvester",
@@ -11,9 +14,9 @@ const IMAGE_KEYS = {
 export default class RenderImplementState extends RenderState {
   constructor() {
     const paths = {
-      [IMAGE_KEYS.HARVESTER]: "./src/assets/combine-harvester.png",
-      [IMAGE_KEYS.SEEDER]: "./src/assets/seeder.png",
-      [IMAGE_KEYS.CRASH]: "./src/assets/crash_sprite_overlay.png",
+      [IMAGE_KEYS.HARVESTER]: harvesterImage,
+      [IMAGE_KEYS.SEEDER]: seederImage,
+      [IMAGE_KEYS.CRASH]: crashImage,
     };
     super(paths, paths.length);
   }
