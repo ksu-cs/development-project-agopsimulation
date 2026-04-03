@@ -260,6 +260,8 @@ export default class simulationEngine extends EventTarget {
 
     if (this.stateManager.states.isGameOver) {
       this.stopMovement();
+      this.dispatchEvent(new CustomEvent("simulationCrashed"));
+      return;
     }
   }
 
