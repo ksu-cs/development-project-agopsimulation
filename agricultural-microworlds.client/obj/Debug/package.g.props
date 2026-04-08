@@ -5,14 +5,14 @@
     <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
     <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">0.0.0</PackageJsonVersion>
     <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
-    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
+    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">cd ../Agricultural-Microworlds.Server &amp;&amp; dotnet run</PackageJsonScriptsDev>
+    <PackageJsonScriptsDevStatic Condition="$(PackageJsonScriptsDevStatic) == ''">vite</PackageJsonScriptsDevStatic>
     <PackageJsonScriptsDevSvg Condition="$(PackageJsonScriptsDevSvg) == ''">OPEN_SVG=true vite</PackageJsonScriptsDevSvg>
     <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">vite build</PackageJsonScriptsBuild>
     <PackageJsonScriptsTest Condition="$(PackageJsonScriptsTest) == ''">jest</PackageJsonScriptsTest>
     <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">eslint .</PackageJsonScriptsLint>
     <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
-    <PackageJsonScriptsPrettierCheck Condition="$(PackageJsonScriptsPrettierCheck) == ''">prettier --check .</PackageJsonScriptsPrettierCheck>
-    <PackageJsonScriptsPrettierFix Condition="$(PackageJsonScriptsPrettierFix) == ''">prettier --write .</PackageJsonScriptsPrettierFix>
+    <PackageJsonScriptsFormat Condition="$(PackageJsonScriptsFormat) == ''">prettier --write .</PackageJsonScriptsFormat>
     <PackageJsonDependenciesBlockly Condition="$(PackageJsonDependenciesBlockly) == ''">12.3.1</PackageJsonDependenciesBlockly>
     <PackageJsonDependenciesReact Condition="$(PackageJsonDependenciesReact) == ''">^19.1.1</PackageJsonDependenciesReact>
     <PackageJsonDependenciesReactDom Condition="$(PackageJsonDependenciesReactDom) == ''">^19.1.1</PackageJsonDependenciesReactDom>

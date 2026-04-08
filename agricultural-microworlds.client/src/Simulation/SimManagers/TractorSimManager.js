@@ -8,7 +8,7 @@ import {
   plant,
   reset,
 } from "../../States/StateClasses/CropState";
-import { VEHICLES } from "../../States/StateClasses/ImplementState";
+import { VEHICLE_FUEL_CONSUMPTION, VEHICLES } from "../../States/StateClasses/ImplementState";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -58,6 +58,8 @@ export default class TractorSimManager extends SimManager {
         const rad = (newTractor.angle * Math.PI) / 180;
         newTractor.x += Math.cos(rad) * moveDistance;
         newTractor.y += Math.sin(rad) * moveDistance;
+        newTractor.fuelConsumed +=
+          VEHICLE_FUEL_CONSUMPTION[newTractor.type] * deltaTime;
       }
 
       // Interaction Logic

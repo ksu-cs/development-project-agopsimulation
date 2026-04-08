@@ -38,5 +38,8 @@ export default class RenderStatState extends RenderState {
       const typeName = data.activeVehicleType === 1 ? "Seeder" : "Harvester";
       activeVehicleEl.innerText = "Active Vehicle: " + typeName;
     }
+
+    const fuelEl = document.getElementById("fuelText");
+    if (fuelEl) fuelEl.innerText = "Total Fuel Consumed: " + data.fuelConsumed + " G";
   }
 }

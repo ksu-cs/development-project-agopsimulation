@@ -334,6 +334,9 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
+    const totalFuelConsumed = vehicles.reduce((total, v) => total + (v.fuelConsumed || 0), 0);
+    const fuelConsumed = totalFuelConsumed.toFixed(2);
+
     const currentTime = weather.timeAccumulator;
 
     const statData = {
@@ -343,6 +346,7 @@ export default class simulationEngine extends EventTarget {
       rainString,
       activeVehicleType,
       currentTime,
+      fuelConsumed: fuelConsumed,
     };
 
     const fieldData = {

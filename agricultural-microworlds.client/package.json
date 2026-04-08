@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "cd ../Agricultural-Microworlds.Server && dotnet run",
-    "dev --static": "vite",
+    "dev--static": "vite",
     "dev:svg": "OPEN_SVG=true vite",
     "build": "vite build",
     "test": "jest",
