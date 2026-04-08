@@ -16,6 +16,7 @@ import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState"
 import SimManager from "../Simulation/SimManager";
 import RenderStatState from "../Rendering/renderStatState";
 import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
+import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -198,8 +199,10 @@ export default class simulationEngine extends EventTarget {
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+    const vehicleManager = this.getManager(TractorSimManager);
+    const waitingMulti = (vehicleManager && vehicleManager.areAllVehiclesInactive(this.stateManager)) ? 6 : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
-    const simDeltaTime = safeRealDelta * speedMult;
+    const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -282,9 +285,6 @@ export default class simulationEngine extends EventTarget {
           const v = vehicles.find((v) => v.type == vehicleType);
           if (v) v.isMoving == false;
         }
-
-        const weather = this.stateManager.getState("weather");
-        if (weather) weather.isWaiting = false;
       }
 
       resolve();
@@ -447,9 +447,6 @@ export default class simulationEngine extends EventTarget {
 
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = false;
-
-    const weather = this.stateManager.getState("weather");
-    if (weather) weather.isWaiting = true;
 
     return new Promise((resolve) => {
       if (vehicle) {
