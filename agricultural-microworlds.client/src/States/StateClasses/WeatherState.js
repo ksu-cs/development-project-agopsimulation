@@ -7,7 +7,6 @@ export default class WeatherState {
     this.currentDayIndex = 0;
     this.timeAccumulator = 5; // Counts up to 24.0 (1 second = 1 hour)
     this.speedMultiplier = 1; // Controls simulation speed
-    this.isWaiting = false;
 
     // GDD Tracking
     this.cumulativeGDD = 0;
@@ -35,7 +34,6 @@ export default class WeatherState {
    * @returns {number} The speed multi at which the game should run at.
    */
   getSpeedMultiplier() {
-    if (this.isWaiting) return this.speedMultiplier * 6.0;
     return this.speedMultiplier;
   }
 }

@@ -269,6 +269,26 @@ export default class TractorSimManager extends SimManager {
   }
 
   /**
+   * Checks if all vehicles are waiting, so we can speed up the night cycle waiting time.
+   * @param {any} stateManager The state manager.
+   * @returns {boolean} Whether or not there are vehicles that are waiting.
+   **/
+  areAllVehiclesWaiting(stateManager) {
+    if (!stateManager) return false;
+
+    const vehicles = stateManager.getState("vehicles");
+    if (!vehicles || vehicles.length <= 0) return false;
+
+    for (const vehicle of vehicles) {
+      if (!vehicle) continue;
+      if (vehicle.isMoving) return false;
+      if (Math.abs(vehicle.goalAngle - vehicle.angle) > 0.1) return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Checks if any vehicle has consumed all of its fuel, and if so ends the game.
    * @param {any} newState The new state of the game, which may have updated fuel consumption values.
    * @returns {boolean} Returns true if a vehicle has run out of fuel and the game is now over, otherwise false.
