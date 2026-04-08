@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "cd ../Agricultural-Microworlds.Server && dotnet run",
+    "dev --static": "vite",
     "dev:svg": "OPEN_SVG=true vite",
     "build": "vite build",
     "test": "jest",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prettier-check": "prettier --check .",
-    "prettier-fix": "prettier --write ."
+    "format": "prettier --write ."
   },
   "dependencies": {
     "blockly": "12.3.1",

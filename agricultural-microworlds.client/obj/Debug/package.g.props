@@ -8,20 +8,27 @@
     <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
     <PackageJsonScriptsDevSvg Condition="$(PackageJsonScriptsDevSvg) == ''">OPEN_SVG=true vite</PackageJsonScriptsDevSvg>
     <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">vite build</PackageJsonScriptsBuild>
+    <PackageJsonScriptsTest Condition="$(PackageJsonScriptsTest) == ''">jest</PackageJsonScriptsTest>
     <PackageJsonScriptsLint Condition="$(PackageJsonScriptsLint) == ''">eslint .</PackageJsonScriptsLint>
     <PackageJsonScriptsPreview Condition="$(PackageJsonScriptsPreview) == ''">vite preview</PackageJsonScriptsPreview>
-    <PackageJsonScriptsPrettier Condition="$(PackageJsonScriptsPrettier) == ''">prettier --write .</PackageJsonScriptsPrettier>
+    <PackageJsonScriptsPrettierCheck Condition="$(PackageJsonScriptsPrettierCheck) == ''">prettier --check .</PackageJsonScriptsPrettierCheck>
+    <PackageJsonScriptsPrettierFix Condition="$(PackageJsonScriptsPrettierFix) == ''">prettier --write .</PackageJsonScriptsPrettierFix>
     <PackageJsonDependenciesBlockly Condition="$(PackageJsonDependenciesBlockly) == ''">12.3.1</PackageJsonDependenciesBlockly>
     <PackageJsonDependenciesReact Condition="$(PackageJsonDependenciesReact) == ''">^19.1.1</PackageJsonDependenciesReact>
     <PackageJsonDependenciesReactDom Condition="$(PackageJsonDependenciesReactDom) == ''">^19.1.1</PackageJsonDependenciesReactDom>
+    <PackageJsonDevdependenciesBabelCore Condition="$(PackageJsonDevdependenciesBabelCore) == ''">^7.29.0</PackageJsonDevdependenciesBabelCore>
+    <PackageJsonDevdependenciesBabelPresetEnv Condition="$(PackageJsonDevdependenciesBabelPresetEnv) == ''">^7.29.0</PackageJsonDevdependenciesBabelPresetEnv>
     <PackageJsonDevdependenciesEslintJs Condition="$(PackageJsonDevdependenciesEslintJs) == ''">^9.36.0</PackageJsonDevdependenciesEslintJs>
     <PackageJsonDevdependenciesTypesReact Condition="$(PackageJsonDevdependenciesTypesReact) == ''">^19.1.16</PackageJsonDevdependenciesTypesReact>
     <PackageJsonDevdependenciesTypesReactDom Condition="$(PackageJsonDevdependenciesTypesReactDom) == ''">^19.1.9</PackageJsonDevdependenciesTypesReactDom>
     <PackageJsonDevdependenciesVitejsPluginReact Condition="$(PackageJsonDevdependenciesVitejsPluginReact) == ''">^5.0.4</PackageJsonDevdependenciesVitejsPluginReact>
+    <PackageJsonDevdependenciesBabelJest Condition="$(PackageJsonDevdependenciesBabelJest) == ''">^30.2.0</PackageJsonDevdependenciesBabelJest>
     <PackageJsonDevdependenciesEslint Condition="$(PackageJsonDevdependenciesEslint) == ''">^9.36.0</PackageJsonDevdependenciesEslint>
     <PackageJsonDevdependenciesEslintPluginReactHooks Condition="$(PackageJsonDevdependenciesEslintPluginReactHooks) == ''">^5.2.0</PackageJsonDevdependenciesEslintPluginReactHooks>
     <PackageJsonDevdependenciesEslintPluginReactRefresh Condition="$(PackageJsonDevdependenciesEslintPluginReactRefresh) == ''">^0.4.22</PackageJsonDevdependenciesEslintPluginReactRefresh>
     <PackageJsonDevdependenciesGlobals Condition="$(PackageJsonDevdependenciesGlobals) == ''">^16.4.0</PackageJsonDevdependenciesGlobals>
+    <PackageJsonDevdependenciesJest Condition="$(PackageJsonDevdependenciesJest) == ''">^30.2.0</PackageJsonDevdependenciesJest>
+    <PackageJsonDevdependenciesJsdoc Condition="$(PackageJsonDevdependenciesJsdoc) == ''">^4.0.5</PackageJsonDevdependenciesJsdoc>
     <PackageJsonDevdependenciesPrettier Condition="$(PackageJsonDevdependenciesPrettier) == ''">^3.6.2</PackageJsonDevdependenciesPrettier>
     <PackageJsonDevdependenciesVite Condition="$(PackageJsonDevdependenciesVite) == ''">^7.1.7</PackageJsonDevdependenciesVite>
   </PropertyGroup>

@@ -52,6 +52,9 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
+    this.simulationEngine.addEventListener("simulationCrashed", () => {
+      this.stopButtonOnClick();
+    });
 
     const checkLoaded = setInterval(() => {
       const modules = Object.values(this.drawCanvas.renderModules);

@@ -1,0 +1,39 @@
+name: DeploySimulation
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: SetupNode
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Dependencies
+        working-directory: ./agricultural-microworlds.client
+        run: npm install
+
+      - name: Build Simulation
+        working-directory: ./agricultural-microworlds.client
+        run: npm run build
+
+      - name: Upload Page Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./agricultural-microworlds.client/dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
