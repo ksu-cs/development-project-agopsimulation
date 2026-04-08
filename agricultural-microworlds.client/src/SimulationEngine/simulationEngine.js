@@ -200,7 +200,7 @@ export default class simulationEngine extends EventTarget {
     const weather = oldStates.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
     const vehicleManager = this.getManager(TractorSimManager);
-    const waitingMulti = (vehicleManager && vehicleManager.areAllVehiclesInactive(this.stateManager)) ? 6 : 1;
+    const waitingMulti = (vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)) ? 6 : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
 

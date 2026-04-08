@@ -257,11 +257,11 @@ export default class TractorSimManager extends SimManager {
   }
 
   /**
-   * Checks if all vehicles are waiting, so we can speed up the night cycle waiting.
+   * Checks if all vehicles are waiting, so we can speed up the night cycle waiting time.
    * @param {any} stateManager The state manager.
    * @returns {boolean} Whether or not there are vehicles that are waiting.
   **/
-  areAllVehiclesInactive(stateManager) {
+  areAllVehiclesWaiting(stateManager) {
     if (!stateManager) return false;
 
     const vehicles = stateManager.getState("vehicles");
