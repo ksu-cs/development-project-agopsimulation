@@ -5,8 +5,8 @@
     <PackageJsonPrivate Condition="$(PackageJsonPrivate) == ''">true</PackageJsonPrivate>
     <PackageJsonVersion Condition="$(PackageJsonVersion) == ''">0.0.0</PackageJsonVersion>
     <PackageJsonType Condition="$(PackageJsonType) == ''">module</PackageJsonType>
-    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">cd ../Agricultural-Microworlds.Server &amp;&amp; dotnet run</PackageJsonScriptsDev>
-    <PackageJsonScriptsDevStatic Condition="$(PackageJsonScriptsDevStatic) == ''">vite</PackageJsonScriptsDevStatic>
+    <PackageJsonScriptsDevServer Condition="$(PackageJsonScriptsDevServer) == ''">cd ../Agricultural-Microworlds.Server &amp;&amp; dotnet run</PackageJsonScriptsDevServer>
+    <PackageJsonScriptsDev Condition="$(PackageJsonScriptsDev) == ''">vite</PackageJsonScriptsDev>
     <PackageJsonScriptsDevSvg Condition="$(PackageJsonScriptsDevSvg) == ''">OPEN_SVG=true vite</PackageJsonScriptsDevSvg>
     <PackageJsonScriptsBuild Condition="$(PackageJsonScriptsBuild) == ''">vite build</PackageJsonScriptsBuild>
     <PackageJsonScriptsTest Condition="$(PackageJsonScriptsTest) == ''">jest</PackageJsonScriptsTest>
