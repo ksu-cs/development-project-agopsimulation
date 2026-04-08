@@ -512,6 +512,17 @@ export default class simulationEngine extends EventTarget {
   }
 
   /**
+   * Fills the fuel tank of the specified vehicle to full capacity.
+   * @param {VEHICLES} targetVehicleType The vehicle type of the fuel tank to fill.
+   */
+  fillVehicleFuelTank(targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle) {
+      vehicle.fuelInTankUsed = 0;
+    }
+  }
+
+  /**
    * Sets the speed multiplier for the simulation's weather manager.
    * @param {number} speed The speed multiplier for the weather.
    */
