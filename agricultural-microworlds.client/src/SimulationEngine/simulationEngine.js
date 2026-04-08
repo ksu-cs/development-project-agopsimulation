@@ -517,9 +517,7 @@ export default class simulationEngine extends EventTarget {
    */
   fillVehicleFuelTank(targetVehicleType) {
     const vehicle = this.getTargetVehicle(targetVehicleType);
-    if (vehicle) {
-      vehicle.fuelInTankUsed = 0;
-    }
+    if (vehicle) vehicle.fuelInTankUsed = 0;
   }
 
   /**
@@ -618,6 +616,9 @@ export default class simulationEngine extends EventTarget {
         break;
       case "switchCropBeingPlanted":
         this.switchCropBeingPlanted(args[0], vehicleType);
+        break;
+      case "fillVehicleFuelTank":
+        this.fillVehicleFuelTank(args[0]);
         break;
       default:
         console.warn("Unknown worker command:", command);
