@@ -43,6 +43,12 @@ class CanvasContainer extends Component {
             <p className={styles.statText} id="fuelText">
               Total Fuel Consumed: 0.00 G
             </p>
+            <p className={styles.statText} id="harvesterFuelLevelText">
+              Harvester Fuel Level: 300.00 G
+            </p>
+            <p className={styles.statText} id="seederFuelLevelText">
+              Seeder Fuel Level: 200.00 G
+            </p>
           </div>
           <canvas
             id="gameCanvas"

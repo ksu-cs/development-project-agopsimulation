@@ -8,7 +8,7 @@ import {
   plant,
   reset,
 } from "../../States/StateClasses/CropState";
-import { VEHICLE_FUEL_CONSUMPTION, VEHICLES } from "../../States/StateClasses/ImplementState";
+import { VEHICLE_FUEL_CAPACITY, VEHICLE_FUEL_CONSUMPTION, VEHICLES } from "../../States/StateClasses/ImplementState";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -58,7 +58,9 @@ export default class TractorSimManager extends SimManager {
         const rad = (newTractor.angle * Math.PI) / 180;
         newTractor.x += Math.cos(rad) * moveDistance;
         newTractor.y += Math.sin(rad) * moveDistance;
-        newTractor.fuelConsumed +=
+        newTractor.totalFuelConsumed +=
+          VEHICLE_FUEL_CONSUMPTION[newTractor.type] * deltaTime;
+        newTractor.fuelInTankUsed +=
           VEHICLE_FUEL_CONSUMPTION[newTractor.type] * deltaTime;
       }
 
@@ -75,6 +77,11 @@ export default class TractorSimManager extends SimManager {
     if (this.checkVehicleCollisions(newState)) {
       return;
     }
+
+    if (this.checkVehicleFuel(newState)) {
+      return;
+    }
+
   }
 
   handleHarvesting(tractor, field) {
@@ -257,4 +264,26 @@ export default class TractorSimManager extends SimManager {
 
     return false;
   }
+
+  /**
+   * Checks if any vehicle has consumed all of its fuel, and if so ends the game.
+   * @param {any} newState The new state of the game, which may have updated fuel consumption values.
+   * @returns {boolean} Returns true if a vehicle has run out of fuel and the game is now over, otherwise false.
+   */
+  checkVehicleFuel(newState) {
+    const vehicles = newState.vehicles;
+    if (!vehicles) return false;
+
+    for (let i = 0; i < vehicles.length; i++) {
+      const vehicle = vehicles[i];
+      const fuelCapacity = VEHICLE_FUEL_CAPACITY[vehicle.type];
+      if (vehicle.fuelInTankUsed >= fuelCapacity) {
+        newState.isGameOver = true;
+        return true;
+      }
+    }
+    return false;
+  }
 }
+
+

@@ -5,6 +5,7 @@ import {
   CROP_TYPES,
 } from "../States/StateClasses/CropState";
 import ImplementState, {
+  VEHICLE_FUEL_CAPACITY,
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
@@ -334,8 +335,12 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
-    const totalFuelConsumed = vehicles.reduce((total, v) => total + (v.fuelConsumed || 0), 0);
+    const totalFuelConsumed = vehicles.reduce((total, v) => total + (v.totalFuelConsumed || 0), 0);
     const fuelConsumed = totalFuelConsumed.toFixed(2);
+
+    const harvesterFuelLevel = VEHICLE_FUEL_CAPACITY[VEHICLES.HARVESTER] - (vehicles[VEHICLES.HARVESTER]?.fuelInTankUsed);
+    const seederFuelLevel = VEHICLE_FUEL_CAPACITY[VEHICLES.SEEDER] - (vehicles[VEHICLES.SEEDER]?.fuelInTankUsed);
+
 
     const currentTime = weather.timeAccumulator;
 
@@ -347,6 +352,8 @@ export default class simulationEngine extends EventTarget {
       activeVehicleType,
       currentTime,
       fuelConsumed: fuelConsumed,
+      harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
+      seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
     };
 
     const fieldData = {
