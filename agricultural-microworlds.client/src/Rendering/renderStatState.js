@@ -40,12 +40,17 @@ export default class RenderStatState extends RenderState {
     }
 
     const fuelEl = document.getElementById("fuelText");
-    if (fuelEl) fuelEl.innerText = "Total Fuel Consumed: " + data.fuelConsumed + " G";
+    if (fuelEl)
+      fuelEl.innerText = "Total Fuel Consumed: " + data.fuelConsumed + " G";
 
     const harvesterFuelEl = document.getElementById("harvesterFuelLevelText");
-    if (harvesterFuelEl) harvesterFuelEl.innerText = "Harvester Fuel Level: " + data.harvesterFuelLevel + " G";
+    if (harvesterFuelEl)
+      harvesterFuelEl.innerText =
+        "Harvester Fuel Level: " + data.harvesterFuelLevel + " G";
 
     const seederFuelEl = document.getElementById("seederFuelLevelText");
-    if (seederFuelEl) seederFuelEl.innerText = "Seeder Fuel Level: " + data.seederFuelLevel + " G";
+    if (seederFuelEl)
+      seederFuelEl.innerText =
+        "Seeder Fuel Level: " + data.seederFuelLevel + " G";
   }
 }

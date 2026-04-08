@@ -8,7 +8,11 @@ import {
   plant,
   reset,
 } from "../../States/StateClasses/CropState";
-import { VEHICLE_FUEL_CAPACITY, VEHICLE_FUEL_CONSUMPTION, VEHICLES } from "../../States/StateClasses/ImplementState";
+import {
+  VEHICLE_FUEL_CAPACITY,
+  VEHICLE_FUEL_CONSUMPTION,
+  VEHICLES,
+} from "../../States/StateClasses/ImplementState";
 
 export default class TractorSimManager extends SimManager {
   constructor() {
@@ -81,7 +85,6 @@ export default class TractorSimManager extends SimManager {
     if (this.checkVehicleFuel(newState)) {
       return;
     }
-
   }
 
   handleHarvesting(tractor, field) {
@@ -285,5 +288,3 @@ export default class TractorSimManager extends SimManager {
     return false;
   }
 }
-
-

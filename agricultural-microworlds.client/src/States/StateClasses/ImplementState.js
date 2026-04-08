@@ -8,12 +8,12 @@ export const VEHICLES = {
 export const VEHICLE_FUEL_CAPACITY = {
   [VEHICLES.HARVESTER]: 300,
   [VEHICLES.SEEDER]: 200,
-}
+};
 
 export const VEHICLE_FUEL_CONSUMPTION = {
   [VEHICLES.HARVESTER]: 12.5,
   [VEHICLES.SEEDER]: 5,
-}
+};
 
 export default class ImplementState {
   constructor() {
