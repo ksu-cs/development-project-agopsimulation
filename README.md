@@ -35,8 +35,6 @@ After that finishes run ```npm run dev```, this should open a new tab where the 
 
 Now you have gotten Agricultrual Microworld running! See the User Guide (add user guide page link) for how to use the application.
 
+## Other Documentation
 
-## User Guide
-
-## How to Contribute
-
+Please checkout our further documentation generated using Jolli at, https://ag-microworlds-docs-ksu-cs.jolli.site/overview
