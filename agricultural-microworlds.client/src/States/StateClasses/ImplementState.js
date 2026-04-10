@@ -5,6 +5,16 @@ export const VEHICLES = {
   SEEDER: 1,
 };
 
+export const VEHICLE_FUEL_CAPACITY = {
+  [VEHICLES.HARVESTER]: 300,
+  [VEHICLES.SEEDER]: 200,
+};
+
+export const VEHICLE_FUEL_CONSUMPTION = {
+  [VEHICLES.HARVESTER]: 12.5,
+  [VEHICLES.SEEDER]: 5,
+};
+
 export default class ImplementState {
   constructor() {
     this.basespeed = 20;
@@ -14,6 +24,8 @@ export default class ImplementState {
     this.y = 0;
     this.angle = 0;
     this.goalAngle = 0;
+    this.totalFuelConsumed = 0;
+    this.fuelInTankUsed = 0;
 
     // Flags
     this.isMoving = false;
@@ -34,6 +46,8 @@ export default class ImplementState {
     newState.y = this.y;
     newState.angle = this.angle;
     newState.goalAngle = this.goalAngle;
+    newState.totalFuelConsumed = this.totalFuelConsumed;
+    newState.fuelInTankUsed = this.fuelInTankUsed;
 
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
