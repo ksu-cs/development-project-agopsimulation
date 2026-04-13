@@ -15,7 +15,6 @@ import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 import SimManager from "../Simulation/SimManager";
-import RenderStatState from "../Rendering/renderStatState";
 import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
@@ -182,12 +181,19 @@ export default class simulationEngine extends EventTarget {
     this.timeStepEvent();
   }
 
+  loop(){
+    while(!this.stateManager.states.isGameOver && this.isRunning){
+      this.engineLoop();
+      this.renderLoop();
+    }
+  }
+
   /**
    * The main game loop.
    * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
    * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
-  loop(timestamp) {
+  engineLoop(timestamp) {
     if (!this.isRunning) return;
 
     if (!timestamp) timestamp = performance.now();
@@ -404,6 +410,10 @@ export default class simulationEngine extends EventTarget {
         detail: ts,
       }),
     );
+  }
+
+  renderLoop(){
+
   }
 
   // --- ASYNC COMMANDS ---
