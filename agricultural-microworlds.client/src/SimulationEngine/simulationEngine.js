@@ -5,6 +5,7 @@ import {
   CROP_TYPES,
 } from "../States/StateClasses/CropState";
 import ImplementState, {
+  VEHICLE_FUEL_CAPACITY,
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
@@ -16,6 +17,7 @@ import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState"
 import SimManager from "../Simulation/SimManager";
 import RenderStatState from "../Rendering/renderStatState";
 import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
+import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -198,8 +200,13 @@ export default class simulationEngine extends EventTarget {
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+    const vehicleManager = this.getManager(TractorSimManager);
+    const waitingMulti =
+      vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
+        ? 6
+        : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
-    const simDeltaTime = safeRealDelta * speedMult;
+    const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -283,9 +290,6 @@ export default class simulationEngine extends EventTarget {
           const v = vehicles.find((v) => v.type == vehicleType);
           if (v) v.isMoving == false;
         }
-
-        const weather = this.stateManager.getState("weather");
-        if (weather) weather.isWaiting = false;
       }
 
       resolve();
@@ -335,6 +339,19 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
+    const totalFuelConsumed = vehicles.reduce(
+      (total, v) => total + (v.totalFuelConsumed || 0),
+      0,
+    );
+    const fuelConsumed = totalFuelConsumed.toFixed(2);
+
+    const harvesterFuelLevel =
+      VEHICLE_FUEL_CAPACITY[VEHICLES.HARVESTER] -
+      vehicles[VEHICLES.HARVESTER]?.fuelInTankUsed;
+    const seederFuelLevel =
+      VEHICLE_FUEL_CAPACITY[VEHICLES.SEEDER] -
+      vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
+
     const currentTime = weather.timeAccumulator;
 
     const statData = {
@@ -344,6 +361,9 @@ export default class simulationEngine extends EventTarget {
       rainString,
       activeVehicleType,
       currentTime,
+      fuelConsumed: fuelConsumed,
+      harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
+      seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
     };
 
     const fieldData = {
@@ -454,9 +474,6 @@ export default class simulationEngine extends EventTarget {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = false;
 
-    const weather = this.stateManager.getState("weather");
-    if (weather) weather.isWaiting = true;
-
     return new Promise((resolve) => {
       if (vehicle) {
         this.activeTasks.set(vehicle.type, {
@@ -504,6 +521,15 @@ export default class simulationEngine extends EventTarget {
   switchCropBeingPlanted(crop, targetVehicleType) {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.cropBeingPlanted = crop;
+  }
+
+  /**
+   * Fills the fuel tank of the specified vehicle to full capacity.
+   * @param {VEHICLES} targetVehicleType The vehicle type of the fuel tank to fill.
+   */
+  fillVehicleFuelTank(targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle) vehicle.fuelInTankUsed = 0;
   }
 
   /**
@@ -603,6 +629,9 @@ export default class simulationEngine extends EventTarget {
         break;
       case "switchCropBeingPlanted":
         this.switchCropBeingPlanted(args[0], vehicleType);
+        break;
+      case "fillVehicleFuelTank":
+        this.fillVehicleFuelTank(args[0]);
         break;
       default:
         console.warn("Unknown worker command:", command);
