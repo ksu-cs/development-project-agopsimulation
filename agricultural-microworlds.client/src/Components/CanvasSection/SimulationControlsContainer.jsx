@@ -238,7 +238,7 @@ class SimulationControlsContainer extends Component {
         
         moveForward: function(d) { return this._send('moveForward', [d]); },
         turnXDegrees: function(d) { return this._send('turnXDegrees', [d]); },
-        waitXWeeks: function(d) { return this._send('waitXWeeks', [d]); },
+        waitXTime: function(d, t) { return this._send('waitXTime', [d, t]); },
         toggleHarvesting: function(b) { return this._send('toggleHarvesting', [b]); },
         toggleSeeding: function(b) { return this._send('toggleSeeding', [b]); },
         switchCropBeingPlanted: function(c) { return this._send('switchCropBeingPlanted', [c]); },

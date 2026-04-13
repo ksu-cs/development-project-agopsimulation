@@ -188,14 +188,24 @@ Blocks["toggle_seeding"] = {
   },
 };
 
-var waitXWeeks = {
-  type: "wait_x_weeks",
-  message0: "wait %1 weeks",
+var waitXTime = {
+  type: "wait_x_time",
+  message0: "wait %1 %2",
   args0: [
     {
       type: "input_value",
       name: "WEEKS",
       check: "Number",
+    },
+    {
+      type: "field_dropdown",
+      name: "time_value",
+      options: [
+        ["Minutes", "0"],
+        ["Hours", "1"],
+        ["Days", "2"],
+        ["Weeks", "3"],
+      ],
     },
   ],
   previousStatement: null,
@@ -203,9 +213,9 @@ var waitXWeeks = {
   style: "control_blocks",
   tooltip: "Wait for a certain number of weeks",
 };
-Blocks["wait_x_weeks"] = {
+Blocks["wait_x_time"] = {
   init: function () {
-    this.jsonInit(waitXWeeks);
+    this.jsonInit(waitXTime);
   },
 };
 

@@ -70,7 +70,10 @@ export default class WeatherManager extends SimManager {
     const prev = weather.timeAccumulator;
     weather.timeAccumulator += deltaTime;
 
-    if (prev < this.dayLength - 60 && weather.timeAccumulator >= this.dayLength - 60) {
+    if (
+      prev < this.dayLength - 60 &&
+      weather.timeAccumulator >= this.dayLength - 60
+    ) {
       this.advanceDay(weather, weather);
     }
     if (weather.timeAccumulator >= this.dayLength) {

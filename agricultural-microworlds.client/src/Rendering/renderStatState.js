@@ -21,7 +21,7 @@ export default class RenderStatState extends RenderState {
       const formattedHours = totalHours.toString().padStart(2, "0");
       const formattedMinutes = totalMinutes.toString().padStart(2, "0");
       const formattedMeridiem =
-        data.currentTime % (23*60) >= (11*60) ? "P.M." : "A.M.";
+        data.currentTime % (23 * 60) >= 11 * 60 ? "P.M." : "A.M.";
       timeEl.innerText = `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
     }
 
