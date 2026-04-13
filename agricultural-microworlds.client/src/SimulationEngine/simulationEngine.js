@@ -38,6 +38,7 @@ export default class simulationEngine extends EventTarget {
     this.TILE_HEIGHT = this.TILE_SIZE;
     this.FRAME_WIDTH = 64;
     this.FRAME_HEIGHT = 64;
+    this.RENDER_FRAMES_PER_SECOND = 60;
 
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
@@ -177,7 +178,6 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
-    cancelAnimationFrame(this.animationId);
     this.timeStepEvent();
   }
 
@@ -191,14 +191,19 @@ export default class simulationEngine extends EventTarget {
   /**
    * The main game loop.
    * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
-   * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
-  engineLoop(timestamp) {
+  engineLoop() {
     if (!this.isRunning) return;
 
-    if (!timestamp) timestamp = performance.now();
-    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000;
+    console.log("last frame time:", this.lastFrameTime);
+    const timestamp = performance.now();
+    /**
+     * How much time has passed since last frame
+     */
+    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000; // so little time passes between loops that it is basically treated as zero by the engine, add minimum threshold between loops to prevent this
     this.lastFrameTime = timestamp;
+    console.log("real delta time:", realDeltaTime);
+    console.log("timestamp:", timestamp);
 
     const oldStates = this.stateManager.states;
     const nextStates = {};
@@ -265,11 +270,6 @@ export default class simulationEngine extends EventTarget {
     for (const key in nextStates) {
       this.stateManager.commitState(key, nextStates[key]);
     }
-
-    // 6. Update Visuals
-    this.timeStepEvent();
-
-    this.animationId = requestAnimationFrame(this.loop.bind(this));
 
     if (this.stateManager.states.isGameOver) {
       this.stopMovement();
@@ -413,7 +413,13 @@ export default class simulationEngine extends EventTarget {
   }
 
   renderLoop(){
-
+    // check if enough time has passed since last render to render again
+    const timestamp = performance.now();
+    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000;
+    if (realDeltaTime >= 1 / this.RENDER_FRAMES_PER_SECOND) {
+      this.timeStepEvent();
+      this.lastFrameTime = timestamp;
+    }
   }
 
   // --- ASYNC COMMANDS ---

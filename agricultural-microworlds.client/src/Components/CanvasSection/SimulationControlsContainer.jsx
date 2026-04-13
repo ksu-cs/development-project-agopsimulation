@@ -162,6 +162,7 @@ class SimulationControlsContainer extends Component {
     spawnWorker(seederCode, 1);
 
     if (this.expectedWorkers > 0) {
+      console.log("right before startMoving");
       this.simulationEngine.startMoving();
     } else {
       alert("You must put code blocks on the workspace to run the simulation!");
