@@ -5,6 +5,7 @@ export default class WeatherManager extends SimManager {
     super();
     this.WHEAT_BASE_TEMP = 10;
     this.weatherDataCache = null;
+    this.dayLength = 24 * 60;
   }
 
   async loadWeatherData(stateManager, stationId, startDateString) {
@@ -54,7 +55,7 @@ export default class WeatherManager extends SimManager {
     weatherState.gddToApplyThisFrame = 0;
     weatherState.rainToApplyThisFrame = 0;
 
-    weatherState.timeAccumulator = 5.0; // Start at 6 A.M.
+    weatherState.timeAccumulator = 300; // Start at 6 A.M.
 
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
   }
@@ -69,11 +70,11 @@ export default class WeatherManager extends SimManager {
     const prev = weather.timeAccumulator;
     weather.timeAccumulator += deltaTime;
 
-    if (prev < 23.0 && weather.timeAccumulator >= 23.0) {
+    if (prev < this.dayLength - 60 && weather.timeAccumulator >= this.dayLength - 60) {
       this.advanceDay(weather, weather);
     }
-    if (weather.timeAccumulator >= 24.0) {
-      weather.timeAccumulator -= 24.0;
+    if (weather.timeAccumulator >= this.dayLength) {
+      weather.timeAccumulator -= this.dayLength;
     }
 
     // Mirror cumulative values to top-level for UI
