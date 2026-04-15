@@ -388,14 +388,15 @@ export default class simulationEngine extends EventTarget {
       currentTime,
       canvasWidth: this.canvasWidth,
       canvasHeight: this.canvasHeight,
-      useEffects: this.useScreenEffects,
     };
 
     const renderModules = {
       [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
-      [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+      ...(this.useScreenEffects && {
+        [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+      }),
     };
 
     const ts = new timeStepData(rainString, renderModules);
