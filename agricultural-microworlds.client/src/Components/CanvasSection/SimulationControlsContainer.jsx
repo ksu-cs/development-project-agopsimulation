@@ -58,7 +58,8 @@ class SimulationControlsContainer extends Component {
     });
 
     const effectsButton = document.getElementById("screenEffectsButton");
-    if (effectsButton) effectsButton.checked = this.simulationEngine.useScreenEffects;
+    if (effectsButton)
+      effectsButton.checked = this.simulationEngine.useScreenEffects;
 
     const checkLoaded = setInterval(() => {
       const modules = Object.values(this.drawCanvas.renderModules);
@@ -176,12 +177,15 @@ class SimulationControlsContainer extends Component {
 
   effectsButtonOnClick() {
     if (this.simulationEngine) {
-      this.simulationEngine.useScreenEffects = !this.simulationEngine.useScreenEffects;
+      this.simulationEngine.useScreenEffects =
+        !this.simulationEngine.useScreenEffects;
 
       const effectsButton = document.getElementById("screenEffectsButton");
-      if (effectsButton) effectsButton.checked = this.simulationEngine.useScreenEffects;
-      
-      this.simulationEngine.timeStepEvent();
+      if (effectsButton)
+        effectsButton.checked = this.simulationEngine.useScreenEffects;
+
+      if (!this.simulationEngine.isRunning)
+        this.simulationEngine.timeStepEvent();
     }
   }
 
@@ -358,7 +362,9 @@ class SimulationControlsContainer extends Component {
               className={styles.effectsButton}
               onClick={this.effectsButtonOnClick}
             />
-            <label for="screenEffectsButton" className={styles.effectsButton}>Screen Effects</label>
+            <label for="screenEffectsButton" className={styles.effectsButton}>
+              Screen Effects
+            </label>
           </div>
         </div>
       </Fragment>
