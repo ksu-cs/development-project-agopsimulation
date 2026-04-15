@@ -48,7 +48,6 @@ export default class simulationEngine extends EventTarget {
 
     // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
-      new WeatherManager(),
       new CropManager(),
       new TractorManager(),
     ];
@@ -66,7 +65,10 @@ export default class simulationEngine extends EventTarget {
     this.isGameOver = false;
     this.crash = null;
     // Simulation configuration
-    this.SIMULATION_HZ = 120; // Configurable simulation rate in Hz
+    this.SIMULATION_HZ = 120
+    this.SIM_SECONDS_PER_SECOND = 60;
+    this.SIM_TIME_PER_TICK = this.SIM_SECONDS_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
+
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
   }
@@ -267,7 +269,7 @@ export default class simulationEngine extends EventTarget {
 
     // 3. Run Managers
     for (const sm of this.managers) {
-    sm.update(simDeltaTime, oldStates, nextStates); // needs to be updated using amount the sim time has increased
+    sm.update(simDeltaTime, oldStates, nextStates); // HERE needs to be updated using amount the sim time has increased
     }
 
     this.activeTasks.forEach((task, vehicleType) => {
@@ -275,7 +277,7 @@ export default class simulationEngine extends EventTarget {
         this.activeTasks.clear();
       } else {
         if (task.type === "TIMER") {
-          task.timeLeft -= simDeltaTime; // switch blocks with "timer" do be based on sim time or based on distance
+          task.timeLeft -= simDeltaTime; // HERE switch blocks with "timer" do be based on sim time or based on distance
           if (task.timeLeft <= 0) {
             if (nextStates.vehicles) {
               const vehicle = nextStates.vehicles.find(
