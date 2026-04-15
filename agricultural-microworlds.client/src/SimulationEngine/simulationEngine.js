@@ -166,6 +166,7 @@ export default class simulationEngine extends EventTarget {
     if (!this.isRunning) {
       this.isRunning = true;
       this.lastFrameTime = performance.now();
+
       this.loop();
     }
   }
@@ -177,15 +178,47 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
-    cancelAnimationFrame(this.animationId);
+
+    // Kill the recursive loop
+    if (this.animationId !== -1) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = -1;
+    }
+
     this.timeStepEvent();
   }
 
+
   loop(){
-    while(!this.stateManager.states.isGameOver && this.isRunning){
-      this.engineLoop();
-      this.renderLoop();
+    // 1. Check for stop
+    if (!this.isRunning || this.stateManager.states.isGameOver) {
+      this.stopMovement();
+      if (this.stateManager.states.isGameOver) {
+        this.dispatchEvent(new CustomEvent("simulationCrashed"));
+      }
+      return;
     }
+
+    // 2. Calculate real delta time
+    const now = performance.now();
+    const realDeltaTime = (now - this.lastFrameTime) / 1000;
+    this.lastFrameTime = now;
+
+
+    // 3. run engine loop
+    this.engineLoop(realDeltaTime);
+
+
+    // 4. run graphics
+    this.renderLoop();
+
+    // 5. schedule next loop iteration
+    this.animationId = requestAnimationFrame(() => this.loop());
+
+    // while(!this.stateManager.states.isGameOver && this.isRunning){
+    //   this.engineLoop();
+    //   this.renderLoop();
+    // }
   }
 
   /**
@@ -193,12 +226,7 @@ export default class simulationEngine extends EventTarget {
    * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
    * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
    */
-  engineLoop(timestamp) {
-    if (!this.isRunning) return;
-
-    if (!timestamp) timestamp = performance.now();
-    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000;
-    this.lastFrameTime = timestamp;
+  engineLoop(realDeltaTime) {
 
     const oldStates = this.stateManager.states;
     const nextStates = {};
@@ -206,6 +234,7 @@ export default class simulationEngine extends EventTarget {
     // 1. Calculate Simulated Time
     const weather = oldStates.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
@@ -268,14 +297,6 @@ export default class simulationEngine extends EventTarget {
 
     // 6. Update Visuals
     this.timeStepEvent();
-
-    this.animationId = requestAnimationFrame(this.loop.bind(this));
-
-    if (this.stateManager.states.isGameOver) {
-      this.stopMovement();
-      this.dispatchEvent(new CustomEvent("simulationCrashed"));
-      return;
-    }
   }
 
   /**
