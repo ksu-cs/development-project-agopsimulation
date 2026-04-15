@@ -241,7 +241,38 @@ export default class simulationEngine extends EventTarget {
         ? 6
         : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
-    const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
+
+    let simDeltaTime = safeRealDelta * speedMult * waitingMulti;
+
+    if (this.activeTasks.size === 0) {
+      simDeltaTime = 0;
+    }
+
+    this.activeTasks.forEach((task) => {
+      if (task.sessionId === this.simulationSessionId && task.type === "TIMER") {
+        if (task.timeLeft > 0 && task.timeLeft < simDeltaTime) {
+          simDeltaTime = task.timeLeft;
+        }
+      }
+    });
+
+    const vehicles = oldStates.vehicles;
+    if (vehicles) {
+      this.activeTasks.forEach((task, vehicleType) => {
+        if (task.sessionId === this.simulationSessionId && task.type === "TURN") {
+          const v = vehicles.find((v) => v.type == vehicleType);
+          if (v) {
+            const diff = Math.abs(v.goalAngle - v.angle);
+            if (diff > 0) {
+              const timeToTurn = diff / v.turnSpeed;
+              if (timeToTurn > 0 && timeToTurn < simDeltaTime) {
+                simDeltaTime = timeToTurn;
+              }
+            }
+          }
+        }
+      });
+    }
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -267,7 +298,7 @@ export default class simulationEngine extends EventTarget {
       } else {
         if (task.type === "TIMER") {
           task.timeLeft -= simDeltaTime;
-          if (task.timeLeft <= 0) {
+          if (task.timeLeft <= 0.001) {
             if (nextStates.vehicles) {
               const vehicle = nextStates.vehicles.find(
                 (v) => v.type == vehicleType,

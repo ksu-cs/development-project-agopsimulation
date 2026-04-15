@@ -29,6 +29,8 @@ class SimulationControlsContainer extends Component {
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
       seederXml:
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      timeControlMode: 'slider',
+      hoursPerSecond: 1
     };
 
     this.workers = [];
@@ -96,8 +98,10 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine.resetEverything();
 
     const speedSlider = document.getElementById("speedSlider");
-    if (speedSlider) {
+    if (this.state.timeControlMode === 'slider' && speedSlider) {
       this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
+    } else {
+      this.simulationEngine.setSpeedMultiplier(this.state.customHoursPerSecond);
     }
 
     // Save the currently visible workspace to state so we have the latest code
@@ -213,6 +217,22 @@ class SimulationControlsContainer extends Component {
     });
   };
 
+  handleTimeModeToggle = () => {
+    this.setState(prevState => ({
+      timeControlMode: prevState.timeControlMode === 'slider' ? 'input' : 'slider'
+    }))
+  }
+
+  onCustomTimeChange = (e) => {
+    const hours = parseFloat(e.target.value);
+    this.setState({ customHoursPerSecond: hours});
+
+    if (this.simulationEngine && !isNaN(hours)) {
+      this.simulationEngine.setSpeedMultiplier(hours);
+    }
+
+  }
+
   createWorkerBlob(userCode) {
     const workerScript = `
       const simulationMethods = {
@@ -286,23 +306,50 @@ class SimulationControlsContainer extends Component {
                 marginBottom: "5px",
               }}
             >
-              <label htmlFor="speedSlider" style={{ fontWeight: "bold" }}>
+              <label style={{ fontWeight: "bold" }}>
                 Sim Speed:
               </label>
-              <span id="speedLabel" style={{ fontWeight: "bold" }}>
-                1x
-              </span>
+              <button 
+                onClick={this.handleTimeModeToggle} 
+                style={{ fontSize: "0.8em", padding: "2px 5px", cursor: "pointer" }}
+              >
+                Switch to {this.state.timeControlMode === 'slider' ? 'Exact Time' : 'Slider'}
+              </button>
             </div>
-            <input
-              type="range"
-              id="speedSlider"
-              min="1"
-              max="5"
-              defaultValue="1"
-              step="1"
-              onChange={this.onSpeedChange}
-              style={{ width: "100%" }}
-            />
+
+            {this.state.timeControlMode === 'slider' ? (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                  <span>Multiplier:</span>
+                  <span id="speedLabel" style={{ fontWeight: "bold" }}>
+                    1x
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  id="speedSlider"
+                  min="1"
+                  max="5"
+                  defaultValue="1"
+                  step="1"
+                  onChange={this.onSpeedChange}
+                  style={{ width: "100%" }}
+                />
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px" }}>
+                <span>1 Real Second = </span>
+                <input 
+                  type="number" 
+                  value={this.state.customHoursPerSecond} 
+                  onChange={this.onCustomTimeChange}
+                  style={{ width: "60px", margin: "0 5px", textAlign: "center" }}
+                  min="0.1"
+                  step="0.1"
+                />
+                <span>Sim Hours</span>
+              </div>
+            )}
           </div>
 
           <div
