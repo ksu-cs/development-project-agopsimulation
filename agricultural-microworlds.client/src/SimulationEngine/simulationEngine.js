@@ -62,6 +62,7 @@ export default class simulationEngine extends EventTarget {
     this.simulationSessionId = 0;
     this.isGameOver = false;
     this.crash = null;
+    this.useScreenEffects = true;
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
   }
@@ -202,7 +203,7 @@ export default class simulationEngine extends EventTarget {
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 60
+        ? 120
         : 1;
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
@@ -370,6 +371,7 @@ export default class simulationEngine extends EventTarget {
       currentTime,
       canvasWidth: this.canvasWidth,
       canvasHeight: this.canvasHeight,
+      useEffects: this.useScreenEffects,
     };
 
     const renderModules = {

@@ -37,6 +37,7 @@ class SimulationControlsContainer extends Component {
 
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
+    this.effectsButtonOnClick = this.effectsButtonOnClick.bind(this);
   }
 
   /**
@@ -56,6 +57,9 @@ class SimulationControlsContainer extends Component {
       this.stopButtonOnClick();
     });
 
+    const effectsButton = document.getElementById("screenEffectsButton");
+    if (effectsButton) effectsButton.checked = this.simulationEngine.useScreenEffects;
+
     const checkLoaded = setInterval(() => {
       const modules = Object.values(this.drawCanvas.renderModules);
       const allReady = modules.every(
@@ -73,19 +77,6 @@ class SimulationControlsContainer extends Component {
 
     await this.simulationEngine.loadStations();
     await this.simulationEngine.fetchData();
-  }
-
-  /**
-   * Gets the code converstion for the next block
-   * @param {*} block The last block that was added to the list
-   * @returns The code representation of the block or an empty string if null
-   */
-  addBlocksToArray(block) {
-    let nextBlock = block.getNextBlock();
-    if (nextBlock != null) {
-      return javascriptGenerator.blockToCode(nextBlock);
-    }
-    return "";
   }
 
   async runButtonOnClick() {
@@ -181,6 +172,17 @@ class SimulationControlsContainer extends Component {
 
     const runButton = document.getElementById("runButton");
     if (runButton) runButton.disabled = false;
+  }
+
+  effectsButtonOnClick() {
+    if (this.simulationEngine) {
+      this.simulationEngine.useScreenEffects = !this.simulationEngine.useScreenEffects;
+
+      const effectsButton = document.getElementById("screenEffectsButton");
+      if (effectsButton) effectsButton.checked = this.simulationEngine.useScreenEffects;
+      
+      this.simulationEngine.timeStepEvent();
+    }
   }
 
   /**
@@ -347,6 +349,16 @@ class SimulationControlsContainer extends Component {
             >
               Stop
             </button>
+          </div>
+
+          <div>
+            <input
+              type="checkbox"
+              id="screenEffectsButton"
+              className={styles.effectsButton}
+              onClick={this.effectsButtonOnClick}
+            />
+            <label for="screenEffectsButton" className={styles.effectsButton}>Screen Effects</label>
           </div>
         </div>
       </Fragment>
