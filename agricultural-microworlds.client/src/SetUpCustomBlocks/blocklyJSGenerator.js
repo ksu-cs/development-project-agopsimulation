@@ -2,9 +2,8 @@ import { javascriptGenerator } from "blockly/javascript";
 import { CROP_TYPES } from "../States/StateClasses/CropState";
 import { VEHICLES } from "../States/StateClasses/ImplementState";
 
-javascriptGenerator.forBlock["move_forward"] = function (block, generator) {
-  const duration =
-    generator.valueToCode(block, "DURATION", generator.ORDER_ATOMIC) || "1";
+javascriptGenerator.forBlock["move_forward"] = function (block) {
+  const duration = Number(block.getFieldValue("DURATION")) || 1;
   return `await simulationMethods.moveForward(${duration});\n`;
 };
 
@@ -16,9 +15,8 @@ javascriptGenerator.forBlock["turn_right"] = function () {
   return `await simulationMethods.turnXDegrees(90);\n`;
 };
 
-javascriptGenerator.forBlock["turn_x_degrees"] = function (block, generator) {
-  let amount =
-    generator.valueToCode(block, "DEGREES", generator.ORDER_NONE) || "1";
+javascriptGenerator.forBlock["turn_x_degrees"] = function (block) {
+  let amount = Number(block.getFieldValue("DEGREES")) || 1;
   const direction = block.getFieldValue("DIRECTION");
 
   if (direction == 0) {
@@ -40,9 +38,8 @@ javascriptGenerator.forBlock["toggle_seeding"] = function (block) {
   return `simulationMethods.toggleSeeding(${inputType});\n`;
 };
 
-javascriptGenerator.forBlock["wait_x_weeks"] = function (block, generator) {
-  const weeks =
-    generator.valueToCode(block, "WEEKS", generator.ORDER_ATOMIC) || "1";
+javascriptGenerator.forBlock["wait_x_weeks"] = function (block) {
+  const weeks = Number(block.getFieldValue("WEEKS")) || 1;
   return `await simulationMethods.waitXWeeks(${weeks});\n`;
 };
 
