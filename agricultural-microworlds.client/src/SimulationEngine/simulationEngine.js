@@ -58,11 +58,15 @@ export default class simulationEngine extends EventTarget {
 
     // Loop variables
     this.lastFrameTime = 0;
-    this.animationId = -1;
+    this.lastSimulationTime = 0;
+    this.renderFrameId = null;
+    this.simulationTimeId = null;
     this.isRunning = false;
     this.simulationSessionId = 0;
     this.isGameOver = false;
     this.crash = null;
+    // Simulation configuration
+    this.SIMULATION_HZ = 120; // Configurable simulation rate in Hz
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
   }
@@ -161,13 +165,15 @@ export default class simulationEngine extends EventTarget {
   }
 
   /**
-   * Begins running the simulation, calling the first loop.
+   * Begins running the simulation, starting both render and simulation loops.
    */
   startMoving() {
     if (!this.isRunning) {
       this.isRunning = true;
       this.lastFrameTime = performance.now();
-      this.loop();
+      this.lastSimulationTime = performance.now();
+      this.scheduleRender();
+      this.scheduleSimulation();
     }
   }
 
@@ -178,32 +184,60 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
+
+    // Cancel both loop schedules
+    if (this.renderFrameId !== null) {
+      cancelAnimationFrame(this.renderFrameId);
+      this.renderFrameId = null;
+    }
+    if (this.simulationTimeId !== null) {
+      clearTimeout(this.simulationTimeId);
+      this.simulationTimeId = null;
+    }
+
     this.timeStepEvent();
   }
 
-  loop(){
-    while(!this.stateManager.states.isGameOver && this.isRunning){
-      this.engineLoop();
-      this.renderLoop();
-    }
+  /**
+   * Schedules the render loop to run at 60 FPS via requestAnimationFrame.
+   * This is decoupled from simulation and syncs with the display refresh rate.
+   */
+  scheduleRender() {
+    if (!this.isRunning) return;
+
+    this.timeStepEvent();
+    this.renderFrameId = requestAnimationFrame(() => this.scheduleRender());
   }
 
   /**
-   * The main game loop.
-   * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
+   * Schedules the simulation loop to run at a fixed rate via setTimeout.
+   * This is completely independent of render rate and can be customized.
+   */
+  scheduleSimulation() {
+    if (!this.isRunning) return;
+
+    this.engineLoop();
+
+    // Schedule next simulation tick at the configured rate
+    const SIM_INTERVAL = 1000 / this.SIMULATION_HZ;
+    this.simulationTimeId = setTimeout(
+      () => this.scheduleSimulation(),
+      SIM_INTERVAL,
+    );
+  }
+
+  /**
+   * The main simulation loop.
+   * Calculates all simulation time, clones the simulation states, runs managers and active tasks.
+   * This runs at a fixed timestep independent of render rate.
    */
   engineLoop() {
     if (!this.isRunning) return;
 
-    console.log("last frame time:", this.lastFrameTime);
     const timestamp = performance.now();
-    /**
-     * How much time has passed since last frame
-     */
-    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000; // so little time passes between loops that it is basically treated as zero by the engine, add minimum threshold between loops to prevent this
-    this.lastFrameTime = timestamp;
-    console.log("real delta time:", realDeltaTime);
-    console.log("timestamp:", timestamp);
+    this.lastSimulationTime = timestamp;
+
+    const fixedDeltaTime = 1 / this.SIMULATION_HZ;
 
     const oldStates = this.stateManager.states;
     const nextStates = {};
@@ -216,8 +250,7 @@ export default class simulationEngine extends EventTarget {
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 6
         : 1;
-    const safeRealDelta = Math.min(realDeltaTime, 0.1);
-    const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
+    const simDeltaTime = fixedDeltaTime * speedMult * waitingMulti;
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -234,7 +267,7 @@ export default class simulationEngine extends EventTarget {
 
     // 3. Run Managers
     for (const sm of this.managers) {
-      sm.update(simDeltaTime, oldStates, nextStates);
+    sm.update(simDeltaTime, oldStates, nextStates); // needs to be updated using amount the sim time has increased
     }
 
     this.activeTasks.forEach((task, vehicleType) => {
@@ -242,7 +275,7 @@ export default class simulationEngine extends EventTarget {
         this.activeTasks.clear();
       } else {
         if (task.type === "TIMER") {
-          task.timeLeft -= simDeltaTime;
+          task.timeLeft -= simDeltaTime; // switch blocks with "timer" do be based on sim time or based on distance
           if (task.timeLeft <= 0) {
             if (nextStates.vehicles) {
               const vehicle = nextStates.vehicles.find(
@@ -276,6 +309,15 @@ export default class simulationEngine extends EventTarget {
       this.dispatchEvent(new CustomEvent("simulationCrashed"));
       return;
     }
+  }
+
+  /**
+   * Sets the simulation rate in Hz (ticks per second).
+   * Can be called at runtime to adjust simulation speed.
+   * @param {number} hz The simulation rate in hertz (e.g., 120 for 120 ticks/sec)
+   */
+  setSimulationRate(hz) {
+    this.SIMULATION_HZ = Math.max(1, hz);
   }
 
   /**
@@ -410,16 +452,6 @@ export default class simulationEngine extends EventTarget {
         detail: ts,
       }),
     );
-  }
-
-  renderLoop(){
-    // check if enough time has passed since last render to render again
-    const timestamp = performance.now();
-    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000;
-    if (realDeltaTime >= 1 / this.RENDER_FRAMES_PER_SECOND) {
-      this.timeStepEvent();
-      this.lastFrameTime = timestamp;
-    }
   }
 
   // --- ASYNC COMMANDS ---

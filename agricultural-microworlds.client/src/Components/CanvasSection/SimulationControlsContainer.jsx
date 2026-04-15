@@ -268,7 +268,7 @@ class SimulationControlsContainer extends Component {
     const label = document.getElementById("speedLabel");
     if (label) label.textContent = `${speed}x`;
     if (this.simulationEngine) {
-      this.simulationEngine.setSpeedMultiplier(speed);
+      this.simulationEngine.setSpeedMultiplier(speed); // change to adjust the hz of the sim
     }
   };
 
