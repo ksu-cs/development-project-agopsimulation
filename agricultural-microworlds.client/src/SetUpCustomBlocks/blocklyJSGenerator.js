@@ -38,9 +38,10 @@ javascriptGenerator.forBlock["toggle_seeding"] = function (block) {
   return `simulationMethods.toggleSeeding(${inputType});\n`;
 };
 
-javascriptGenerator.forBlock["wait_x_weeks"] = function (block) {
+javascriptGenerator.forBlock["wait_x_time"] = function (block) {
   const weeks = Number(block.getFieldValue("WEEKS")) || 1;
-  return `await simulationMethods.waitXWeeks(${weeks});\n`;
+  const timeValue = block.getFieldValue("time_value");
+  return `await simulationMethods.waitXTime(${weeks}, ${timeValue});\n`;
 };
 
 javascriptGenerator.forBlock["is_over_tile"] = function (block, generator) {

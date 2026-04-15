@@ -37,6 +37,7 @@ class SimulationControlsContainer extends Component {
 
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
+    this.effectsButtonOnClick = this.effectsButtonOnClick.bind(this);
   }
 
   /**
@@ -56,6 +57,10 @@ class SimulationControlsContainer extends Component {
       this.stopButtonOnClick();
     });
 
+    const effectsButton = document.getElementById("screenEffectsButton");
+    if (effectsButton)
+      effectsButton.checked = this.simulationEngine.useScreenEffects;
+
     const checkLoaded = setInterval(() => {
       const modules = Object.values(this.drawCanvas.renderModules);
       const allReady = modules.every(
@@ -73,19 +78,6 @@ class SimulationControlsContainer extends Component {
 
     await this.simulationEngine.loadStations();
     await this.simulationEngine.fetchData();
-  }
-
-  /**
-   * Gets the code converstion for the next block
-   * @param {*} block The last block that was added to the list
-   * @returns The code representation of the block or an empty string if null
-   */
-  addBlocksToArray(block) {
-    let nextBlock = block.getNextBlock();
-    if (nextBlock != null) {
-      return javascriptGenerator.blockToCode(nextBlock);
-    }
-    return "";
   }
 
   async runButtonOnClick() {
@@ -183,6 +175,20 @@ class SimulationControlsContainer extends Component {
     if (runButton) runButton.disabled = false;
   }
 
+  effectsButtonOnClick() {
+    if (this.simulationEngine) {
+      this.simulationEngine.useScreenEffects =
+        !this.simulationEngine.useScreenEffects;
+
+      const effectsButton = document.getElementById("screenEffectsButton");
+      if (effectsButton)
+        effectsButton.checked = this.simulationEngine.useScreenEffects;
+
+      if (!this.simulationEngine.isRunning)
+        this.simulationEngine.timeStepEvent();
+    }
+  }
+
   /**
    * onClick method for vehicle selection
    * switches camera to follow selected vehicle
@@ -238,7 +244,7 @@ class SimulationControlsContainer extends Component {
         
         moveForward: function(d) { return this._send('moveForward', [d]); },
         turnXDegrees: function(d) { return this._send('turnXDegrees', [d]); },
-        waitXWeeks: function(d) { return this._send('waitXWeeks', [d]); },
+        waitXTime: function(d, t) { return this._send('waitXTime', [d, t]); },
         toggleHarvesting: function(b) { return this._send('toggleHarvesting', [b]); },
         toggleSeeding: function(b) { return this._send('toggleSeeding', [b]); },
         switchCropBeingPlanted: function(c) { return this._send('switchCropBeingPlanted', [c]); },
@@ -348,6 +354,18 @@ class SimulationControlsContainer extends Component {
             >
               Stop
             </button>
+          </div>
+
+          <div>
+            <input
+              type="checkbox"
+              id="screenEffectsButton"
+              className={styles.effectsButton}
+              onClick={this.effectsButtonOnClick}
+            />
+            <label for="screenEffectsButton" className={styles.effectsButton}>
+              Screen Effects
+            </label>
           </div>
         </div>
       </Fragment>
