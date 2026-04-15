@@ -48,9 +48,11 @@ var moveForward = {
   message0: "move forward for %1 seconds",
   args0: [
     {
-      type: "input_value",
+      type: "field_number",
       name: "DURATION",
-      check: "Number",
+      value: 1,
+      min: 0,
+      precision: 0.1,
     },
   ],
   previousStatement: null,
@@ -97,9 +99,11 @@ var turnXDegrees = {
   message0: "Turn %1 degrees %2",
   args0: [
     {
-      type: "input_value",
+      type: "field_number",
       name: "DEGREES",
-      check: "Number",
+      value: 90,
+      min: 0,
+      precision: 0.1,
     },
     {
       type: "field_dropdown",
@@ -193,9 +197,11 @@ var waitXTime = {
   message0: "wait %1 %2",
   args0: [
     {
-      type: "input_value",
+      type: "field_number",
       name: "WEEKS",
-      check: "Number",
+      value: 1,
+      min: 0,
+      precision: 0.1,
     },
     {
       type: "field_dropdown",
@@ -341,6 +347,30 @@ var changeVehicle = {
 Blocks["change_vehicle"] = {
   init: function () {
     this.jsonInit(changeVehicle);
+  },
+};
+
+var fillVehicleFuelTank = {
+  type: "fill_vehicle_fuel_tank",
+  message0: "Fill %1 fuel tank",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleVehicle",
+      options: [
+        ["Harvester", "0"],
+        ["Seeder", "1"],
+      ],
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Fills the fuel tank of the specified vehicle back to full",
+};
+Blocks["fill_vehicle_fuel_tank"] = {
+  init: function () {
+    this.jsonInit(fillVehicleFuelTank);
   },
 };
 //#endregion

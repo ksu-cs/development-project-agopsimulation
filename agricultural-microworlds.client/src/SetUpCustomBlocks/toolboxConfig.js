@@ -53,6 +53,7 @@ export const toolbox = {
         { kind: "block", type: "wait_x_time" },
         { kind: "block", type: "switch_crop_being_planted" },
         { kind: "block", type: "change_vehicle" },
+        { kind: "block", type: "fill_vehicle_fuel_tank" },
       ],
     },
     {

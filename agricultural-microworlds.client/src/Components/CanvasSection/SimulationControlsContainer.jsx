@@ -248,7 +248,8 @@ class SimulationControlsContainer extends Component {
         toggleHarvesting: function(b) { return this._send('toggleHarvesting', [b]); },
         toggleSeeding: function(b) { return this._send('toggleSeeding', [b]); },
         switchCropBeingPlanted: function(c) { return this._send('switchCropBeingPlanted', [c]); },
-        CheckIfPlantInFront: function(c) { return this._send('CheckIfPlantInFront', [c]); }
+        CheckIfPlantInFront: function(c) { return this._send('CheckIfPlantInFront', [c]); },
+        fillVehicleFuelTank: function(v) { return this._send('fillVehicleFuelTank', [v]); }
       };
 
       async function runUserCode() {

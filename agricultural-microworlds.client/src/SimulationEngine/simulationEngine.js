@@ -5,6 +5,7 @@ import {
   CROP_TYPES,
 } from "../States/StateClasses/CropState";
 import ImplementState, {
+  VEHICLE_FUEL_CAPACITY,
   VEHICLES,
 } from "../States/StateClasses/ImplementState";
 import WeatherState from "../States/StateClasses/WeatherState";
@@ -338,6 +339,19 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
+    const totalFuelConsumed = vehicles.reduce(
+      (total, v) => total + (v.totalFuelConsumed || 0),
+      0,
+    );
+    const fuelConsumed = totalFuelConsumed.toFixed(2);
+
+    const harvesterFuelLevel =
+      VEHICLE_FUEL_CAPACITY[VEHICLES.HARVESTER] -
+      vehicles[VEHICLES.HARVESTER]?.fuelInTankUsed;
+    const seederFuelLevel =
+      VEHICLE_FUEL_CAPACITY[VEHICLES.SEEDER] -
+      vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
+
     const currentTime = weather.timeAccumulator;
 
     const statData = {
@@ -347,6 +361,9 @@ export default class simulationEngine extends EventTarget {
       rainString,
       activeVehicleType,
       currentTime,
+      fuelConsumed: fuelConsumed,
+      harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
+      seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
     };
 
     const fieldData = {
@@ -517,6 +534,15 @@ export default class simulationEngine extends EventTarget {
   }
 
   /**
+   * Fills the fuel tank of the specified vehicle to full capacity.
+   * @param {VEHICLES} targetVehicleType The vehicle type of the fuel tank to fill.
+   */
+  fillVehicleFuelTank(targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle) vehicle.fuelInTankUsed = 0;
+  }
+
+  /**
    * Sets the speed multiplier for the simulation's weather manager.
    * @param {number} speed The speed multiplier for the weather.
    */
@@ -612,6 +638,9 @@ export default class simulationEngine extends EventTarget {
         break;
       case "switchCropBeingPlanted":
         this.switchCropBeingPlanted(args[0], vehicleType);
+        break;
+      case "fillVehicleFuelTank":
+        this.fillVehicleFuelTank(args[0]);
         break;
       default:
         console.warn("Unknown worker command:", command);
