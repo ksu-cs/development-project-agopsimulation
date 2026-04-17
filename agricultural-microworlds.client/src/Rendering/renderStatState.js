@@ -15,13 +15,13 @@ export default class RenderStatState extends RenderState {
     const timeEl = document.getElementById("timeText");
     if (timeEl) {
       // Format the current time into hours, minutes, and AM/PM.
-      const totalHours = 1 + Math.floor(data.currentTime % 12.0);
-      const totalMinutes = Math.floor(60 * (data.currentTime % 1.0));
+      const totalHours = 1 + Math.floor((data.currentTime / 60.0) % 12.0);
+      const totalMinutes = Math.floor(data.currentTime % 60.0);
 
       const formattedHours = totalHours.toString().padStart(2, "0");
       const formattedMinutes = totalMinutes.toString().padStart(2, "0");
       const formattedMeridiem =
-        data.currentTime % 23.0 >= 11.0 ? "P.M." : "A.M.";
+        data.currentTime % (23 * 60) >= 11 * 60 ? "P.M." : "A.M.";
       timeEl.innerText = `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
     }
 

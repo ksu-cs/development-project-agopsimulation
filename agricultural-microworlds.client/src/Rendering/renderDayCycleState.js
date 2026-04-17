@@ -8,6 +8,7 @@ export default class RenderDayCycleState extends RenderState {
   render(context, data) {
     // Basic colorization option, using a rectangle draw. Formula for the color should be expanded to account for seasons / weather.
     let nightAlpha = 0.0;
+    data.currentTime /= 60.0;
     if (data.currentTime < 12)
       nightAlpha =
         1.0 - Math.min(Math.max(data.currentTime - 5.0, 0.0) / 4.0, 1.0);

@@ -24,7 +24,7 @@ export default class SimulationState {
     await new Promise((r) => setTimeout(r, Math.abs(degrees) * 10));
   }
 
-  async waitXWeeks(weeks) {
+  async waitXTime(weeks) {
     console.log("Waiting for", weeks, "weeks");
     await new Promise((r) => setTimeout(r, weeks * 50));
   }

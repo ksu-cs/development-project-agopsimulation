@@ -64,6 +64,7 @@ export default class simulationEngine extends EventTarget {
     this.simulationSessionId = 0;
     this.isGameOver = false;
     this.crash = null;
+    this.useScreenEffects = true;
     // Simulation configuration
     this.SIMULATION_HZ = 120
     this.SIM_SECONDS_PER_SECOND = 60;
@@ -250,7 +251,7 @@ export default class simulationEngine extends EventTarget {
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 6
+        ? 120
         : 1;
     const simDeltaTime = fixedDeltaTime * speedMult * waitingMulti;
 
@@ -443,7 +444,9 @@ export default class simulationEngine extends EventTarget {
       [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
-      [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+      ...(this.useScreenEffects && {
+        [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+      }),
     };
 
     const ts = new timeStepData(rainString, renderModules);
@@ -511,9 +514,23 @@ export default class simulationEngine extends EventTarget {
    * @param {number} weeks How many weeks the tractor should wait for.
    * @returns {Promise} Returns a new Promise to wait a certain amount of time.
    */
-  async waitXWeeks(weeks, targetVehicleType) {
+  async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
-    const durationInSeconds = Number(weeks) * 24.0 * 7.0;
+    const timeValue = Number(timeType);
+    console.log(timeValue + " " + amount);
+    let durationInSeconds = Number(amount);
+    if (timeValue > 0) {
+      // Hours
+      durationInSeconds *= 60.0;
+      if (timeValue > 1) {
+        // Days
+        durationInSeconds *= 24.0;
+        if (timeValue > 2) {
+          // Weeks
+          durationInSeconds *= 7.0;
+        }
+      }
+    }
 
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = false;
@@ -661,8 +678,8 @@ export default class simulationEngine extends EventTarget {
       case "turnXDegrees":
         await this.turnXDegrees(args[0], vehicleType);
         break;
-      case "waitXWeeks":
-        await this.waitXWeeks(args[0], vehicleType);
+      case "waitXTime":
+        await this.waitXTime(args[0], args[1], vehicleType);
         break;
       case "toggleHarvesting":
         this.toggleHarvesting(args[0], vehicleType);

@@ -120,3 +120,8 @@
   cursor: pointer;
   margin-bottom: 10px;
 }
+
+.effectsButton {
+  font-weight: bold;
+  min-width: 30px;
+}
