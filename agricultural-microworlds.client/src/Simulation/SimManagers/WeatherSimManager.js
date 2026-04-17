@@ -99,7 +99,5 @@ export default class WeatherManager extends SimManager {
     newWeather.currentDayIndex = oldWeather.currentDayIndex + 1;
     newWeather.gddToApplyThisFrame = dailyGDD;
     newWeather.rainToApplyThisFrame = rain;
-
-    //console.log("Rain raw value:", dayData[3]);
   }
 }

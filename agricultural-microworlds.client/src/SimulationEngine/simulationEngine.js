@@ -48,6 +48,7 @@ export default class simulationEngine extends EventTarget {
 
     // Logic managers. Handle rules for Weather, Crops, and Tractor
     this.managers = [
+      new WeatherManager(),
       new CropManager(),
       new TractorManager(),
     ];
@@ -235,12 +236,11 @@ export default class simulationEngine extends EventTarget {
    * This runs at a fixed timestep independent of render rate.
    */
   engineLoop() {
-    if (!this.isRunning) return;
 
     const timestamp = performance.now();
     this.lastSimulationTime = timestamp;
 
-    const fixedDeltaTime = 1 / this.SIMULATION_HZ;
+    const fixedDeltaTime = this.SIM_TIME_PER_TICK;
 
     const oldStates = this.stateManager.states;
     const nextStates = {};
@@ -253,7 +253,7 @@ export default class simulationEngine extends EventTarget {
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 120
         : 1;
-    const simDeltaTime = fixedDeltaTime * speedMult * waitingMulti;
+    const simDeltaTime = (fixedDeltaTime * speedMult * waitingMulti);
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -270,7 +270,7 @@ export default class simulationEngine extends EventTarget {
 
     // 3. Run Managers
     for (const sm of this.managers) {
-    sm.update(simDeltaTime, oldStates, nextStates); // HERE needs to be updated using amount the sim time has increased
+    sm.update(simDeltaTime, oldStates, nextStates);
     }
 
     this.activeTasks.forEach((task, vehicleType) => {
@@ -278,7 +278,7 @@ export default class simulationEngine extends EventTarget {
         this.activeTasks.clear();
       } else {
         if (task.type === "TIMER") {
-          task.timeLeft -= simDeltaTime; // HERE switch blocks with "timer" do be based on sim time or based on distance
+          task.timeLeft -= simDeltaTime;
           if (task.timeLeft <= 0) {
             if (nextStates.vehicles) {
               const vehicle = nextStates.vehicles.find(
@@ -403,7 +403,7 @@ export default class simulationEngine extends EventTarget {
       vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
 
     const currentTime = weather.timeAccumulator;
-
+    console.log(currentTime);
     const statData = {
       yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
       currentDate: dateString,
@@ -462,11 +462,11 @@ export default class simulationEngine extends EventTarget {
   // --- ASYNC COMMANDS ---
 
   /**
-   * Begins moving the tractor for a set amount of time.
-   * @param {number} durationInSeconds The length of time the tractor should be moving for.
+   * Begins moving the tractor for a set amount of simulation time.
+   * @param {number} durationInMinutes The length of time the tractor should be moving for (in simulation minutes).
    * @returns {Promise} Returns a new Promise to handle tractor movement.
    */
-  async moveForward(durationInSeconds, targetVehicleType) {
+  async moveForward(durationInMinutes, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = true;
@@ -475,7 +475,7 @@ export default class simulationEngine extends EventTarget {
       if (vehicle) {
         this.activeTasks.set(vehicle.type, {
           type: "TIMER",
-          timeLeft: Number(durationInSeconds),
+          timeLeft: Number(durationInMinutes),
           resolve: resolve,
           sessionId: mySessionId,
         });
