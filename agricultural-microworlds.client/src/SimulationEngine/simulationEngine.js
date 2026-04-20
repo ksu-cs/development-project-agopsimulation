@@ -467,7 +467,6 @@ export default class simulationEngine extends EventTarget {
   async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const timeValue = Number(timeType);
-    console.log(timeValue + " " + amount);
     let durationInSeconds = Number(amount);
     if (timeValue > 0) {
       // Hours
@@ -508,8 +507,9 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.HARVESTER) {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
+
+      vehicle.postMessage(isOn);
     }
-    this.harvesterWorker.postMessage(isOn);
   }
 
   /**
@@ -521,8 +521,9 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
+
+      vehicle.postMessage(isOn);
     }
-    this.seederWorker.postMessage(isOn);
   }
 
   /**
@@ -620,6 +621,8 @@ export default class simulationEngine extends EventTarget {
 
     const { command, args, vehicleType, requestId } = data;
 
+    let result = true;
+
     // Route the string command to the actual simulation API
     switch (command) {
       case "moveForward":
@@ -643,6 +646,9 @@ export default class simulationEngine extends EventTarget {
       case "fillVehicleFuelTank":
         this.fillVehicleFuelTank(args[0]);
         break;
+      case "CheckIfPlantInFront":
+        result = this.CheckIfPlantInFront(args[0], vehicleType);
+        break;
       default:
         console.warn("Unknown worker command:", command);
         break;
@@ -654,7 +660,7 @@ export default class simulationEngine extends EventTarget {
       worker.postMessage({
         type: "RESPONSE",
         requestId: requestId,
-        result: true,
+        result: result,
       });
     }
   }
