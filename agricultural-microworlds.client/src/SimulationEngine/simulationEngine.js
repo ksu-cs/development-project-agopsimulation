@@ -19,6 +19,13 @@ import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
+ * Known issues:
+ * speeding up sim doesn't increase frames just increases other stuff
+ * wait weeks INSANELY fast, > 1 day a second
+ * 60 base hz faster than 120 base hz
+ */
+
+/**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
  */
 export default class simulationEngine extends EventTarget {
@@ -67,7 +74,7 @@ export default class simulationEngine extends EventTarget {
     this.crash = null;
     this.useScreenEffects = true;
     // Simulation configuration
-    this.SIMULATION_HZ = 120
+    this.SIMULATION_HZ = 60
     this.SIM_SECONDS_PER_SECOND = 60;
     this.SIM_TIME_PER_TICK = this.SIM_SECONDS_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
 
@@ -222,8 +229,13 @@ export default class simulationEngine extends EventTarget {
 
     this.engineLoop();
 
+    const weather = this.stateManager.states.weather;
+    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+
+    console.log('speedMult:', speedMult, 'interval:', 1000 / (this.SIMULATION_HZ * speedMult));
+
     // Schedule next simulation tick at the configured rate
-    const SIM_INTERVAL = 1000 / this.SIMULATION_HZ;
+    const SIM_INTERVAL = 1000 / (this.SIMULATION_HZ * speedMult);
     this.simulationTimeId = setTimeout(
       () => this.scheduleSimulation(),
       SIM_INTERVAL,
@@ -236,7 +248,6 @@ export default class simulationEngine extends EventTarget {
    * This runs at a fixed timestep independent of render rate.
    */
   engineLoop() {
-
     const timestamp = performance.now();
     this.lastSimulationTime = timestamp;
 
@@ -245,15 +256,12 @@ export default class simulationEngine extends EventTarget {
     const oldStates = this.stateManager.states;
     const nextStates = {};
 
-    // 1. Calculate Simulated Time
-    const weather = oldStates.weather;
-    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 120
         : 1;
-    const simDeltaTime = (fixedDeltaTime * speedMult * waitingMulti);
+    const simDeltaTime = (fixedDeltaTime * waitingMulti);
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -312,6 +320,8 @@ export default class simulationEngine extends EventTarget {
       this.dispatchEvent(new CustomEvent("simulationCrashed"));
       return;
     }
+
+    console.log('engineLoop took', performance.now() - timestamp, 'ms');
   }
 
   /**
@@ -403,7 +413,6 @@ export default class simulationEngine extends EventTarget {
       vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
 
     const currentTime = weather.timeAccumulator;
-    console.log(currentTime);
     const statData = {
       yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
       currentDate: dateString,
@@ -600,6 +609,7 @@ export default class simulationEngine extends EventTarget {
   setSpeedMultiplier(speed) {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;
+    this.SIMULATION_HZ 
   }
 
   /**
