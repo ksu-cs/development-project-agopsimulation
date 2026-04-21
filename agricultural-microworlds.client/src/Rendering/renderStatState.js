@@ -29,7 +29,7 @@ export default class RenderStatState extends RenderState {
     if (gddEl) gddEl.innerText = "GDD: " + data.cumulativeGDD;
 
     const rainEl = document.getElementById("rainText");
-    const r = data.cumulativeRain ?? 0;
+    const r = data.rainString ?? 0;
     if (rainEl)
       rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
 
@@ -52,5 +52,11 @@ export default class RenderStatState extends RenderState {
     if (seederFuelEl)
       seederFuelEl.innerText =
         "Seeder Fuel Level: " + data.seederFuelLevel + " G";
+
+    const waterAppliedEl = document.getElementById("waterAppliedText");
+    const waterApplied = data.totalWaterApplied ?? 0;
+    if (waterAppliedEl)
+      waterAppliedEl.innerText =
+        "Irrigation Applied: " + Number(waterApplied).toFixed(3);
   }
 }

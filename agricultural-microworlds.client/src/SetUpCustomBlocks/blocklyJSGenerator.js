@@ -124,3 +124,9 @@ javascriptGenerator.forBlock["fill_vehicle_fuel_tank"] = function (block) {
   }
   return `simulationMethods.fillVehicleFuelTank(${vehicle});\n`;
 };
+
+javascriptGenerator.forBlock["toggle_watering"] = function (block) {
+  const toggle = block.getFieldValue("toggleType");
+  const inputType = toggle == 0 ? false : true;
+  return `simulationMethods.toggleWatering(${inputType});\n`;
+};

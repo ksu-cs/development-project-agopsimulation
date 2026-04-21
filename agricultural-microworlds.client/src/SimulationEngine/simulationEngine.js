@@ -131,12 +131,32 @@ export default class simulationEngine extends EventTarget {
         size: 4,
         type: "float32",
       },
-      ["minerals"]: {
+      ["nitrogen"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["phosphorus"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["potassium"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["stress"]: {
+        size: 4,
+        type: "float32",
+      },
+      ["yieldMultiplier"]: {
         size: 4,
         type: "float32",
       },
     };
     const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
+
+    const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
+    const startingWaterFromWeather =
+      weatherMgr?.getInitialSoilWater?.(weatherState) ?? 0.0;
 
     /** @type {Object.<string, number>} */
     const startingValues = {
@@ -144,11 +164,19 @@ export default class simulationEngine extends EventTarget {
       ["type"]: CROP_TYPES.CORN,
       ["currentGDD"]: 0,
       ["requiredGDD"]: CROP_GDDS[CROP_TYPES.CORN],
-      ["waterLevel"]: 1000,
-      ["minerals"]: 1000,
+
+      // temp default until weather data is loaded
+      ["waterLevel"]: startingWaterFromWeather,
+
+      ["nitrogen"]: 1.0,
+      ["phosphorus"]: 1.0,
+      ["potassium"]: 1.0,
+
+      ["stress"]: 0.0,
+      ["yieldMultiplier"]: 1.0,
     };
     field.InitializeField(startingValues);
-
+    this.stateManager.initState("totalWaterApplied", 0);
     this.stateManager.initState("field", field);
     this.stateManager.initState("vehicles", [harvester, seeder]);
 
@@ -227,6 +255,124 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
+    const tractorManager = this.getManager(TractorManager);
+    const vehicles = nextStates.vehicles ?? [];
+    const field = nextStates.field;
+
+    if (tractorManager && field) {
+      for (const vehicle of vehicles) {
+        if (vehicle.type === VEHICLES.SEEDER && vehicle.isWateringOn) {
+          const tiles = tractorManager.getTilesCurrentlyOver(
+            vehicle,
+            field,
+            tractorManager.HEADER_OFFSET,
+          );
+
+          for (const tileInfo of tiles) {
+            const x = tileInfo[1];
+            const y = tileInfo[2];
+
+            if (x !== undefined && y !== undefined) {
+              const before = field.GetVariableAt(x, y, "waterLevel") ?? 0;
+              const after = Math.min(1.0, before + 0.01 * simDeltaTime);
+              field.setVariable("waterLevel", after, x, y);
+
+              // how much actually got added
+              const addedWater = after - before;
+
+              // add to running total
+              nextStates.totalWaterApplied =
+                (nextStates.totalWaterApplied ?? 0) + addedWater;
+            }
+          }
+        }
+      }
+    }
+    const rainToApply = nextStates.weather?.rainToApplyThisFrame ?? 0;
+    const didAdvanceDay =
+      (nextStates.weather?.gddToApplyThisFrame ?? 0) > 0 || rainToApply > 0;
+
+    if (didAdvanceDay) {
+      const CROP_WATER_USE = {
+        [CROP_TYPES.EMPTY]: 0.0,
+        [CROP_TYPES.WHEAT]: 0.002,
+        [CROP_TYPES.CORN]: 0.003,
+        [CROP_TYPES.SOY]: 0.0025,
+      };
+
+      for (let y = 0; y < this.ROWS; y++) {
+        for (let x = 0; x < this.COLS; x++) {
+          const cropType = nextStates.field.GetVariableAt(x, y, "type");
+
+          let waterLevel =
+            nextStates.field.GetVariableAt(x, y, "waterLevel") ?? 0;
+
+          let yieldMultiplier =
+            nextStates.field.GetVariableAt(x, y, "yieldMultiplier") ?? 1.0;
+
+          //rain adds water
+          waterLevel = Math.min(1.0, waterLevel + rainToApply * 0.001);
+
+          //crop uses water
+          const waterUse = CROP_WATER_USE[cropType] ?? 0;
+          waterLevel = Math.max(0.0, waterLevel - waterUse);
+
+          //stress rules
+          const CROP_WATER_RULES = {
+            [CROP_TYPES.WHEAT]: { stressStart: 0.18 },
+            [CROP_TYPES.CORN]: { stressStart: 0.2 },
+            [CROP_TYPES.SOY]: { stressStart: 0.18 },
+          };
+
+          const rules = CROP_WATER_RULES[cropType];
+
+          let waterStress = 0.0;
+
+          if (rules && waterLevel < rules.stressStart) {
+            waterStress = (rules.stressStart - waterLevel) / rules.stressStart;
+          }
+
+          waterStress = Math.max(0.0, Math.min(1.0, waterStress));
+
+          //hurt yield
+          yieldMultiplier = Math.max(0.0, yieldMultiplier - waterStress * 0.01);
+
+          nextStates.field.setVariable("waterLevel", waterLevel, x, y);
+          nextStates.field.setVariable("stress", waterStress, x, y);
+          nextStates.field.setVariable(
+            "yieldMultiplier",
+            yieldMultiplier,
+            x,
+            y,
+          );
+        }
+      }
+      const w = nextStates.field.GetVariableAt(0, 0, "waterLevel");
+      const s = nextStates.field.GetVariableAt(0, 0, "stress");
+      const y = nextStates.field.GetVariableAt(0, 0, "yieldMultiplier");
+
+      console.log(
+        `DAY UPDATE → rain:${rainToApply.toFixed(2)} | water:${w.toFixed(3)} | stress:${s.toFixed(3)} | yield:${y.toFixed(3)}`,
+      );
+      console.log("daily rain:", rainToApply);
+      console.log(
+        "tile 0,0 water after day update:",
+        nextStates.field.GetVariableAt(0, 0, "waterLevel"),
+      );
+    }
+    if (rainToApply > 0) {
+      for (let y = 0; y < this.ROWS; y++) {
+        for (let x = 0; x < this.COLS; x++) {
+          const currentWater =
+            nextStates.field.GetVariableAt(x, y, "waterLevel") ?? 0;
+
+          const newWater = Math.min(1.0, currentWater + rainToApply * 0.001);
+
+          nextStates.field.setVariable("waterLevel", newWater, x, y);
+        }
+      }
+    }
+
     this.activeTasks.forEach((task, vehicleType) => {
       if (task.sessionId !== this.simulationSessionId) {
         this.activeTasks.clear();
@@ -303,7 +449,8 @@ export default class simulationEngine extends EventTarget {
     const tractor = this.stateManager.getState("tractor");
     const field = this.stateManager.getState("field");
     const weather = this.stateManager.getState("weather");
-
+    const totalWaterApplied =
+      this.stateManager.getState("totalWaterApplied") ?? 0;
     const vehicles = this.stateManager.getState("vehicles");
     const activeVehicleType = this.stateManager.getState("activeVehicleType");
     /** @type {TractorManager} */
@@ -330,7 +477,6 @@ export default class simulationEngine extends EventTarget {
 
     // Calculate strings
     const gddString = weather.cumulativeGDD.toFixed(2);
-
     // pick the rain source from WeatherState
     const rainValue =
       weather.cumulativeRain ??
@@ -364,6 +510,7 @@ export default class simulationEngine extends EventTarget {
       fuelConsumed: fuelConsumed,
       harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
       seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
+      totalWaterApplied,
     };
 
     const fieldData = {
@@ -509,7 +656,10 @@ export default class simulationEngine extends EventTarget {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
     }
-    this.harvesterWorker.postMessage(isOn);
+
+    if (this.harvesterWorker) {
+      this.harvesterWorker.postMessage(isOn);
+    }
   }
 
   /**
@@ -522,7 +672,10 @@ export default class simulationEngine extends EventTarget {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
     }
-    this.seederWorker.postMessage(isOn);
+
+    if (this.seederWorker) {
+      this.seederWorker.postMessage(isOn);
+    }
   }
 
   /**
@@ -608,8 +761,38 @@ export default class simulationEngine extends EventTarget {
     const station = document.getElementById("station")?.value || "Flickner";
     const start = document.getElementById("start")?.value || "2021-01-01";
     const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
-    if (weatherMgr)
+
+    if (weatherMgr) {
       await weatherMgr.loadWeatherData(this.stateManager, station, start);
+
+      const weatherState = this.stateManager.getState("weather");
+      const startingWater = weatherMgr.getInitialSoilWater(weatherState);
+      if (startingWater !== null) {
+        this.setAllFieldWaterLevels(startingWater);
+        console.log("Starting field water set from VMC5CM:", startingWater);
+      }
+    }
+  }
+
+  toggleWatering(isOn, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle && vehicle.type === VEHICLES.SEEDER) {
+      vehicle.isWateringOn = isOn;
+      console.log("Watering:", isOn);
+    }
+  }
+
+  setAllFieldWaterLevels(waterValue) {
+    const field = this.stateManager.getState("field");
+    if (!field || waterValue === null || waterValue === undefined) return;
+
+    for (let y = 0; y < this.ROWS; y++) {
+      for (let x = 0; x < this.COLS; x++) {
+        field.setVariable("waterLevel", waterValue, x, y);
+      }
+    }
+
+    this.stateManager.commitState("field", field);
   }
 
   /**
@@ -619,6 +802,7 @@ export default class simulationEngine extends EventTarget {
     if (!this.isRunning) return;
 
     const { command, args, vehicleType, requestId } = data;
+    console.log("ENGINE handleWorkerMessage:", command, args, vehicleType);
 
     // Route the string command to the actual simulation API
     switch (command) {
@@ -642,6 +826,9 @@ export default class simulationEngine extends EventTarget {
         break;
       case "fillVehicleFuelTank":
         this.fillVehicleFuelTank(args[0]);
+        break;
+      case "toggleWatering":
+        this.toggleWatering(args[0], vehicleType);
         break;
       default:
         console.warn("Unknown worker command:", command);
