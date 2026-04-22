@@ -313,40 +313,6 @@ export default class simulationEngine extends EventTarget {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
-    const tractorManager = this.getManager(TractorManager);
-    const vehicles = nextStates.vehicles ?? [];
-    const field = nextStates.field;
-
-    if (tractorManager && field) {
-      for (const vehicle of vehicles) {
-        if (vehicle.type === VEHICLES.SEEDER && vehicle.isWateringOn) {
-          const tiles = tractorManager.getTilesCurrentlyOver(
-            vehicle,
-            field,
-            tractorManager.HEADER_OFFSET,
-          );
-
-          for (const tileInfo of tiles) {
-            const x = tileInfo[1];
-            const y = tileInfo[2];
-
-            if (x !== undefined && y !== undefined) {
-              const before = field.GetVariableAt(x, y, "waterLevel") ?? 0;
-              const after = Math.min(1.0, before + 0.01 * simDeltaTime);
-              field.setVariable("waterLevel", after, x, y);
-
-              // how much actually got added
-              const addedWater = after - before;
-
-              // add to running total
-              nextStates.totalWaterApplied =
-                (nextStates.totalWaterApplied ?? 0) + addedWater;
-            }
-          }
-        }
-      }
-    }
-
     this.activeTasks.forEach((task, vehicleType) => {
       if (task.sessionId !== this.simulationSessionId) {
         this.activeTasks.clear();
@@ -591,7 +557,7 @@ export default class simulationEngine extends EventTarget {
   async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const timeValue = Number(timeType);
-    
+
     let durationInSeconds = Number(amount);
     if (timeValue > 0) {
       // Hours

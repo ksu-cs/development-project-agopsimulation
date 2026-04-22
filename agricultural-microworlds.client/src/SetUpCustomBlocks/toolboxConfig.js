@@ -81,11 +81,11 @@ export const toolbox = {
               shadow: {
                 type: "math_number",
                 fields: {
-                  NUM: 10
-                }
-              }
-            }
-          }
+                  NUM: 10,
+                },
+              },
+            },
+          },
         },
         { kind: "block", type: "controls_whileUntil" },
       ],
