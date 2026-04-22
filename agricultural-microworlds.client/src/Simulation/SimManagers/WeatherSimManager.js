@@ -17,15 +17,17 @@ export default class WeatherManager extends SimManager {
     const startFmt = startDateString.replaceAll("-", "");
     const endFmt = `${endDate.getFullYear()}${(endDate.getMonth() + 1).toString().padStart(2, "0")}${endDate.getDate().toString().padStart(2, "0")}`;
 
-    const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${stationId}&int=day&t_start=${startFmt}000000&t_end=${endFmt}000000&vars=TEMP2MAVG,PRECIP`;
+    const url = `https://mesonet.k-state.edu/rest/stationdata?stn=${stationId}&int=day&t_start=${startFmt}000000&t_end=${endFmt}000000&vars=TEMP2MAVG,PRECIP,VWC5CM`;
 
     try {
       const response = await fetch(url);
       const data = await response.text();
       const lines = data.trim().split("\n");
+      const headers = lines[0].split(",");
       const parsedCsv = lines.slice(1).map((line) => line.split(","));
 
       this.weatherDataCache = {
+        headers: headers,
         csvLines: parsedCsv,
         startDate: startDate,
       };
@@ -44,6 +46,7 @@ export default class WeatherManager extends SimManager {
   applyCacheToState(weatherState) {
     if (!this.weatherDataCache) return;
 
+    weatherState.headers = this.weatherDataCache.headers;
     weatherState.csvLines = this.weatherDataCache.csvLines;
     weatherState.startDate = new Date(this.weatherDataCache.startDate);
 
@@ -58,6 +61,25 @@ export default class WeatherManager extends SimManager {
     weatherState.timeAccumulator = 300; // Start at 6 A.M.
 
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
+  }
+
+  getInitialSoilWater(weatherState) {
+    if (
+      !weatherState ||
+      !weatherState.csvLines ||
+      weatherState.csvLines.length === 0
+    ) {
+      return null;
+    }
+
+    for (const row of weatherState.csvLines) {
+      const value = parseFloat(row[4]);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+    }
+
+    return null;
   }
 
   update(deltaTime, oldState, newState) {

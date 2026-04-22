@@ -35,7 +35,7 @@ export default class ImplementState {
     this.isHarvestingOn = false;
     this.isSeedingOn = false;
     this.cropBeingPlanted = CROP_TYPES.WHEAT;
-
+    this.isWateringOn = false;
     this.yieldScore = 0;
     this.type = VEHICLES.HARVESTER;
   }
@@ -54,7 +54,7 @@ export default class ImplementState {
 
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
-
+    newState.isWateringOn = this.isWateringOn;
     newState.isSeedingOn = this.isSeedingOn;
 
     newState.cropBeingPlanted = this.cropBeingPlanted;
