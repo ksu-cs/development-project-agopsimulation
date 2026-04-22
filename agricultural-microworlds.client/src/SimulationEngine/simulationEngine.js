@@ -557,7 +557,6 @@ export default class simulationEngine extends EventTarget {
   async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const timeValue = Number(timeType);
-
     let durationInSeconds = Number(amount);
     if (timeValue > 0) {
       // Hours
@@ -598,10 +597,8 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.HARVESTER) {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
-    }
 
-    if (this.harvesterWorker) {
-      this.harvesterWorker.postMessage(isOn);
+      vehicle.postMessage(isOn);
     }
   }
 
@@ -614,10 +611,8 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
-    }
 
-    if (this.seederWorker) {
-      this.seederWorker.postMessage(isOn);
+      vehicle.postMessage(isOn);
     }
   }
 
@@ -747,6 +742,8 @@ export default class simulationEngine extends EventTarget {
     const { command, args, vehicleType, requestId } = data;
     console.log("ENGINE handleWorkerMessage:", command, args, vehicleType);
 
+    let result = true;
+
     // Route the string command to the actual simulation API
     switch (command) {
       case "moveForward":
@@ -773,8 +770,12 @@ export default class simulationEngine extends EventTarget {
       case "toggleWatering":
         this.toggleWatering(args[0], vehicleType);
         break;
+      case "CheckIfPlantInFront":
+        result = this.CheckIfPlantInFront(args[0], vehicleType);
+        break;
       default:
         console.warn("Unknown worker command:", command);
+        result = false;
         break;
     }
 
@@ -784,7 +785,7 @@ export default class simulationEngine extends EventTarget {
       worker.postMessage({
         type: "RESPONSE",
         requestId: requestId,
-        result: true,
+        result: result,
       });
     }
   }
