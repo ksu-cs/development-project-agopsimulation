@@ -42,6 +42,9 @@ export default class TractorSimManager extends SimManager {
       const oldTractor = oldVehicles[i];
       const newTractor = newVehicles[i];
 
+      // Skip processing stationary structures like the silo
+      if (newTractor.type === VEHICLES.SILO) continue;
+
       // Turning and Movement Logic
       const diff = newTractor.goalAngle - newTractor.angle;
       const isTurning = Math.abs(diff) > 0.1;
@@ -75,6 +78,11 @@ export default class TractorSimManager extends SimManager {
         this.handleHarvesting(newTractor, newField, newVehicles);
       } else if (oldTractor.isSeedingOn) {
         this.handleSeeding(newTractor, newField);
+      }
+
+      // Check if collector should transfer to silo
+      if (newTractor.type === VEHICLES.COLLECTOR) {
+        this.handleCollectorToSilo(newTractor, newVehicles);
       }
     }
 
@@ -121,9 +129,27 @@ export default class TractorSimManager extends SimManager {
           plant(tractor.cropBeingPlanted, tile);
           return true;
         }
+        return false;
       },
       -this.HEADER_OFFSET,
     );
+  }
+  handleCollectorToSilo(collector, vehicles) {
+    const silo = vehicles.find(v => v.type === VEHICLES.SILO);
+    if (!silo) return;
+
+    const isCollectorBesideSilo = this.isBeside(collector, silo);
+    if (!isCollectorBesideSilo) return;
+
+    // Transfer collector's yield to silo storage
+    const transferAmount = collector.yieldScore;
+    if (transferAmount > 0) {
+      const availableCapacity = silo.storageCapacity - silo.currentStorage;
+      const amountToTransfer = Math.min(transferAmount, availableCapacity);
+
+      silo.currentStorage += amountToTransfer;
+      collector.yieldScore -= amountToTransfer;
+    }
   }
 
   isBeside(vehicle1, vehicle2) {
@@ -265,7 +291,13 @@ export default class TractorSimManager extends SimManager {
     if (newState.isGameOver) return true;
 
     for (let i = 0; i < vehicles.length; i++) {
+      // Skip collision checks for stationary structures like the silo
+      if (vehicles[i].type === VEHICLES.SILO) continue;
+
       for (let j = i + 1; j < vehicles.length; j++) {
+        // Skip collision checks for stationary structures like the silo
+        if (vehicles[j].type === VEHICLES.SILO) continue;
+
         const result = this.areVehiclesColliding(vehicles[i], vehicles[j]);
 
         if (result.collided) {
@@ -296,6 +328,8 @@ export default class TractorSimManager extends SimManager {
 
     for (const vehicle of vehicles) {
       if (!vehicle) continue;
+      // Skip checking stationary structures like the silo
+      if (vehicle.type === VEHICLES.SILO) continue;
       if (vehicle.isMoving) return false;
       if (Math.abs(vehicle.goalAngle - vehicle.angle) > 0.1) return false;
     }
@@ -314,6 +348,9 @@ export default class TractorSimManager extends SimManager {
 
     for (let i = 0; i < vehicles.length; i++) {
       const vehicle = vehicles[i];
+      // Skip checking fuel for stationary structures like the silo
+      if (vehicle.type === VEHICLES.SILO) continue;
+      
       const fuelCapacity = VEHICLE_FUEL_CAPACITY[vehicle.type];
       if (vehicle.fuelInTankUsed >= fuelCapacity) {
         newState.isGameOver = true;

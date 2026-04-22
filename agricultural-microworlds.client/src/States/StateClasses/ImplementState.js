@@ -4,18 +4,21 @@ export const VEHICLES = {
   HARVESTER: 0,
   SEEDER: 1,
   COLLECTOR: 2,
+  SILO: 3,
 };
 
 export const VEHICLE_FUEL_CAPACITY = {
   [VEHICLES.HARVESTER]: 300,
   [VEHICLES.SEEDER]: 200,
   [VEHICLES.COLLECTOR]: 250,
+  [VEHICLES.SILO]: 0,
 };
 
 export const VEHICLE_FUEL_CONSUMPTION = {
   [VEHICLES.HARVESTER]: 12.5,
   [VEHICLES.SEEDER]: 5,
-  [VEHICLES.COLLECTOR]: 8,
+  [VEHICLES.COLLECTOR]: 0,
+  [VEHICLES.SILO]: 0,
 };
 
 export default class ImplementState {
@@ -38,6 +41,8 @@ export default class ImplementState {
     this.isWateringOn = false;
     this.yieldScore = 0;
     this.type = VEHICLES.HARVESTER;
+    this.storageCapacity = 0; // Storage capacity for collector
+    this.currentStorage = 0; // Current storage amount
   }
 
   clone() {
@@ -61,6 +66,8 @@ export default class ImplementState {
 
     newState.yieldScore = this.yieldScore;
     newState.type = this.type;
+    newState.storageCapacity = this.storageCapacity;
+    newState.currentStorage = this.currentStorage;
     return newState;
   }
 }

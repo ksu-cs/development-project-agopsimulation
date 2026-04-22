@@ -112,6 +112,15 @@ export default class simulationEngine extends EventTarget {
     collector.type = VEHICLES.COLLECTOR;
     collector.x = -150;
     collector.y = (this.ROWS * this.TILE_SIZE) / 2 - 110;
+    collector.storageCapacity = 2000;
+    collector.currentStorage = 0;
+
+    const silo = new ImplementState();
+    silo.type = VEHICLES.SILO;
+    silo.x = -150;
+    silo.y = (this.ROWS * this.TILE_SIZE) / 2 - 110 - 200; // Position silo 300 pixels above collector
+    silo.storageCapacity = 10000; // Large capacity for silo
+    silo.currentStorage = 0;
 
     // 3. Setup field
     /** @type {Object.<string, {size: number, type: string}>} */
@@ -183,7 +192,7 @@ export default class simulationEngine extends EventTarget {
     field.InitializeField(startingValues);
     this.stateManager.initState("totalWaterApplied", 0);
     this.stateManager.initState("field", field);
-    this.stateManager.initState("vehicles", [harvester, seeder, collector]);
+    this.stateManager.initState("vehicles", [harvester, seeder, collector, silo]);
 
     const tractorSimManager = this.getManager(TractorManager);
     const existingCamera = tractorSimManager.activeVehicleCamera;
