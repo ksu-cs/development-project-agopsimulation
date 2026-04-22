@@ -21,11 +21,11 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 /**
  * Known issues:
  * wait weeks INSANELY fast, > 1 day a second
- * 60 base hz faster than 120 base hz, because 60/60 = 1 and 60/120 = .5
- * stop multiplying tractor speed by sim delta time and have it fixed per frame??
+ * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
  * max frame interval should be 5 ms, otherwise the it takes too long to do the calculations
  * having different speed multipliers causes the sim starting time to be different for some reason (ask max)
- * 
+ *  at very start of program couple frames where "both vehicles waiting" is true causing jump in time beacuse of 120x multiplier
+ *  wait weeks fast because previously 120x 0.008 was small but 120x .5 or 1 is very fast
  */
 
 /**
@@ -78,7 +78,7 @@ export default class simulationEngine extends EventTarget {
     this.useScreenEffects = true;
     // Simulation configuration
     this.SIMULATION_HZ = 60
-    this.SIM_SECONDS_PER_SECOND = 60;
+    this.SIM_SECONDS_PER_SECOND = 120;
     this.SIM_TIME_PER_TICK = this.SIM_SECONDS_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
 
     // Active Task System to sync Logic with Physics
@@ -188,6 +188,7 @@ export default class simulationEngine extends EventTarget {
       this.lastSimulationTime = performance.now();
       this.scheduleRender();
       this.scheduleSimulation();
+      console.log(performance.now() / 1000);
     }
   }
 
@@ -235,7 +236,7 @@ export default class simulationEngine extends EventTarget {
     const weather = this.stateManager.states.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
 
-    console.log('speedMult:', speedMult, 'interval:', 1000 / (this.SIMULATION_HZ * speedMult));
+    //console.log('speedMult:', speedMult, 'interval:', 1000 / (this.SIMULATION_HZ * speedMult));
 
     // Schedule next simulation tick at the configured rate
     const SIM_INTERVAL = 1000 / (this.SIMULATION_HZ * speedMult);
@@ -324,7 +325,7 @@ export default class simulationEngine extends EventTarget {
       return;
     }
 
-    console.log('engineLoop took', performance.now() - timestamp, 'ms');
+    //console.log('engineLoop took', performance.now() - timestamp, 'ms');
   }
 
   /**
@@ -603,6 +604,8 @@ export default class simulationEngine extends EventTarget {
   fillVehicleFuelTank(targetVehicleType) {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.fuelInTankUsed = 0;
+    
+      console.log(performance.now() / 1000);
   }
 
   /**
@@ -612,7 +615,6 @@ export default class simulationEngine extends EventTarget {
   setSpeedMultiplier(speed) {
     const weather = this.stateManager.getState("weather");
     if (weather) weather.speedMultiplier = speed;
-    this.SIMULATION_HZ 
   }
 
   /**
