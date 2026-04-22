@@ -21,10 +21,6 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 /**
  * Known issues:
  * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
- * max frame interval should be 5 ms, otherwise the it takes too long to do the calculations
- * having different speed multipliers causes the sim starting time to be different for some reason (ask max)
- *  at very start of program couple frames where "both vehicles waiting" is true causing jump in time beacuse of 120x multiplier
- *  wait weeks fast because previously 120x 0.008 was small but 120x .5 or 1 is very fast
  */
 
 /**
@@ -76,7 +72,7 @@ export default class simulationEngine extends EventTarget {
     this.crash = null;
     this.useScreenEffects = true;
     // Simulation configuration
-    this.SIMULATION_HZ = 40
+    this.SIMULATION_HZ = 40;
     this.SIM_MINUTES_PER_SECOND = 1;
     this.SIM_TIME_PER_TICK = this.SIM_MINUTES_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
 
@@ -187,7 +183,6 @@ export default class simulationEngine extends EventTarget {
       this.lastSimulationTime = performance.now();
       this.scheduleRender();
       this.scheduleSimulation();
-      console.log(performance.now() / 1000);
     }
   }
 
@@ -235,10 +230,16 @@ export default class simulationEngine extends EventTarget {
     const weather = this.stateManager.states.weather;
     const speedMult = weather ? weather.getSpeedMultiplier() : 1;
 
-    //console.log('speedMult:', speedMult, 'interval:', 1000 / (this.SIMULATION_HZ * speedMult));
-
     // Schedule next simulation tick at the configured rate
-    const SIM_INTERVAL = 1000 / (this.SIMULATION_HZ * speedMult);
+    const SIM_HZ = this.SIMULATION_HZ * speedMult;
+    if (SIM_HZ > 200) {
+      console.warn(
+        `Simulation speed multiplier is causing simulation rate to exceed 200 Hz (current: ${SIM_HZ.toFixed(
+          2,
+        )} Hz). Capping at 200 Hz to prevent performance issues.`,
+      );
+    }
+    const SIM_INTERVAL = 1000 / Math.min(SIM_HZ, 200); // capping simEngine fps at 200 because update takes 5ms minimum and 1000 (ms per second) / 5 (ms per frame) = 200 fps
     this.simulationTimeId = setTimeout(
       () => this.scheduleSimulation(),
       SIM_INTERVAL,
@@ -264,7 +265,7 @@ export default class simulationEngine extends EventTarget {
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 20
         : 1;
-    const simDeltaTime = (fixedDeltaTime * waitingMulti);
+    const simDeltaTime = fixedDeltaTime * waitingMulti;
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -281,7 +282,7 @@ export default class simulationEngine extends EventTarget {
 
     // 3. Run Managers
     for (const sm of this.managers) {
-    sm.update(simDeltaTime, oldStates, nextStates);
+      sm.update(simDeltaTime, oldStates, nextStates);
     }
 
     this.activeTasks.forEach((task, vehicleType) => {
@@ -323,8 +324,6 @@ export default class simulationEngine extends EventTarget {
       this.dispatchEvent(new CustomEvent("simulationCrashed"));
       return;
     }
-
-    //console.log('engineLoop took', performance.now() - timestamp, 'ms');
   }
 
   /**
@@ -529,7 +528,7 @@ export default class simulationEngine extends EventTarget {
   async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const timeValue = Number(timeType);
-    console.log(timeValue + " " + amount);
+    
     let durationInSeconds = Number(amount);
     if (timeValue > 0) {
       // Hours
@@ -603,8 +602,6 @@ export default class simulationEngine extends EventTarget {
   fillVehicleFuelTank(targetVehicleType) {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.fuelInTankUsed = 0;
-    
-      console.log(performance.now() / 1000);
   }
 
   /**

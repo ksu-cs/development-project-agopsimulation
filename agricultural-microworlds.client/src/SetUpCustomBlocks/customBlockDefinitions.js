@@ -45,7 +45,7 @@ Blocks["args_example"] = {
 //#region custom
 var moveForward = {
   type: "move_forward",
-  message0: "move forward for %1 minute",
+  message0: "move forward for %1 minute(s)",
   args0: [
     {
       type: "field_number",
@@ -58,7 +58,7 @@ var moveForward = {
   previousStatement: null,
   nextStatement: null,
   style: "movement_blocks",
-  tooltip: "Move forward for specified minutes",
+  tooltip: "Move forward for specified minute(s)",
 };
 Blocks["move_forward"] = {
   init: function () {
