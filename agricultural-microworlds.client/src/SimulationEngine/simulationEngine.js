@@ -20,9 +20,12 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
  * Known issues:
- * speeding up sim doesn't increase frames just increases other stuff
  * wait weeks INSANELY fast, > 1 day a second
- * 60 base hz faster than 120 base hz
+ * 60 base hz faster than 120 base hz, because 60/60 = 1 and 60/120 = .5
+ * stop multiplying tractor speed by sim delta time and have it fixed per frame??
+ * max frame interval should be 5 ms, otherwise the it takes too long to do the calculations
+ * having different speed multipliers causes the sim starting time to be different for some reason (ask max)
+ * 
  */
 
 /**
