@@ -108,6 +108,11 @@ export default class simulationEngine extends EventTarget {
     seeder.x = -150;
     seeder.y = (this.ROWS * this.TILE_SIZE) / 2 + 50;
 
+    const collector = new ImplementState();
+    collector.type = VEHICLES.COLLECTOR;
+    collector.x = -150;
+    collector.y = (this.ROWS * this.TILE_SIZE) / 2 - 110;
+
     // 3. Setup field
     /** @type {Object.<string, {size: number, type: string}>} */
     const tileState = {
@@ -150,7 +155,7 @@ export default class simulationEngine extends EventTarget {
     field.InitializeField(startingValues);
 
     this.stateManager.initState("field", field);
-    this.stateManager.initState("vehicles", [harvester, seeder]);
+    this.stateManager.initState("vehicles", [harvester, seeder, collector]);
 
     const tractorSimManager = this.getManager(TractorManager);
     const existingCamera = tractorSimManager.activeVehicleCamera;

@@ -22,12 +22,14 @@ class SimulationControlsContainer extends Component {
     this.simulationEngine = null;
     this.drawCanvas = null;
 
-    // Harvester = 0, Seeder = 1
+    // Harvester = 0, Seeder = 1, Collector = 2
     this.state = {
       selectedVehicle: 0,
       harvesterXml:
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
       seederXml:
+        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      collectorXml:
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
     };
 
@@ -97,8 +99,10 @@ class SimulationControlsContainer extends Component {
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
     if (this.state.selectedVehicle === 0) {
       this.state.harvesterXml = currentXmlText; // Mutate to avoid async delay
-    } else {
+    } else if (this.state.selectedVehicle === 1) {
       this.state.seederXml = currentXmlText;
+    } else if (this.state.selectedVehicle === 2) {
+      this.state.collectorXml = currentXmlText;
     }
 
     // Helper to generate code in the background safely
@@ -122,6 +126,7 @@ class SimulationControlsContainer extends Component {
 
     const harvesterCode = generateHeadlessCode(this.state.harvesterXml);
     const seederCode = generateHeadlessCode(this.state.seederXml);
+    const collectorCode = generateHeadlessCode(this.state.collectorXml);
 
     this.expectedWorkers = 0;
     this.completedWorkers = 0;
@@ -149,9 +154,10 @@ class SimulationControlsContainer extends Component {
       this.workers.push(worker);
     };
 
-    // 0 = HARVESTER, 1 = SEEDER
+    // 0 = HARVESTER, 1 = SEEDER, 2 = COLLECTOR
     spawnWorker(harvesterCode, 0);
     spawnWorker(seederCode, 1);
+    spawnWorker(collectorCode, 2);
 
     if (this.expectedWorkers > 0) {
       this.simulationEngine.startMoving();
@@ -200,13 +206,21 @@ class SimulationControlsContainer extends Component {
 
     if (this.state.selectedVehicle == 0) {
       this.setState({ harvesterXml: currentXmlText });
-    } else {
+    } else if (this.state.selectedVehicle == 1) {
       this.setState({ seederXml: currentXmlText });
+    } else if (this.state.selectedVehicle == 2) {
+      this.setState({ collectorXml: currentXmlText });
     }
 
     // Load blocks for new tab
-    const nextXmlText =
-      vehicleType == 0 ? this.state.harvesterXml : this.state.seederXml;
+    let nextXmlText;
+    if (vehicleType == 0) {
+      nextXmlText = this.state.harvesterXml;
+    } else if (vehicleType == 1) {
+      nextXmlText = this.state.seederXml;
+    } else if (vehicleType == 2) {
+      nextXmlText = this.state.collectorXml;
+    }
 
     this.setState({ selectedVehicle: vehicleType }, () => {
       this.props.workspace.clear();
@@ -319,7 +333,11 @@ class SimulationControlsContainer extends Component {
             }}
           >
             Camera Following:{" "}
-            {this.state.selectedVehicle === 1 ? "Seeder" : "Harvester"}
+            {this.state.selectedVehicle === 0
+              ? "Harvester"
+              : this.state.selectedVehicle === 1
+              ? "Seeder"
+              : "Collector"}
           </div>
 
           <div className={styles.buttonGroup}>
@@ -336,6 +354,13 @@ class SimulationControlsContainer extends Component {
               onClick={() => this.handleImplementSelect(1)}
             >
               Seeder
+            </button>
+            <button
+              id="collectorCameraButton"
+              className={styles.camera_btn}
+              onClick={() => this.handleImplementSelect(2)}
+            >
+              Collector
             </button>
           </div>
 

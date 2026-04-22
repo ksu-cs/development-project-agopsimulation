@@ -3,11 +3,13 @@ import { FRAME_HEIGHT, FRAME_WIDTH } from "./renderingConstants";
 import RenderState from "./renderState";
 import harvesterImage from "@/assets/combine-harvester.png";
 import seederImage from "@/assets/seeder.png";
+import collectorImage from "@/assets/collector.png";
 import crashImage from "@/assets/crash_sprite_overlay.png";
 
 const IMAGE_KEYS = {
   HARVESTER: "harvester",
   SEEDER: "seeder",
+  COLLECTOR: "collector",
   CRASH: "crash",
 };
 
@@ -16,6 +18,7 @@ export default class RenderImplementState extends RenderState {
     const paths = {
       [IMAGE_KEYS.HARVESTER]: harvesterImage,
       [IMAGE_KEYS.SEEDER]: seederImage,
+      [IMAGE_KEYS.COLLECTOR]: collectorImage,
       [IMAGE_KEYS.CRASH]: crashImage,
     };
     super(paths, paths.length);
@@ -34,6 +37,8 @@ export default class RenderImplementState extends RenderState {
       const sprite =
         vehicle.type === VEHICLES.SEEDER
           ? this.images[IMAGE_KEYS.SEEDER]
+          : vehicle.type === VEHICLES.COLLECTOR
+          ? this.images[IMAGE_KEYS.COLLECTOR]
           : this.images[IMAGE_KEYS.HARVESTER];
 
       context.save();

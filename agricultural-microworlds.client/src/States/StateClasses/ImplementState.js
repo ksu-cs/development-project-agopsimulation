@@ -3,16 +3,19 @@ import { CROP_TYPES } from "./CropState";
 export const VEHICLES = {
   HARVESTER: 0,
   SEEDER: 1,
+  COLLECTOR: 2,
 };
 
 export const VEHICLE_FUEL_CAPACITY = {
   [VEHICLES.HARVESTER]: 300,
   [VEHICLES.SEEDER]: 200,
+  [VEHICLES.COLLECTOR]: 250,
 };
 
 export const VEHICLE_FUEL_CONSUMPTION = {
   [VEHICLES.HARVESTER]: 12.5,
   [VEHICLES.SEEDER]: 5,
+  [VEHICLES.COLLECTOR]: 8,
 };
 
 export default class ImplementState {

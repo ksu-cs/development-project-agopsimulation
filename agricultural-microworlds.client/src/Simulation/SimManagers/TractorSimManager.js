@@ -72,7 +72,7 @@ export default class TractorSimManager extends SimManager {
 
       // Check Harvesting
       if (oldTractor.isHarvestingOn) {
-        this.handleHarvesting(newTractor, newField);
+        this.handleHarvesting(newTractor, newField, newVehicles);
       } else if (oldTractor.isSeedingOn) {
         this.handleSeeding(newTractor, newField);
       }
@@ -87,13 +87,20 @@ export default class TractorSimManager extends SimManager {
     }
   }
 
-  handleHarvesting(tractor, field) {
+  handleHarvesting(tractor, field, vehicles) {
+    if (tractor.type !== VEHICLES.HARVESTER) return; // Only harvester harvests
+
+    const collector = vehicles.find(v => v.type === VEHICLES.COLLECTOR);
+    const isCollectorBeside = this.isBeside(tractor, collector);
+
     this.applyToolAction(
       tractor,
       field,
       (tile) => {
         if (isMature(tile)) {
-          tractor.yieldScore += getYieldScore(tile);
+          if (isCollectorBeside) {
+            tractor.yieldScore += getYieldScore(tile);
+          }
           reset(tile);
           return true;
         } else if (isGrowing(tile)) {
@@ -117,6 +124,14 @@ export default class TractorSimManager extends SimManager {
       },
       -this.HEADER_OFFSET,
     );
+  }
+
+  isBeside(vehicle1, vehicle2) {
+    if (!vehicle1 || !vehicle2) return false;
+    const dx = vehicle1.x - vehicle2.x;
+    const dy = vehicle1.y - vehicle2.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < 100; // Beside if within 100 pixels
   }
 
   /**
