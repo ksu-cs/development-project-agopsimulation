@@ -374,4 +374,29 @@ Blocks["fill_vehicle_fuel_tank"] = {
     this.jsonInit(fillVehicleFuelTank);
   },
 };
+
+var toggleWatering = {
+  type: "toggle_watering",
+  message0: "turn watering %1",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleType",
+      options: [
+        ["ON", "1"],
+        ["OFF", "0"],
+      ],
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Turns watering on seeder on or off",
+};
+
+Blocks["toggle_watering"] = {
+  init: function () {
+    this.jsonInit(toggleWatering);
+  },
+};
 //#endregion
