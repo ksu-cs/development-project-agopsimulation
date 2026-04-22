@@ -223,6 +223,7 @@ class SimulationControlsContainer extends Component {
     const workerScript = `
       const simulationMethods = {
         _send: function(command, args) {
+           console.log("WORKER sending", command, args);
            return new Promise((resolve) => {
               const reqId = Math.random().toString(36).substring(7);
               self.postMessage({ 
@@ -249,7 +250,8 @@ class SimulationControlsContainer extends Component {
         toggleSeeding: function(b) { return this._send('toggleSeeding', [b]); },
         switchCropBeingPlanted: function(c) { return this._send('switchCropBeingPlanted', [c]); },
         CheckIfPlantInFront: function(c) { return this._send('CheckIfPlantInFront', [c]); },
-        fillVehicleFuelTank: function(v) { return this._send('fillVehicleFuelTank', [v]); }
+        fillVehicleFuelTank: function(v) { return this._send('fillVehicleFuelTank', [v]); },
+        toggleWatering: function(b) { return this._send('toggleWatering', [b]); },
       };
 
       async function runUserCode() {
