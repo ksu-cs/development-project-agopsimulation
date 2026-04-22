@@ -651,6 +651,7 @@ export default class simulationEngine extends EventTarget {
         break;
       default:
         console.warn("Unknown worker command:", command);
+        result = false;
         break;
     }
 
