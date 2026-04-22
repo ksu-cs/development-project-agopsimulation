@@ -234,6 +234,7 @@ export default class simulationEngine extends EventTarget {
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 120
         : 1;
+    console.log(waitingMulti);
     const safeRealDelta = Math.min(realDeltaTime, 0.1);
     const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
 
@@ -453,12 +454,19 @@ export default class simulationEngine extends EventTarget {
       canvasHeight: this.canvasHeight,
     };
 
+    const weatherData = {
+      dailyRain: weather.dailyRain,
+      canvasWidth: this.canvasWidth,
+      canvasHeight: this.canvasHeight,
+    };
+
     const renderModules = {
       [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
       ...(this.useScreenEffects && {
         [RENDER_MODULE_KEYS.DAY_CYCLE]: dayCycleData,
+        [RENDER_MODULE_KEYS.WEATHER]: weatherData,
       }),
     };
 
@@ -530,7 +538,6 @@ export default class simulationEngine extends EventTarget {
   async waitXTime(amount, timeType, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const timeValue = Number(timeType);
-    console.log(timeValue + " " + amount);
     let durationInSeconds = Number(amount);
     if (timeValue > 0) {
       // Hours
@@ -571,10 +578,8 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.HARVESTER) {
       vehicle.isHarvestingOn = isOn;
       if (isOn) vehicle.isSeedingOn = false;
-    }
 
-    if (this.harvesterWorker) {
-      this.harvesterWorker.postMessage(isOn);
+      vehicle.postMessage(isOn);
     }
   }
 
@@ -587,10 +592,8 @@ export default class simulationEngine extends EventTarget {
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isSeedingOn = isOn;
       if (isOn) vehicle.isHarvestingOn = false;
-    }
 
-    if (this.seederWorker) {
-      this.seederWorker.postMessage(isOn);
+      vehicle.postMessage(isOn);
     }
   }
 
@@ -720,6 +723,8 @@ export default class simulationEngine extends EventTarget {
     const { command, args, vehicleType, requestId } = data;
     console.log("ENGINE handleWorkerMessage:", command, args, vehicleType);
 
+    let result = true;
+
     // Route the string command to the actual simulation API
     switch (command) {
       case "moveForward":
@@ -746,8 +751,12 @@ export default class simulationEngine extends EventTarget {
       case "toggleWatering":
         this.toggleWatering(args[0], vehicleType);
         break;
+      case "CheckIfPlantInFront":
+        result = this.CheckIfPlantInFront(args[0], vehicleType);
+        break;
       default:
         console.warn("Unknown worker command:", command);
+        result = false;
         break;
     }
 
@@ -757,7 +766,7 @@ export default class simulationEngine extends EventTarget {
       worker.postMessage({
         type: "RESPONSE",
         requestId: requestId,
-        result: true,
+        result: result,
       });
     }
   }
