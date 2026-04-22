@@ -20,7 +20,6 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
  * Known issues:
- * wait weeks INSANELY fast, > 1 day a second
  * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
  * max frame interval should be 5 ms, otherwise the it takes too long to do the calculations
  * having different speed multipliers causes the sim starting time to be different for some reason (ask max)
@@ -77,9 +76,9 @@ export default class simulationEngine extends EventTarget {
     this.crash = null;
     this.useScreenEffects = true;
     // Simulation configuration
-    this.SIMULATION_HZ = 60
-    this.SIM_SECONDS_PER_SECOND = 120;
-    this.SIM_TIME_PER_TICK = this.SIM_SECONDS_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
+    this.SIMULATION_HZ = 40
+    this.SIM_MINUTES_PER_SECOND = 1;
+    this.SIM_TIME_PER_TICK = this.SIM_MINUTES_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
 
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
@@ -263,7 +262,7 @@ export default class simulationEngine extends EventTarget {
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 120
+        ? 20
         : 1;
     const simDeltaTime = (fixedDeltaTime * waitingMulti);
 
