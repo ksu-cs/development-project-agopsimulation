@@ -6,8 +6,8 @@ export default class RenderStatState extends RenderState {
   }
 
   render(context, data) {
-    const yieldEl = document.getElementById("scoreText");
-    if (yieldEl) yieldEl.innerText = "Yield: " + data.yieldScore;
+    const siloStorageEl = document.getElementById("siloStorageText");
+    if (siloStorageEl) siloStorageEl.innerText = "Silo Storage: " + (data.siloStorage ?? 0) + " / 50000";
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + data.currentDate;
@@ -58,5 +58,13 @@ export default class RenderStatState extends RenderState {
     if (waterAppliedEl)
       waterAppliedEl.innerText =
         "Irrigation Applied: " + Number(waterApplied).toFixed(3);
+
+    const truckStorageEl = document.getElementById("truckStorageText");
+    if (truckStorageEl) truckStorageEl.innerText = "Truck Storage: " + (data.truckStorage ?? 0) + " / 5000";
+
+    const truckFuelEl = document.getElementById("truckFuelLevelText");
+    if (truckFuelEl)
+      truckFuelEl.innerText =
+        "Truck Fuel Level: " + (data.truckFuelLevel ?? 0) + " G";
   }
 }

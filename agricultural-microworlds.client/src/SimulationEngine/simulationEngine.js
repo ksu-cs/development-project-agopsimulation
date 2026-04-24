@@ -112,14 +112,14 @@ export default class simulationEngine extends EventTarget {
     collector.type = VEHICLES.COLLECTOR;
     collector.x = -150;
     collector.y = (this.ROWS * this.TILE_SIZE) / 2 - 110;
-    collector.storageCapacity = 2000;
+    collector.storageCapacity = 5000;
     collector.currentStorage = 0;
 
     const silo = new ImplementState();
     silo.type = VEHICLES.SILO;
     silo.x = -150;
     silo.y = (this.ROWS * this.TILE_SIZE) / 2 - 110 - 200; // Position silo 300 pixels above collector
-    silo.storageCapacity = 10000; // Large capacity for silo
+    silo.storageCapacity = 50000; // Large capacity for silo
     silo.currentStorage = 0;
 
     // 3. Setup field
@@ -427,6 +427,9 @@ export default class simulationEngine extends EventTarget {
     const seederFuelLevel =
       VEHICLE_FUEL_CAPACITY[VEHICLES.SEEDER] -
       vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
+    const truckFuelLevel =
+      VEHICLE_FUEL_CAPACITY[VEHICLES.COLLECTOR] -
+      vehicles[VEHICLES.COLLECTOR]?.fuelInTankUsed;
 
     const currentTime = weather.timeAccumulator;
 
@@ -440,6 +443,9 @@ export default class simulationEngine extends EventTarget {
       fuelConsumed: fuelConsumed,
       harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
       seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
+      truckFuelLevel: truckFuelLevel.toFixed(2) || "0.00",
+      truckStorage: vehicles[VEHICLES.COLLECTOR]?.currentStorage || 0,
+      siloStorage: vehicles[VEHICLES.SILO]?.currentStorage || 0,
       totalWaterApplied,
     };
 

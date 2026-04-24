@@ -106,7 +106,7 @@ export default class TractorSimManager extends SimManager {
       field,
       (tile) => {
         if (isMature(tile)) {
-          if (isCollectorBeside) {
+          if (isCollectorBeside && collector) {
             tractor.yieldScore += getYieldScore(tile);
           }
           reset(tile);
@@ -118,6 +118,11 @@ export default class TractorSimManager extends SimManager {
       },
       this.HEADER_OFFSET,
     );
+    
+    // Transfer harvester yield to collector storage when beside
+    if (isCollectorBeside && collector) {
+      this.handleHarvesterToCollector(tractor, collector);
+    }
   }
 
   handleSeeding(tractor, field) {
@@ -134,6 +139,18 @@ export default class TractorSimManager extends SimManager {
       -this.HEADER_OFFSET,
     );
   }
+  handleHarvesterToCollector(harvester, collector) {
+    // Transfer harvester's yield to collector's storage
+    const transferAmount = harvester.yieldScore;
+    if (transferAmount > 0) {
+      const availableCapacity = collector.storageCapacity - collector.currentStorage;
+      const amountToTransfer = Math.min(transferAmount, availableCapacity);
+
+      collector.currentStorage += amountToTransfer;
+      harvester.yieldScore -= amountToTransfer;
+    }
+  }
+
   handleCollectorToSilo(collector, vehicles) {
     const silo = vehicles.find(v => v.type === VEHICLES.SILO);
     if (!silo) return;
@@ -141,14 +158,14 @@ export default class TractorSimManager extends SimManager {
     const isCollectorBesideSilo = this.isBeside(collector, silo);
     if (!isCollectorBesideSilo) return;
 
-    // Transfer collector's yield to silo storage
-    const transferAmount = collector.yieldScore;
+    // Transfer collector's storage to silo storage
+    const transferAmount = collector.currentStorage;
     if (transferAmount > 0) {
       const availableCapacity = silo.storageCapacity - silo.currentStorage;
       const amountToTransfer = Math.min(transferAmount, availableCapacity);
 
       silo.currentStorage += amountToTransfer;
-      collector.yieldScore -= amountToTransfer;
+      collector.currentStorage -= amountToTransfer;
     }
   }
 

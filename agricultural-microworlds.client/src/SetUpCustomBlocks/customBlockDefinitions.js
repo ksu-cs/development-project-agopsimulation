@@ -361,6 +361,7 @@ var fillVehicleFuelTank = {
       options: [
         ["Harvester", "0"],
         ["Seeder", "1"],
+        ["Collector", "2"],
       ],
     },
   ],

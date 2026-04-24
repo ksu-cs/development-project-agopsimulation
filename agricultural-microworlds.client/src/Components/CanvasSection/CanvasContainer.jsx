@@ -28,8 +28,8 @@ class CanvasContainer extends Component {
             <p className={styles.statText} id="timeText">
               Time: 6:00 A.M.
             </p>
-            <p className={styles.statText} id="scoreText">
-              Yield: 0
+            <p className={styles.statText} id="siloStorageText">
+              Silo Storage: 0 / 50000
             </p>
             <p className={styles.statText} id="gddText">
               Growth Days: 0.00
@@ -51,6 +51,12 @@ class CanvasContainer extends Component {
             </p>
             <p className={styles.statText} id="seederFuelLevelText">
               Seeder Fuel Level: 200.00 G
+            </p>
+            <p className={styles.statText} id="truckStorageText">
+              Truck Storage: 0 / 5000
+            </p>
+            <p className={styles.statText} id="truckFuelLevelText">
+              Truck Fuel Level: 0 G
             </p>
           </div>
           <canvas
