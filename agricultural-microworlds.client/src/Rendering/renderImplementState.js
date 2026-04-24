@@ -41,10 +41,10 @@ export default class RenderImplementState extends RenderState {
         vehicle.type === VEHICLES.SEEDER
           ? this.images[IMAGE_KEYS.SEEDER]
           : vehicle.type === VEHICLES.COLLECTOR
-          ? this.images[IMAGE_KEYS.COLLECTOR]
-          : vehicle.type === VEHICLES.SILO
-          ? this.images[IMAGE_KEYS.SILO]
-          : this.images[IMAGE_KEYS.HARVESTER];
+            ? this.images[IMAGE_KEYS.COLLECTOR]
+            : vehicle.type === VEHICLES.SILO
+              ? this.images[IMAGE_KEYS.SILO]
+              : this.images[IMAGE_KEYS.HARVESTER];
 
       context.save();
       context.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);

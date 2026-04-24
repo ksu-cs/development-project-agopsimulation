@@ -204,7 +204,12 @@ export default class simulationEngine extends EventTarget {
     field.InitializeField(startingValues);
     this.stateManager.initState("totalWaterApplied", 0);
     this.stateManager.initState("field", field);
-    this.stateManager.initState("vehicles", [harvester, seeder, collector, silo]);
+    this.stateManager.initState("vehicles", [
+      harvester,
+      seeder,
+      collector,
+      silo,
+    ]);
 
     const tractorSimManager = this.getManager(TractorManager);
     const existingCamera = tractorSimManager.activeVehicleCamera;

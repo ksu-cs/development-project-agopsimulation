@@ -7,7 +7,9 @@ export default class RenderStatState extends RenderState {
 
   render(context, data) {
     const siloStorageEl = document.getElementById("siloStorageText");
-    if (siloStorageEl) siloStorageEl.innerText = "Silo Storage: " + (data.siloStorage ?? 0) + " / 50000";
+    if (siloStorageEl)
+      siloStorageEl.innerText =
+        "Silo Storage: " + (data.siloStorage ?? 0) + " / 50000";
 
     const dateEl = document.getElementById("dateText");
     if (dateEl) dateEl.innerText = "Date: " + data.currentDate;
@@ -60,7 +62,9 @@ export default class RenderStatState extends RenderState {
         "Irrigation Applied: " + Number(waterApplied).toFixed(3);
 
     const truckStorageEl = document.getElementById("truckStorageText");
-    if (truckStorageEl) truckStorageEl.innerText = "Truck Storage: " + (data.truckStorage ?? 0) + " / 5000";
+    if (truckStorageEl)
+      truckStorageEl.innerText =
+        "Truck Storage: " + (data.truckStorage ?? 0) + " / 5000";
 
     const truckFuelEl = document.getElementById("truckFuelLevelText");
     if (truckFuelEl)

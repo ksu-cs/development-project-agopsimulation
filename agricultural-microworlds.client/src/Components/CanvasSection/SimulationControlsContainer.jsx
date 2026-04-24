@@ -338,8 +338,8 @@ class SimulationControlsContainer extends Component {
             {this.state.selectedVehicle === 0
               ? "Harvester"
               : this.state.selectedVehicle === 1
-              ? "Seeder"
-              : "Collector"}
+                ? "Seeder"
+                : "Collector"}
           </div>
 
           <div className={styles.buttonGroup}>

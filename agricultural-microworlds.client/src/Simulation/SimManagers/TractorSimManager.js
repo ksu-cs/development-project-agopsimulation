@@ -123,7 +123,7 @@ export default class TractorSimManager extends SimManager {
   handleHarvesting(tractor, field, vehicles) {
     if (tractor.type !== VEHICLES.HARVESTER) return; // Only harvester harvests
 
-    const collector = vehicles.find(v => v.type === VEHICLES.COLLECTOR);
+    const collector = vehicles.find((v) => v.type === VEHICLES.COLLECTOR);
     const isCollectorBeside = this.isBeside(tractor, collector);
 
     this.applyToolAction(
@@ -143,7 +143,7 @@ export default class TractorSimManager extends SimManager {
       },
       this.HEADER_OFFSET,
     );
-    
+
     // Transfer harvester yield to collector storage when beside
     if (isCollectorBeside && collector) {
       this.handleHarvesterToCollector(tractor, collector);
@@ -168,7 +168,8 @@ export default class TractorSimManager extends SimManager {
     // Transfer harvester's yield to collector's storage
     const transferAmount = harvester.yieldScore;
     if (transferAmount > 0) {
-      const availableCapacity = collector.storageCapacity - collector.currentStorage;
+      const availableCapacity =
+        collector.storageCapacity - collector.currentStorage;
       const amountToTransfer = Math.min(transferAmount, availableCapacity);
 
       collector.currentStorage += amountToTransfer;
@@ -177,7 +178,7 @@ export default class TractorSimManager extends SimManager {
   }
 
   handleCollectorToSilo(collector, vehicles) {
-    const silo = vehicles.find(v => v.type === VEHICLES.SILO);
+    const silo = vehicles.find((v) => v.type === VEHICLES.SILO);
     if (!silo) return;
 
     const isCollectorBesideSilo = this.isBeside(collector, silo);
@@ -392,7 +393,7 @@ export default class TractorSimManager extends SimManager {
       const vehicle = vehicles[i];
       // Skip checking fuel for stationary structures like the silo
       if (vehicle.type === VEHICLES.SILO) continue;
-      
+
       const fuelCapacity = VEHICLE_FUEL_CAPACITY[vehicle.type];
       if (vehicle.fuelInTankUsed >= fuelCapacity) {
         newState.isGameOver = true;
