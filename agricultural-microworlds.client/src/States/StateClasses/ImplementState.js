@@ -14,6 +14,9 @@ export const VEHICLE_FUEL_CAPACITY = {
   [VEHICLES.SILO]: 0,
 };
 
+/**
+ * In gallons per minute at base speed
+ */
 export const VEHICLE_FUEL_CONSUMPTION = {
   [VEHICLES.HARVESTER]: 12.5,
   [VEHICLES.SEEDER]: 5,
@@ -23,8 +26,8 @@ export const VEHICLE_FUEL_CONSUMPTION = {
 
 export default class ImplementState {
   constructor() {
-    this.basespeed = 20;
-    this.turnSpeed = 90; // Degrees per second
+    this.basespeed = 62.5;
+    this.turnSpeed = 281.25; // Degrees per second
 
     this.x = 0;
     this.y = 0;

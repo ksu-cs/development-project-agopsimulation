@@ -73,7 +73,20 @@ export const toolbox = {
       name: "Loops",
       categorystyle: "loops_category",
       contents: [
-        { kind: "block", type: "controls_repeat_ext" },
+        {
+          kind: "block",
+          type: "controls_repeat_ext",
+          inputs: {
+            TIMES: {
+              shadow: {
+                type: "math_number",
+                fields: {
+                  NUM: 10,
+                },
+              },
+            },
+          },
+        },
         { kind: "block", type: "controls_whileUntil" },
       ],
     },
