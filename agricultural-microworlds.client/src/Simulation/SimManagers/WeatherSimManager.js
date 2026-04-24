@@ -58,7 +58,7 @@ export default class WeatherManager extends SimManager {
     weatherState.gddToApplyThisFrame = 0;
     weatherState.rainToApplyThisFrame = 0;
 
-    weatherState.timeAccumulator = 300; // Start at 6 A.M.
+    weatherState.timeAccumulator = 480; // Start at 9 A.M.
 
     if (!weatherState.speedMultiplier) weatherState.speedMultiplier = 1;
   }
@@ -121,7 +121,5 @@ export default class WeatherManager extends SimManager {
     newWeather.currentDayIndex = oldWeather.currentDayIndex + 1;
     newWeather.gddToApplyThisFrame = dailyGDD;
     newWeather.rainToApplyThisFrame = rain;
-
-    //console.log("Rain raw value:", dayData[3]);
   }
 }

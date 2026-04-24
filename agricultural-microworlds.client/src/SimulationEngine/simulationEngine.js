@@ -15,9 +15,13 @@ import CropManager from "../Simulation/SimManagers/CropSimManager";
 import TractorManager from "../Simulation/SimManagers/TractorSimManager";
 import BitmapFieldState from "../BinaryArrayAbstractionMethods/BitmapFieldState";
 import SimManager from "../Simulation/SimManager";
-import RenderStatState from "../Rendering/renderStatState";
 import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
+
+/**
+ * Known issues:
+ * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
+ */
 
 /**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
@@ -39,6 +43,7 @@ export default class simulationEngine extends EventTarget {
     this.TILE_HEIGHT = this.TILE_SIZE;
     this.FRAME_WIDTH = 64;
     this.FRAME_HEIGHT = 64;
+    this.RENDER_FRAMES_PER_SECOND = 60;
 
     this.worldPixelWidth = this.COLS * this.TILE_WIDTH;
     this.worldPixelHeight = this.ROWS * this.TILE_HEIGHT;
@@ -58,12 +63,19 @@ export default class simulationEngine extends EventTarget {
 
     // Loop variables
     this.lastFrameTime = 0;
-    this.animationId = -1;
+    this.lastSimulationTime = 0;
+    this.renderFrameId = null;
+    this.simulationTimeId = null;
     this.isRunning = false;
     this.simulationSessionId = 0;
     this.isGameOver = false;
     this.crash = null;
     this.useScreenEffects = true;
+    // Simulation configuration
+    this.SIMULATION_HZ = 40;
+    this.SIM_MINUTES_PER_SECOND = 1;
+    this.SIM_TIME_PER_TICK = this.SIM_MINUTES_PER_SECOND / this.SIMULATION_HZ; // in sim seconds
+
     // Active Task System to sync Logic with Physics
     this.activeTasks = new Map();
   }
@@ -190,13 +202,15 @@ export default class simulationEngine extends EventTarget {
   }
 
   /**
-   * Begins running the simulation, calling the first loop.
+   * Begins running the simulation, starting both render and simulation loops.
    */
   startMoving() {
     if (!this.isRunning) {
       this.isRunning = true;
       this.lastFrameTime = performance.now();
-      this.loop();
+      this.lastSimulationTime = performance.now();
+      this.scheduleRender();
+      this.scheduleSimulation();
     }
   }
 
@@ -207,35 +221,79 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
-    cancelAnimationFrame(this.animationId);
+
+    // Cancel both loop schedules
+    if (this.renderFrameId !== null) {
+      cancelAnimationFrame(this.renderFrameId);
+      this.renderFrameId = null;
+    }
+    if (this.simulationTimeId !== null) {
+      clearTimeout(this.simulationTimeId);
+      this.simulationTimeId = null;
+    }
+
     this.timeStepEvent();
   }
 
   /**
-   * The main game loop.
-   * Calculates all simulation time, clones the simulation states, runs managers and active tasks, and updates the visuals accordingly.
-   * @param {number} timestamp The current timestamp of the game, used to calculate delta time.
+   * Schedules the render loop to run at 60 FPS via requestAnimationFrame.
+   * This is decoupled from simulation and syncs with the display refresh rate.
    */
-  loop(timestamp) {
+  scheduleRender() {
     if (!this.isRunning) return;
 
-    if (!timestamp) timestamp = performance.now();
-    const realDeltaTime = (timestamp - this.lastFrameTime) / 1000;
-    this.lastFrameTime = timestamp;
+    this.timeStepEvent();
+    this.renderFrameId = requestAnimationFrame(() => this.scheduleRender());
+  }
+
+  /**
+   * Schedules the simulation loop to run at a fixed rate via setTimeout.
+   * This is completely independent of render rate and can be customized.
+   */
+  scheduleSimulation() {
+    if (!this.isRunning) return;
+
+    this.engineLoop();
+
+    const weather = this.stateManager.states.weather;
+    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
+
+    // Schedule next simulation tick at the configured rate
+    const SIM_HZ = this.SIMULATION_HZ * speedMult;
+    if (SIM_HZ > 200) {
+      console.warn(
+        `Simulation speed multiplier is causing simulation rate to exceed 200 Hz (current: ${SIM_HZ.toFixed(
+          2,
+        )} Hz). Capping at 200 Hz to prevent performance issues.`,
+      );
+    }
+    const SIM_INTERVAL = 1000 / Math.min(SIM_HZ, 200); // capping simEngine fps at 200 because update takes 5ms minimum and 1000 (ms per second) / 5 (ms per frame) = 200 fps
+    this.simulationTimeId = setTimeout(
+      () => this.scheduleSimulation(),
+      SIM_INTERVAL,
+    );
+  }
+
+  /**
+   * The main simulation loop.
+   * Calculates all simulation time, clones the simulation states, runs managers and active tasks.
+   * This runs at a fixed timestep independent of render rate.
+   */
+  engineLoop() {
+    const timestamp = performance.now();
+    this.lastSimulationTime = timestamp;
+
+    const fixedDeltaTime = this.SIM_TIME_PER_TICK;
 
     const oldStates = this.stateManager.states;
     const nextStates = {};
 
-    // 1. Calculate Simulated Time
-    const weather = oldStates.weather;
-    const speedMult = weather ? weather.getSpeedMultiplier() : 1;
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 120
+        ? 20
         : 1;
-    const safeRealDelta = Math.min(realDeltaTime, 0.1);
-    const simDeltaTime = safeRealDelta * speedMult * waitingMulti;
+    const simDeltaTime = fixedDeltaTime * waitingMulti;
 
     // 2. Clone States
     for (const key in oldStates) {
@@ -253,40 +311,6 @@ export default class simulationEngine extends EventTarget {
     // 3. Run Managers
     for (const sm of this.managers) {
       sm.update(simDeltaTime, oldStates, nextStates);
-    }
-
-    const tractorManager = this.getManager(TractorManager);
-    const vehicles = nextStates.vehicles ?? [];
-    const field = nextStates.field;
-
-    if (tractorManager && field) {
-      for (const vehicle of vehicles) {
-        if (vehicle.type === VEHICLES.SEEDER && vehicle.isWateringOn) {
-          const tiles = tractorManager.getTilesCurrentlyOver(
-            vehicle,
-            field,
-            tractorManager.HEADER_OFFSET,
-          );
-
-          for (const tileInfo of tiles) {
-            const x = tileInfo[1];
-            const y = tileInfo[2];
-
-            if (x !== undefined && y !== undefined) {
-              const before = field.GetVariableAt(x, y, "waterLevel") ?? 0;
-              const after = Math.min(1.0, before + 0.01 * simDeltaTime);
-              field.setVariable("waterLevel", after, x, y);
-
-              // how much actually got added
-              const addedWater = after - before;
-
-              // add to running total
-              nextStates.totalWaterApplied =
-                (nextStates.totalWaterApplied ?? 0) + addedWater;
-            }
-          }
-        }
-      }
     }
 
     this.activeTasks.forEach((task, vehicleType) => {
@@ -323,16 +347,20 @@ export default class simulationEngine extends EventTarget {
       this.stateManager.commitState(key, nextStates[key]);
     }
 
-    // 6. Update Visuals
-    this.timeStepEvent();
-
-    this.animationId = requestAnimationFrame(this.loop.bind(this));
-
     if (this.stateManager.states.isGameOver) {
       this.stopMovement();
       this.dispatchEvent(new CustomEvent("simulationCrashed"));
       return;
     }
+  }
+
+  /**
+   * Sets the simulation rate in Hz (ticks per second).
+   * Can be called at runtime to adjust simulation speed.
+   * @param {number} hz The simulation rate in hertz (e.g., 120 for 120 ticks/sec)
+   */
+  setSimulationRate(hz) {
+    this.SIMULATION_HZ = Math.max(1, hz);
   }
 
   /**
@@ -415,7 +443,6 @@ export default class simulationEngine extends EventTarget {
       vehicles[VEHICLES.SEEDER]?.fuelInTankUsed;
 
     const currentTime = weather.timeAccumulator;
-
     const statData = {
       yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
       currentDate: dateString,
@@ -475,11 +502,11 @@ export default class simulationEngine extends EventTarget {
   // --- ASYNC COMMANDS ---
 
   /**
-   * Begins moving the tractor for a set amount of time.
-   * @param {number} durationInSeconds The length of time the tractor should be moving for.
+   * Begins moving the tractor for a set amount of simulation time.
+   * @param {number} durationInMinutes The length of time the tractor should be moving for (in simulation minutes).
    * @returns {Promise} Returns a new Promise to handle tractor movement.
    */
-  async moveForward(durationInSeconds, targetVehicleType) {
+  async moveForward(durationInMinutes, targetVehicleType) {
     const mySessionId = this.simulationSessionId;
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle) vehicle.isMoving = true;
@@ -488,7 +515,7 @@ export default class simulationEngine extends EventTarget {
       if (vehicle) {
         this.activeTasks.set(vehicle.type, {
           type: "TIMER",
-          timeLeft: Number(durationInSeconds),
+          timeLeft: Number(durationInMinutes),
           resolve: resolve,
           sessionId: mySessionId,
         });
