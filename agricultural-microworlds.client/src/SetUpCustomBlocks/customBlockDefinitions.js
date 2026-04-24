@@ -336,6 +336,7 @@ var changeVehicle = {
       options: [
         ["Harvester", "0"],
         ["Seeder", "1"],
+        ["Collector", "2"],
       ],
     },
   ],
@@ -360,6 +361,7 @@ var fillVehicleFuelTank = {
       options: [
         ["Harvester", "0"],
         ["Seeder", "1"],
+        ["Collector", "2"],
       ],
     },
   ],

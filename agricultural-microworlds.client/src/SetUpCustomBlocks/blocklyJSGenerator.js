@@ -118,6 +118,9 @@ javascriptGenerator.forBlock["fill_vehicle_fuel_tank"] = function (block) {
     case "1":
       vehicle = VEHICLES.SEEDER;
       break;
+    case "2":
+      vehicle = VEHICLES.COLLECTOR;
+      break;
     default:
       vehicle = VEHICLES.HARVESTER;
       break;
