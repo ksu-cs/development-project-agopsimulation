@@ -15,6 +15,8 @@ const IMAGE_KEYS = {
   SOY: "soy",
 };
 
+// Scale of one field tile is roughly 3.5 ft x 3.5 ft based on the average harvester being 28 ft long and the in game harvester being 8 tiles long.
+
 export default class RenderFieldState extends RenderState {
   constructor() {
     const paths = {
