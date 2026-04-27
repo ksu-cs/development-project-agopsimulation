@@ -31,6 +31,7 @@ class SimulationControlsContainer extends Component {
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
       collectorXml:
         '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      showXmlInput: false,
     };
 
     this.workers = [];
@@ -40,6 +41,10 @@ class SimulationControlsContainer extends Component {
     this.runButtonOnClick = this.runButtonOnClick.bind(this);
     this.stopButtonOnClick = this.stopButtonOnClick.bind(this);
     this.effectsButtonOnClick = this.effectsButtonOnClick.bind(this);
+    this.printWorkspaceXml = this.printWorkspaceXml.bind(this);
+    this.loadWorkspaceXml = this.loadWorkspaceXml.bind(this);
+    this.toggleXmlInput = this.toggleXmlInput.bind(this);
+    this.xmlInputRef = null;
   }
 
   /**
@@ -293,6 +298,108 @@ class SimulationControlsContainer extends Component {
     }
   };
 
+  /**
+   * Exports the XML of all Blockly workspaces as JSON and logs to console
+   */
+  printWorkspaceXml() {
+    // Save the currently visible workspace before exporting
+    const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
+    const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
+
+    // Create JSON object with all workspaces
+    let workspaceData = {
+      harvester: this.state.harvesterXml,
+      seeder: this.state.seederXml,
+      collector: this.state.collectorXml,
+    };
+
+    // Update the current selected vehicle's XML with the latest from the workspace
+    if (this.state.selectedVehicle === 0) {
+      workspaceData.harvester = currentXmlText;
+    } else if (this.state.selectedVehicle === 1) {
+      workspaceData.seeder = currentXmlText;
+    } else if (this.state.selectedVehicle === 2) {
+      workspaceData.collector = currentXmlText;
+    }
+
+    const jsonString = JSON.stringify(workspaceData, null, 2);
+    console.log("=== Blockly Workspace JSON ===");
+    console.log(jsonString);
+    console.log("=== End Blockly Workspace JSON ===");
+
+    // Also copy to clipboard for convenience
+    navigator.clipboard.writeText(jsonString).then(() => {
+      console.log("Workspace JSON copied to clipboard!");
+    });
+  }
+
+  /**
+   * Loads workspace XML from a JSON string
+   */
+  loadWorkspaceXml() {
+    const jsonString = this.xmlInputRef?.value;
+
+    if (!jsonString || jsonString.trim() === "") {
+      alert("Please paste a JSON workspace configuration");
+      return;
+    }
+
+    try {
+      const workspaceData = JSON.parse(jsonString);
+
+      // Validate that we have the expected fields
+      if (
+        !workspaceData.harvester ||
+        !workspaceData.seeder ||
+        !workspaceData.collector
+      ) {
+        alert(
+          "Invalid JSON format. Expected fields: harvester, seeder, collector",
+        );
+        return;
+      }
+
+      // Update state with loaded XML
+      this.setState({
+        harvesterXml: workspaceData.harvester,
+        seederXml: workspaceData.seeder,
+        collectorXml: workspaceData.collector,
+      });
+
+      // Load the current selected vehicle's workspace
+      if (this.state.selectedVehicle === 0) {
+        this.props.workspace.clear();
+        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.harvester);
+        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
+      } else if (this.state.selectedVehicle === 1) {
+        this.props.workspace.clear();
+        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.seeder);
+        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
+      } else if (this.state.selectedVehicle === 2) {
+        this.props.workspace.clear();
+        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.collector);
+        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
+      }
+
+      alert("Workspace loaded successfully!");
+
+      // Clear the input and hide it
+      if (this.xmlInputRef) {
+        this.xmlInputRef.value = "";
+      }
+      this.setState({ showXmlInput: false });
+    } catch (error) {
+      alert(`Error parsing JSON: ${error.message}`);
+    }
+  }
+
+  /**
+   * Toggles the visibility of the XML input area
+   */
+  toggleXmlInput() {
+    this.setState({ showXmlInput: !this.state.showXmlInput });
+  }
+
   render() {
     return (
       <Fragment>
@@ -393,6 +500,75 @@ class SimulationControlsContainer extends Component {
             <label for="screenEffectsButton" className={styles.effectsButton}>
               Screen Effects
             </label>
+          </div>
+
+          <div
+            style={{
+              marginTop: "15px",
+              borderTop: "1px solid #ccc",
+              paddingTop: "10px",
+            }}
+          >
+            <button
+              id="exportWorkspaceXmlButton"
+              className={styles.runButton}
+              onClick={this.printWorkspaceXml}
+              style={{ width: "100%", marginBottom: "10px" }}
+            >
+              Export Workspace JSON
+            </button>
+
+            <button
+              id="loadWorkspaceJsonButton"
+              className={styles.runButton}
+              onClick={this.toggleXmlInput}
+              style={{
+                width: "100%",
+                marginBottom: this.state.showXmlInput ? "10px" : "0px",
+              }}
+            >
+              {this.state.showXmlInput ? "Cancel" : "Load Workspace JSON"}
+            </button>
+
+            {this.state.showXmlInput && (
+              <>
+                <label
+                  htmlFor="xmlInput"
+                  style={{
+                    display: "block",
+                    fontWeight: "bold",
+                    marginBottom: "5px",
+                    marginTop: "10px",
+                  }}
+                >
+                  Import Workspace JSON:
+                </label>
+                <textarea
+                  id="xmlInput"
+                  ref={(ref) => (this.xmlInputRef = ref)}
+                  placeholder="Paste JSON workspace configuration here"
+                  style={{
+                    width: "100%",
+                    height: "150px",
+                    padding: "8px",
+                    fontFamily: "monospace",
+                    fontSize: "12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    marginBottom: "10px",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <button
+                  id="importWorkspaceXmlButton"
+                  className={styles.runButton}
+                  onClick={this.loadWorkspaceXml}
+                  style={{ width: "100%" }}
+                >
+                  Load
+                </button>
+              </>
+            )}
           </div>
         </div>
       </Fragment>
