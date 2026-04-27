@@ -317,22 +317,40 @@ export default class simulationEngine extends EventTarget {
    * This runs at a fixed timestep independent of render rate.
    */
   engineLoop() {
+    const simDeltaTime = this.#getSimDeltaTime();
+
+    const nextStates = this.#updateManagers(simDeltaTime);
+
+    this.#processActiveTasks(simDeltaTime, nextStates);
+
+    // Commit States
+    for (const key in nextStates) {
+      this.stateManager.commitState(key, nextStates[key]);
+    }
+
+    this.#checkForGameOver();
+  }
+
+  #getSimDeltaTime() {
     const timestamp = performance.now();
     this.lastSimulationTime = timestamp;
 
     const fixedDeltaTime = this.SIM_TIME_PER_TICK;
-
-    const oldStates = this.stateManager.states;
-    const nextStates = {};
 
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
         ? 20
         : 1;
-    const simDeltaTime = fixedDeltaTime * waitingMulti;
 
-    // 2. Clone States
+    return fixedDeltaTime * waitingMulti;
+  }
+
+  #updateManagers(simDeltaTime) {
+    const oldStates = this.stateManager.states;
+    const nextStates = {};
+
+    // Clone States
     for (const key in oldStates) {
       if (oldStates[key] && typeof oldStates[key].clone === "function") {
         nextStates[key] = oldStates[key].clone();
@@ -345,11 +363,15 @@ export default class simulationEngine extends EventTarget {
       }
     }
 
-    // 3. Run Managers
+    // Run Managers
     for (const sm of this.managers) {
       sm.update(simDeltaTime, oldStates, nextStates);
     }
 
+    return nextStates;
+  }
+
+  #processActiveTasks(simDeltaTime, nextStates) {
     this.activeTasks.forEach((task, vehicleType) => {
       if (task.sessionId !== this.simulationSessionId) {
         this.activeTasks.clear();
@@ -378,12 +400,9 @@ export default class simulationEngine extends EventTarget {
         }
       }
     });
+  }
 
-    // 5. Commit States
-    for (const key in nextStates) {
-      this.stateManager.commitState(key, nextStates[key]);
-    }
-
+  #checkForGameOver() {
     if (this.stateManager.states.isGameOver) {
       this.stopMovement();
       this.dispatchEvent(new CustomEvent("simulationCrashed"));
