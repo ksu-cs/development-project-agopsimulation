@@ -21,6 +21,11 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 /**
  * Known issues:
  * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
+ *
+ * TODO:
+ * - Change the workspaces for the different vehicles to be modular and dynamically create buttons based on the vehicles present in the state manager
+ * - split timestep event into different methods to have it look cleaner maybe the same with engine loop
+ * - adding a new method for a new block requires changes in multiple places, make the process of adding a new method to the workers easier
  */
 
 /**
@@ -92,16 +97,9 @@ export default class simulationEngine extends EventTarget {
    * Initializes all simulation states of the weather, tractor, and field.
    */
   initializeStates() {
-    // 1. Setup weather
-    const weatherState = new WeatherState();
-
-    if (this.managers) {
-      const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
-      if (weatherMgr && typeof weatherMgr.applyCacheToState === "function") {
-        weatherMgr.applyCacheToState(weatherState);
-      }
-    }
-    this.stateManager.initState("weather", weatherState);
+    const weatherState = this.#initWeather();
+    this.#initImplements();
+    this.#initField(weatherState);
 
     // This block of code is SUPPOSED to not do anything... whenever I comment it out, it breaks.
     const tractor = new ImplementState();
@@ -109,7 +107,26 @@ export default class simulationEngine extends EventTarget {
     tractor.y = (this.ROWS * this.TILE_SIZE) / 2;
     this.stateManager.initState("tractor", tractor);
 
-    // 2. Setup vehicles
+    this.#initActiveCamera();
+
+    this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
+    this.stateManager.initState("isGameOver", false);
+  }
+
+  #initWeather() {
+    const weatherState = new WeatherState();
+
+    if (this.managers) {
+      const weatherMgr = this.getManager(WeatherManager);
+      if (weatherMgr && typeof weatherMgr.applyCacheToState === "function") {
+        weatherMgr.applyCacheToState(weatherState);
+      }
+    }
+    this.stateManager.initState("weather", weatherState);
+    return weatherState;
+  }
+
+  #initImplements() {
     const harvester = new ImplementState();
     harvester.type = VEHICLES.HARVESTER;
     harvester.x = -150;
@@ -134,6 +151,12 @@ export default class simulationEngine extends EventTarget {
     silo.storageCapacity = 50000; // Large capacity for silo
     silo.currentStorage = 0;
 
+    let vehicles = [];
+    vehicles.push(harvester, seeder, collector, silo);
+    this.stateManager.initState("vehicles", vehicles);
+  }
+
+  #initField(weatherState) {
     // 3. Setup field
     /** @type {Object.<string, {size: number, type: string}>} */
     const tileState = {
@@ -180,7 +203,7 @@ export default class simulationEngine extends EventTarget {
     };
     const field = new BitmapFieldState(this.ROWS, this.COLS, tileState);
 
-    const weatherMgr = this.managers.find((m) => m instanceof WeatherManager);
+    const weatherMgr = this.getManager(WeatherManager);
     const startingWaterFromWeather =
       weatherMgr?.getInitialSoilWater?.(weatherState) ?? 0.0;
 
@@ -204,20 +227,13 @@ export default class simulationEngine extends EventTarget {
     field.InitializeField(startingValues);
     this.stateManager.initState("totalWaterApplied", 0);
     this.stateManager.initState("field", field);
-    this.stateManager.initState("vehicles", [
-      harvester,
-      seeder,
-      collector,
-      silo,
-    ]);
+  }
 
+  #initActiveCamera() {
     const tractorSimManager = this.getManager(TractorManager);
     const existingCamera = tractorSimManager.activeVehicleCamera;
     tractorSimManager.activeVehicleCamera =
       existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
-
-    this.stateManager.initState("activeVehicleType", VEHICLES.HARVESTER);
-    this.stateManager.initState("isGameOver", false);
   }
 
   /**
@@ -240,8 +256,12 @@ export default class simulationEngine extends EventTarget {
     this.isRunning = false;
     this.simulationSessionId++;
     this.activeTasks.clear();
+    this.#cancelLoopSchedules();
 
-    // Cancel both loop schedules
+    this.timeStepEvent();
+  }
+
+  #cancelLoopSchedules() {
     if (this.renderFrameId !== null) {
       cancelAnimationFrame(this.renderFrameId);
       this.renderFrameId = null;
@@ -250,8 +270,6 @@ export default class simulationEngine extends EventTarget {
       clearTimeout(this.simulationTimeId);
       this.simulationTimeId = null;
     }
-
-    this.timeStepEvent();
   }
 
   /**
