@@ -301,6 +301,27 @@ Blocks["start_program"] = {
   },
 };
 
+var onFunction = {
+  type: "function_event",
+  message0: "On Function %1",
+  nextStatement: null,
+  style: "event_blocks",
+  tooltip: "Is called as a customizable function.",
+  args0: [
+    {
+      "type": "field_input",
+      "name": "FUNCTIONNAME",
+      "text": "My Function",
+      "spellcheck": false
+    },
+  ],
+};
+Blocks["function_event"] = {
+  init: function () {
+    this.jsonInit(onFunction);
+  },
+};
+
 var switchCropBeingPlanted = {
   type: "switch_crop_being_planted",
   message0: "Switch crop being planted to %1",

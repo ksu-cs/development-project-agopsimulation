@@ -72,6 +72,10 @@ javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
 };
 
+javascriptGenerator.forBlock["function_event"] = function () {
+  return `\n`;
+};
+
 javascriptGenerator.forBlock["change_vehicle"] = function (block) {
   const toggle = block.getFieldValue("toggleVehicle");
   var vehicle;

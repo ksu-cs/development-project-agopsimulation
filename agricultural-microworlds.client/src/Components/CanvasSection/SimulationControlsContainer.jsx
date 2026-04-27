@@ -112,8 +112,20 @@ class SimulationControlsContainer extends Component {
       try {
         const dom = Blockly.utils.xml.textToDom(xmlText);
         Blockly.Xml.domToWorkspace(dom, headless);
+        let code = "";
         javascriptGenerator.init(headless);
-        const code = javascriptGenerator.workspaceToCode(headless);
+        const allBlocks = headless.getAllBlocks(false);
+
+        if (allBlocks.length > 0) {
+            allBlocks.forEach((block) => {
+              console.log(block.type);
+              if (block.type == "start_program") {
+                //console.log(javascriptGenerator.blockToCode(block));
+                code += javascriptGenerator.blockToCode(block) + "\n";
+              }
+            });
+        }
+
         const vars = Object.values(javascriptGenerator.definitions_).join("\n");
         return vars + "\n" + code;
       } catch (error) {
