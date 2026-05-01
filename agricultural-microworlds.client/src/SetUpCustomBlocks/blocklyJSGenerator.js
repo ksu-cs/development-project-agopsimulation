@@ -108,24 +108,8 @@ javascriptGenerator.forBlock["switch_crop_being_planted"] = function (block) {
   return `simulationMethods.switchCropBeingPlanted(${crop});\n`;
 };
 
-javascriptGenerator.forBlock["fill_vehicle_fuel_tank"] = function (block) {
-  const toggle = block.getFieldValue("toggleVehicle");
-  var vehicle;
-  switch (toggle) {
-    case "0":
-      vehicle = VEHICLES.HARVESTER;
-      break;
-    case "1":
-      vehicle = VEHICLES.SEEDER;
-      break;
-    case "2":
-      vehicle = VEHICLES.COLLECTOR;
-      break;
-    default:
-      vehicle = VEHICLES.HARVESTER;
-      break;
-  }
-  return `simulationMethods.fillVehicleFuelTank(${vehicle});\n`;
+javascriptGenerator.forBlock["fill_vehicle_fuel_tank"] = function () {
+  return `simulationMethods.fillVehicleFuelTank();\n`;
 };
 
 javascriptGenerator.forBlock["toggle_watering"] = function (block) {

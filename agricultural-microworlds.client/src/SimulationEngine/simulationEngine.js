@@ -790,7 +790,7 @@ export default class simulationEngine extends EventTarget {
         this.switchCropBeingPlanted(args[0], vehicleType);
         break;
       case "fillVehicleFuelTank":
-        this.fillVehicleFuelTank(args[0]);
+        this.fillVehicleFuelTank(vehicleType);
         break;
       case "toggleWatering":
         this.toggleWatering(args[0], vehicleType);
