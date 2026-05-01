@@ -8,11 +8,10 @@ import RenderState from "./renderState";
 
 export default class timeStepData {
   /**
-   * @param {*} cumulativeRain
    * @param {Object.<any, RenderState>} renderModules
    */
-  constructor(cumulativeRain, renderModuleData) {
-    this.cumulativeRain = cumulativeRain;
+  constructor(statData, renderModuleData) {
+    this.statData = statData;
     /**@type {Object.<any, RenderState>} */
     this.renderModuleData = renderModuleData;
   }

@@ -26,6 +26,9 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
  * - Change the workspaces for the different vehicles to be modular and dynamically create buttons based on the vehicles present in the state manager
  * - split timestep event into different methods to have it look cleaner maybe the same with engine loop
  * - adding a new method for a new block requires changes in multiple places, make the process of adding a new method to the workers easier
+ * - Make render stat and render field state more readable
+ * - add comments to all render modules
+ * - refactor controls container, currently large and clunky, hard to read
  */
 
 /**
@@ -113,6 +116,7 @@ export default class simulationEngine extends EventTarget {
     this.stateManager.initState("isGameOver", false);
   }
 
+  //#region Initialization Helper Methods
   #initWeather() {
     const weatherState = new WeatherState();
 
@@ -235,6 +239,7 @@ export default class simulationEngine extends EventTarget {
     tractorSimManager.activeVehicleCamera =
       existingCamera !== undefined ? existingCamera : VEHICLES.HARVESTER;
   }
+  //#endregion
 
   /**
    * Begins running the simulation, starting both render and simulation loops.
@@ -331,6 +336,7 @@ export default class simulationEngine extends EventTarget {
     this.#checkForGameOver();
   }
 
+  //#region Engine Loop Helper Methods
   #getSimDeltaTime() {
     const timestamp = performance.now();
     this.lastSimulationTime = timestamp;
@@ -409,6 +415,7 @@ export default class simulationEngine extends EventTarget {
       return;
     }
   }
+  //#endregion
 
   /**
    * Sets the simulation rate in Hz (ticks per second).
@@ -501,21 +508,23 @@ export default class simulationEngine extends EventTarget {
       VEHICLE_FUEL_CAPACITY[VEHICLES.COLLECTOR] -
       vehicles[VEHICLES.COLLECTOR]?.fuelInTankUsed;
 
-    const currentTime = weather.timeAccumulator;
+    const formattedTime = this.#FormatTime();
+
     const statData = {
-      yieldScore: vehicles[VEHICLES.HARVESTER].yieldScore,
-      currentDate: dateString,
-      cumulativeGDD: gddString,
-      rainString,
-      activeVehicleType,
-      currentTime,
-      fuelConsumed: fuelConsumed,
-      harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
-      seederFuelLevel: seederFuelLevel.toFixed(2) || "0.00",
-      truckFuelLevel: truckFuelLevel.toFixed(2) || "0.00",
-      truckStorage: vehicles[VEHICLES.COLLECTOR]?.currentStorage || 0,
-      siloStorage: vehicles[VEHICLES.SILO]?.currentStorage || 0,
-      totalWaterApplied,
+      dateText: dateString,
+      gddValue: gddString,
+      rainValue: rainString,
+      activeVehicleText: activeVehicleType,
+      timeText: formattedTime,
+      totalFuelValue: fuelConsumed, 
+      harvesterFuelLevel: harvesterFuelLevel.toFixed(2),
+      seederFuelLevel: seederFuelLevel.toFixed(2),
+      truckFuelLevel: truckFuelLevel.toFixed(2),
+      truckStorageLevel: vehicles[VEHICLES.COLLECTOR].currentStorage,
+      truckStorageMax: vehicles[VEHICLES.COLLECTOR].storageCapacity,
+      siloStorage: vehicles[VEHICLES.SILO].currentStorage,
+      siloStorageMax: vehicles[VEHICLES.SILO].storageCapacity,
+      waterAppliedValue: totalWaterApplied,
     };
 
     const fieldData = {
@@ -543,7 +552,6 @@ export default class simulationEngine extends EventTarget {
     };
 
     const renderModules = {
-      [RENDER_MODULE_KEYS.STATS]: statData,
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
       ...(this.useScreenEffects && {
@@ -551,17 +559,33 @@ export default class simulationEngine extends EventTarget {
       }),
     };
 
-    const ts = new timeStepData(rainString, renderModules);
+    const ts = new timeStepData(statData, renderModules);
 
     this.dispatchEvent(
-      new CustomEvent("simulationEngineCreated", {
+      new CustomEvent("simulationEngineTimeStep", {
         bubbles: true,
         detail: ts,
       }),
     );
   }
 
-  // --- ASYNC COMMANDS ---
+  //#region TimeStepEvent Helper Methods
+    #FormatTime(){
+    const weather = this.stateManager.getState("weather");
+    const currentTime = weather.timeAccumulator;
+    // Format the current time into hours, minutes, and AM/PM.
+    const totalHours = 1 + Math.floor((currentTime / 60.0) % 12.0);
+    const totalMinutes = Math.floor(currentTime % 60.0);
+
+    const formattedHours = totalHours.toString().padStart(2, "0");
+    const formattedMinutes = totalMinutes.toString().padStart(2, "0");
+    const formattedMeridiem =
+      currentTime % (23 * 60) >= 11 * 60 ? "P.M." : "A.M.";
+    return `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
+    }
+  //#endregion
+
+  //#region Custom Block Methods
 
   /**
    * Begins moving the tractor for a set amount of simulation time.
@@ -730,6 +754,28 @@ export default class simulationEngine extends EventTarget {
     return false;
   }
 
+  toggleWatering(isOn, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle && vehicle.type === VEHICLES.SEEDER) {
+      vehicle.isWateringOn = isOn;
+      console.log("Watering:", isOn);
+    }
+  }
+  //#endregion
+
+  setAllFieldWaterLevels(waterValue) {
+    const field = this.stateManager.getState("field");
+    if (!field || waterValue === null || waterValue === undefined) return;
+
+    for (let y = 0; y < this.ROWS; y++) {
+      for (let x = 0; x < this.COLS; x++) {
+        field.setVariable("waterLevel", waterValue, x, y);
+      }
+    }
+
+    this.stateManager.commitState("field", field);
+  }
+
   async loadStations() {
     try {
       const response = await fetch(
@@ -772,27 +818,6 @@ export default class simulationEngine extends EventTarget {
         console.log("Starting field water set from VMC5CM:", startingWater);
       }
     }
-  }
-
-  toggleWatering(isOn, targetVehicleType) {
-    const vehicle = this.getTargetVehicle(targetVehicleType);
-    if (vehicle && vehicle.type === VEHICLES.SEEDER) {
-      vehicle.isWateringOn = isOn;
-      console.log("Watering:", isOn);
-    }
-  }
-
-  setAllFieldWaterLevels(waterValue) {
-    const field = this.stateManager.getState("field");
-    if (!field || waterValue === null || waterValue === undefined) return;
-
-    for (let y = 0; y < this.ROWS; y++) {
-      for (let x = 0; x < this.COLS; x++) {
-        field.setVariable("waterLevel", waterValue, x, y);
-      }
-    }
-
-    this.stateManager.commitState("field", field);
   }
 
   /**

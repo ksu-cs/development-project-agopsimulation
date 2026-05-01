@@ -3,7 +3,6 @@ import RenderDebugState from "./renderDebugState";
 import RenderFieldState from "./renderFieldState";
 import RenderImplementState from "./renderImplementState";
 import { RENDER_MODULE_KEYS } from "./renderingConstants";
-import RenderStatState from "./renderStatState";
 import RenderWeatherState from "./renderWeatherState";
 /** @typedef {import("./timeStepData").timeStepData} timeStepData */
 
@@ -31,7 +30,6 @@ export default class drawCanvas {
     this.renderModules = {
       [RENDER_MODULE_KEYS.FIELD]: new RenderFieldState(),
       [RENDER_MODULE_KEYS.IMPLEMENTS]: new RenderImplementState(),
-      [RENDER_MODULE_KEYS.STATS]: new RenderStatState(),
       [RENDER_MODULE_KEYS.WEATHER]: new RenderWeatherState(),
       [RENDER_MODULE_KEYS.DAY_CYCLE]: new RenderDayCycleState(),
       [RENDER_MODULE_KEYS.DEBUG]: new RenderDebugState(),

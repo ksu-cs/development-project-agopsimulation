@@ -1,6 +1,7 @@
 import { Component, Fragment } from "react";
 import styles from "../../Styles/index.module.css";
 import WeatherData from "./WeatherData";
+import StatsContainer from "./StatsContainer";
 
 /**
  * @classdesc Creates the simulation canvas and the simulation stats
@@ -21,44 +22,7 @@ class CanvasContainer extends Component {
         <div
           className={`${styles.canvasArea} ${styles.alignItemsCenterColumn}`}
         >
-          <div className={styles.statTextContainer}>
-            <p className={styles.statText} id="dateText">
-              Date: --
-            </p>
-            <p className={styles.statText} id="timeText">
-              Time: 6:00 A.M.
-            </p>
-            <p className={styles.statText} id="siloStorageText">
-              Silo Storage: 0 / 50000
-            </p>
-            <p className={styles.statText} id="gddText">
-              Growth Days: 0.00
-            </p>
-            <p className={styles.statText} id="rainText">
-              Precipitation: 0.00
-            </p>
-            <p className={styles.statText} id="activeVehicleText">
-              Active Vehicle: Harvester
-            </p>
-            <p className={styles.statText} id="fuelText">
-              Total Fuel Consumed: 0.00 G
-            </p>
-            <p className={styles.statText} id="waterAppliedText">
-              Irrigation Applied: 0.000 G
-            </p>
-            <p className={styles.statText} id="harvesterFuelLevelText">
-              Harvester Fuel Level: 300.00 G
-            </p>
-            <p className={styles.statText} id="seederFuelLevelText">
-              Seeder Fuel Level: 200.00 G
-            </p>
-            <p className={styles.statText} id="truckStorageText">
-              Truck Storage: 0 / 5000
-            </p>
-            <p className={styles.statText} id="truckFuelLevelText">
-              Truck Fuel Level: 0 G
-            </p>
-          </div>
+          <StatsContainer statsProps={this.props.statsProps} />
           <canvas
             id="gameCanvas"
             ref={this.canvasRef}

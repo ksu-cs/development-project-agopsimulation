@@ -15,7 +15,12 @@ class SimulationCanvasContainer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = createRef();
+    this.statsProps = null;
   }
+
+  handleChangeStatsProps = (data) => {
+    this.statsProps = data.statsData;
+  };
 
   render() {
     const { workspace } = this.props;
@@ -24,10 +29,11 @@ class SimulationCanvasContainer extends Component {
         <div
           className={`${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
         >
-          <CanvasContainer canvasRef={this.canvasRef} />
+          <CanvasContainer canvasRef={this.canvasRef} statsProps={this.statsProps} />
           <SimulationControlsContainer
             workspace={workspace}
             canvasRef={this.canvasRef}
+            statsEventHandler={this.handleChangeStatsProps}
           />
         </div>
       </Fragment>

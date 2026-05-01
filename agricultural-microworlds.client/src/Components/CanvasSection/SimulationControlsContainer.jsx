@@ -57,11 +57,14 @@ class SimulationControlsContainer extends Component {
     const canvasHeight = 500;
     this.simulationEngine = new simulationEngine(canvasWidth, canvasHeight);
     this.drawCanvas = new drawCanvas(canvas, canvasWidth, canvasHeight);
-    this.simulationEngine.addEventListener("simulationEngineCreated", (e) =>
+    this.simulationEngine.addEventListener("simulationEngineTimeStep", (e) =>
       this.drawCanvas.handleTimeStep(e),
     );
     this.simulationEngine.addEventListener("simulationCrashed", () => {
       this.stopButtonOnClick();
+    });
+    this.simulationEngine.addEventListener("simulationEngineTimeStep", (e) => {
+      this.props.statsEventHandler(e);
     });
 
     const effectsButton = document.getElementById("screenEffectsButton");
