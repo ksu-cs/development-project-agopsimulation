@@ -93,6 +93,20 @@ export default class RenderFieldState extends RenderState {
           TILE_WIDTH,
           TILE_HEIGHT,
         );
+        const stressValue = data.field.GetVariableAt(j, i, "stress") ?? 0;
+        const stress = Math.min(Math.max(stressValue, 0), 1);
+
+        if (stress > 0) {
+          const alpha = Math.pow(stress, 1.5) * 0.7;
+
+          context.fillStyle = `rgba(92, 55, 28, ${alpha})`;
+          context.fillRect(
+            Math.floor(tileScreenX),
+            Math.floor(tileScreenY),
+            TILE_WIDTH,
+            TILE_HEIGHT,
+          );
+        }
       }
     }
   }
