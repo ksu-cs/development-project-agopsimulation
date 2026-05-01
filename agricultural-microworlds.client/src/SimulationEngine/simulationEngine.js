@@ -346,7 +346,7 @@ export default class simulationEngine extends EventTarget {
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 20
+        ? 2000
         : 1;
 
     return fixedDeltaTime * waitingMulti;
@@ -457,9 +457,8 @@ export default class simulationEngine extends EventTarget {
     const field = this.stateManager.getState("field");
     const weather = this.stateManager.getState("weather");
     const totalWaterApplied =
-      this.stateManager.getState("totalWaterApplied") ?? 0;
+      this.stateManager.getState("totalWaterApplied").toFixed(2) ?? 0;
     const vehicles = this.stateManager.getState("vehicles");
-    const activeVehicleType = this.stateManager.getState("activeVehicleType");
     /** @type {TractorManager} */
     const tractorManager = this.getManager(TractorManager);
     /** @type {VEHICLES} */
@@ -473,6 +472,8 @@ export default class simulationEngine extends EventTarget {
     );
 
     if (!tractor || !field || !weather) return;
+
+    const currentTime = weather.timeAccumulator;
 
     // Handle case where startDate is null (initial load before Fetch)
     let dateString = "Not Started";
@@ -508,13 +509,12 @@ export default class simulationEngine extends EventTarget {
       VEHICLE_FUEL_CAPACITY[VEHICLES.COLLECTOR] -
       vehicles[VEHICLES.COLLECTOR]?.fuelInTankUsed;
 
-    const formattedTime = this.#FormatTime();
+    const formattedTime = this.#FormatTime(currentTime);
 
     const statData = {
       dateText: dateString,
       gddValue: gddString,
       rainValue: rainString,
-      activeVehicleText: activeVehicleType,
       timeText: formattedTime,
       totalFuelValue: fuelConsumed, 
       harvesterFuelLevel: harvesterFuelLevel.toFixed(2),
@@ -570,9 +570,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   //#region TimeStepEvent Helper Methods
-    #FormatTime(){
-    const weather = this.stateManager.getState("weather");
-    const currentTime = weather.timeAccumulator;
+    #FormatTime(currentTime){
     // Format the current time into hours, minutes, and AM/PM.
     const totalHours = 1 + Math.floor((currentTime / 60.0) % 12.0);
     const totalMinutes = Math.floor(currentTime % 60.0);
@@ -581,7 +579,7 @@ export default class simulationEngine extends EventTarget {
     const formattedMinutes = totalMinutes.toString().padStart(2, "0");
     const formattedMeridiem =
       currentTime % (23 * 60) >= 11 * 60 ? "P.M." : "A.M.";
-    return `Time: ${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
+    return `${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
     }
   //#endregion
 

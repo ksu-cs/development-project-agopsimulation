@@ -500,7 +500,7 @@ class SimulationControlsContainer extends Component {
               className={styles.effectsButton}
               onClick={this.effectsButtonOnClick}
             />
-            <label for="screenEffectsButton" className={styles.effectsButton}>
+            <label htmlFor="screenEffectsButton" className={styles.effectsButton}>
               Screen Effects
             </label>
           </div>

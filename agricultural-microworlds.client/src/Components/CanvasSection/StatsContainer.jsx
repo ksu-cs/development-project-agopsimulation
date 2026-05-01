@@ -22,9 +22,6 @@ class StatsContainer extends Component {
           <p className={styles.statText} id="rainText">
             Precipitation: {this.props.rainValue || "--"}
           </p>
-          <p className={styles.statText} id="activeVehicleText">
-            Active Vehicle: {this.props.activeVehicleText || "--"}
-          </p>
           <p className={styles.statText} id="waterAppliedText">
             Irrigation Applied: {this.props.waterAppliedValue || "--"} G
           </p>
@@ -45,7 +42,7 @@ class StatsContainer extends Component {
             {this.props.truckStorageMax || "5000"}
           </p>
           <p className={styles.statText} id="siloStorageText">
-            Silo Storage: {this.props.siloStorageLevel || "0"} /{" "}
+            Silo Storage: {this.props.siloStorage || "0"} /{" "}
             {this.props.siloStorageMax || "50000"}
           </p>
         </div>

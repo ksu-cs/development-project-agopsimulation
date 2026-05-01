@@ -22,7 +22,7 @@ class CanvasContainer extends Component {
         <div
           className={`${styles.canvasArea} ${styles.alignItemsCenterColumn}`}
         >
-          <StatsContainer statsProps={this.props.statsProps} />
+          <StatsContainer {...this.props.statsProps} />
           <canvas
             id="gameCanvas"
             ref={this.canvasRef}

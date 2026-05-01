@@ -15,21 +15,24 @@ class SimulationCanvasContainer extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = createRef();
-    this.statsProps = null;
+    this.state = {
+      statsProps: null,
+    };
   }
 
   handleChangeStatsProps = (data) => {
-    this.statsProps = data.statsData;
+    this.setState({ statsProps: data.detail.statData });
   };
 
   render() {
     const { workspace } = this.props;
+    const { statsProps } = this.state;
     return (
       <Fragment>
         <div
           className={`${styles.canvasSection} ${styles.alignItemsCenterColumn}`}
         >
-          <CanvasContainer canvasRef={this.canvasRef} statsProps={this.statsProps} />
+          <CanvasContainer canvasRef={this.canvasRef} statsProps={statsProps} />
           <SimulationControlsContainer
             workspace={workspace}
             canvasRef={this.canvasRef}
