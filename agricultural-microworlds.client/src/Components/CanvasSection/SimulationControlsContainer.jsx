@@ -26,9 +26,21 @@ class SimulationControlsContainer extends Component {
     this.state = {
       selectedVehicle: 0,
       vehiclesXml: {
-        0: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
-        1: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
-        2: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+        0: {
+          name: "Harvester",
+          xml:
+          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
+        },
+        1: {
+          name: "Seeder",
+          xml:
+          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
+        },
+        2: {
+          name: "Collector",
+          xml:
+          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
+        }
       },
       showXmlInput: false,
     };
@@ -152,7 +164,7 @@ class SimulationControlsContainer extends Component {
 
     Object.entries(this.state.vehiclesXml).forEach(([key]) => {
       if (this.state.selectedVehicle === key) {
-        this.state.vehiclesXml[key] = currentXmlText;
+        this.state.vehiclesXml[key].xml = currentXmlText;
         spawnWorker(generateHeadlessCode(currentXmlText), parseInt(key));
       }
     });
@@ -205,12 +217,15 @@ class SimulationControlsContainer extends Component {
     this.setState((prevState) => ({
       vehiclesXml: {
         ...prevState.vehiclesXml,
-        [prevState.selectedVehicle]: currentXmlText,
+        [prevState.selectedVehicle]: {
+          ...prevState.vehiclesXml[prevState.selectedVehicle],
+          xml: currentXmlText
+        }
       },
     }));
 
     // Load blocks for new tab
-    const nextXmlText = this.state.vehiclesXml[vehicleType] || "";
+    const nextXmlText = this.state.vehiclesXml[vehicleType]?.xml || "";
 
     this.setState({ selectedVehicle: vehicleType }, () => {
       this.props.workspace.clear();
@@ -292,7 +307,7 @@ class SimulationControlsContainer extends Component {
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
 
     // Update the current workspace's XML before exporting
-    this.state.vehiclesXml[this.state.selectedVehicle] = currentXmlText;
+    this.state.vehiclesXml[this.state.selectedVehicle].xml = currentXmlText;
 
 
     const jsonString = JSON.stringify(this.state.vehiclesXml, null, 2);
@@ -411,7 +426,7 @@ class SimulationControlsContainer extends Component {
             {
               Object.entries(this.state.vehiclesXml).map(([index]) => {
                 <button className = {styles.camera_btn} onClick={() => this.handleImplementSelect(index)}>
-                  {index === 0 ? "Harvester" : index === 1 ? "Seeder" : "Collector"}
+                  {this.state.vehiclesXml[index].name}
                 </button>
               })
             }
