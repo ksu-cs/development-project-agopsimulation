@@ -78,6 +78,10 @@ export default class RenderFieldState extends RenderState {
     }
   }
 
+  /**
+   * Determines which tile image to used based on the tiles, planted state, and it's maturity level then what type of crop it is
+   * @param {*} crop The state of the crop on this tile, used to determine which image to render
+   */
   #determineTileImage(crop) {
     let tileImage = this.images[IMAGE_KEYS.DIRT];
 

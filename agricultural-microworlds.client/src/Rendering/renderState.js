@@ -9,20 +9,7 @@ export default class RenderState {
     this.imageLoadCount = 0;
     /** @type {{[key: string] : Image}} */
     this.images = {};
-
-    if (!imagePaths) return;
-
-    Object.entries(imagePaths).forEach(([key, path]) => {
-      this.images[key] = new Image();
-      this.images[key].src = path;
-      this.images[key].onload = () => {
-        console.log(`${key} loaded`);
-        this.#onImageLoad();
-      };
-      this.images[key].onerror = () => {
-        console.log(`Failed to load ${key}`);
-      };
-    });
+    this.#loadAllImages(imagePaths);
   }
   /**
    * Renders the this item based on the information stored in the class
@@ -31,6 +18,26 @@ export default class RenderState {
    */
   // eslint-disable-next-line no-unused-vars
   render(context, mouduleData) {}
+
+  #loadAllImages(imagePaths) {
+    if (!imagePaths) return;
+
+    Object.entries(imagePaths).forEach(([key, path]) => {
+      this.#loadImage(key, path);
+    });
+  }
+
+  #loadImage(key, path) {
+    this.images[key] = new Image();
+    this.images[key].src = path;
+    this.images[key].onload = () => {
+      console.log(`${key} loaded`);
+      this.#onImageLoad();
+    };
+    this.images[key].onerror = () => {
+      console.log(`Failed to load ${key}`);
+    };
+  }
 
   #onImageLoad() {
     this.imageLoadCount++;

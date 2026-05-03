@@ -6,10 +6,8 @@ import { RENDER_MODULE_KEYS } from "./renderingConstants";
 import RenderWeatherState from "./renderWeatherState";
 /** @typedef {import("./timeStepData").timeStepData} timeStepData */
 
-//move some constants to a separate file for multiple classes to use
-
 /**
- * @classdesc Draws on a stored canvas, changing what is displayed based on what information is received by the handleTimeStep
+ * @classdesc Draws on a stored canvas ref, changing what is displayed based on what information is received by the handleTimeStep
  */
 export default class drawCanvas {
   /**
@@ -27,6 +25,7 @@ export default class drawCanvas {
     /** @type {timeStepData} Holds the timeStepData to draw */
     this.simulationState = null;
 
+    // List of all render Modules possible, intialized now so that they may be used at any point in the simulation, and so that they can load their images as soon as possible
     this.renderModules = {
       [RENDER_MODULE_KEYS.FIELD]: new RenderFieldState(),
       [RENDER_MODULE_KEYS.IMPLEMENTS]: new RenderImplementState(),
@@ -43,11 +42,13 @@ export default class drawCanvas {
    * @param {timeStepData} simulationData Data needed to update what the simulation should look like
    */
   handleTimeStep(simulationData) {
+    // Save the needed data from the event into a class variable
     this.simulationState = simulationData.detail;
 
     this.renderAllModules();
   }
 
+  // Loops through all the render modules the simulation Engine decides to send and calls their render method
   renderAllModules() {
     Object.entries(this.simulationState.renderModuleData).forEach(
       ([key, data]) => {

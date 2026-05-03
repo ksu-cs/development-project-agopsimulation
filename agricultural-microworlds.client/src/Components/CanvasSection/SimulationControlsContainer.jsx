@@ -28,19 +28,16 @@ class SimulationControlsContainer extends Component {
       vehiclesXml: {
         0: {
           name: "Harvester",
-          xml:
-          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
+          xml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
         },
         1: {
           name: "Seeder",
-          xml:
-          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
+          xml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
         },
         2: {
           name: "Collector",
-          xml:
-          '<xml xmlns="https://developers.google.com/blockly/xml"></xml>'
-        }
+          xml: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+        },
       },
       showXmlInput: false,
     };
@@ -168,7 +165,7 @@ class SimulationControlsContainer extends Component {
     // Generate headless code for each workspace after updating the current workspace
     Object.entries(this.state.vehiclesXml).forEach(([key, value]) => {
       spawnWorker(generateHeadlessCode(value.xml), parseInt(key));
-    })
+    });
 
     if (this.expectedWorkers > 0) {
       this.simulationEngine.startMoving();
@@ -220,8 +217,8 @@ class SimulationControlsContainer extends Component {
         ...prevState.vehiclesXml,
         [prevState.selectedVehicle]: {
           ...prevState.vehiclesXml[prevState.selectedVehicle],
-          xml: currentXmlText
-        }
+          xml: currentXmlText,
+        },
       },
     }));
 
@@ -310,7 +307,6 @@ class SimulationControlsContainer extends Component {
     // Update the current workspace's XML before exporting
     this.state.vehiclesXml[this.state.selectedVehicle].xml = currentXmlText;
 
-
     const jsonString = JSON.stringify(this.state.vehiclesXml, null, 2);
     console.log("=== Blockly Workspace JSON ===");
     console.log(jsonString);
@@ -337,12 +333,8 @@ class SimulationControlsContainer extends Component {
       const workspaceData = JSON.parse(jsonString);
 
       // Validate that we have the expected fields
-      if (
-        !workspaceData[0] || !workspaceData[0].xml
-      ) {
-        alert(
-          "Invalid JSON format. Must be at least one vehicle XML field",
-        );
+      if (!workspaceData[0] || !workspaceData[0].xml) {
+        alert("Invalid JSON format. Must be at least one vehicle XML field");
         return;
       }
 
@@ -352,7 +344,9 @@ class SimulationControlsContainer extends Component {
       });
 
       this.props.workspace.clear();
-      const xmlDom = Blockly.utils.xml.textToDom(workspaceData[this.state.selectedVehicle].xml);
+      const xmlDom = Blockly.utils.xml.textToDom(
+        workspaceData[this.state.selectedVehicle].xml,
+      );
       Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
 
       alert("Workspace loaded successfully!");
@@ -424,13 +418,14 @@ class SimulationControlsContainer extends Component {
           </div>
 
           <div className={styles.buttonGroup}>
-            {
-              Object.entries(this.state.vehiclesXml).map(([index]) => {
-                <button className = {styles.camera_btn} onClick={() => this.handleImplementSelect(index)}>
-                  {this.state.vehiclesXml[index].name}
-                </button>
-              })
-            }
+            {Object.entries(this.state.vehiclesXml).map(([index]) => {
+              <button
+                className={styles.camera_btn}
+                onClick={() => this.handleImplementSelect(index)}
+              >
+                {this.state.vehiclesXml[index].name}
+              </button>;
+            })}
             <button
               id="harvesterCameraButton"
               className={styles.camera_btn}

@@ -17,6 +17,7 @@ const IMAGE_KEYS = {
 
 export default class RenderImplementState extends RenderState {
   constructor() {
+    // Send the paths of the images needed for the module to the parent class to load them and store them in the images object
     const paths = {
       [IMAGE_KEYS.HARVESTER]: harvesterImage,
       [IMAGE_KEYS.SEEDER]: seederImage,
@@ -31,20 +32,15 @@ export default class RenderImplementState extends RenderState {
     if (!data.vehicles) return;
 
     data.vehicles.forEach((vehicle) => {
+      // Calculate screen positions
       const screenX = vehicle.x - data.cameraX;
       const screenY = vehicle.y - data.cameraY;
 
+      // Calculate rotation angle in radians
       const normalizedAngle = ((vehicle.angle % 360) + 360) % 360;
       var angleInRadians = (normalizedAngle * Math.PI) / 180;
 
-      const sprite =
-        vehicle.type === VEHICLES.SEEDER
-          ? this.images[IMAGE_KEYS.SEEDER]
-          : vehicle.type === VEHICLES.COLLECTOR
-            ? this.images[IMAGE_KEYS.COLLECTOR]
-            : vehicle.type === VEHICLES.SILO
-              ? this.images[IMAGE_KEYS.SILO]
-              : this.images[IMAGE_KEYS.HARVESTER];
+      const sprite = this.#getImplementSprite(vehicle.type);
 
       context.save();
       context.translate(screenX + FRAME_WIDTH / 2, screenY + FRAME_HEIGHT / 2);
@@ -56,6 +52,7 @@ export default class RenderImplementState extends RenderState {
       context.restore();
     });
 
+    // Check to see if simulation must stop
     if (!data?.isGameOver) return;
     if (!data?.crashed) return;
 
@@ -74,5 +71,15 @@ export default class RenderImplementState extends RenderState {
       size,
       size,
     );
+  }
+
+  #getImplementSprite(type){
+    return type === VEHICLES.SEEDER
+          ? this.images[IMAGE_KEYS.SEEDER]
+          : type === VEHICLES.COLLECTOR
+            ? this.images[IMAGE_KEYS.COLLECTOR]
+            : type === VEHICLES.SILO
+              ? this.images[IMAGE_KEYS.SILO]
+              : this.images[IMAGE_KEYS.HARVESTER];
   }
 }

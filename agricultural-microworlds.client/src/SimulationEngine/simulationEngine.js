@@ -23,9 +23,7 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
  * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
  *
  * TODO:
- * - Change the workspaces for the different vehicles to be modular and dynamically create buttons based on the vehicles present in the state manager
  * - adding a new method for a new block requires changes in multiple places, make the process of adding a new method to the workers easier
- * - add comments to all render modules
  * - refactor controls container, currently large and clunky, hard to read
  */
 
