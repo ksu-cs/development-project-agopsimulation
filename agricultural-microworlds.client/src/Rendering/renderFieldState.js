@@ -17,6 +17,7 @@ const IMAGE_KEYS = {
 
 export default class RenderFieldState extends RenderState {
   constructor() {
+    // Send the paths of the images needed for the module to the parent class to load them and store them in the images object
     const paths = {
       [IMAGE_KEYS.DIRT]: dirtImage,
       [IMAGE_KEYS.SEED]: seedImage,
@@ -28,9 +29,11 @@ export default class RenderFieldState extends RenderState {
   }
 
   render(context, data) {
+    // Set up canvas for rendering
     context.fillStyle = "#4a3b2c";
     context.fillRect(0, 0, data.canvasWidth, data.canvasHeight);
 
+    // Set up variables for rendering
     const fieldWidth = data.fieldWidth;
     const fieldHeight = data.fieldWidth;
     const cameraX = data.cameraX;
@@ -45,37 +48,15 @@ export default class RenderFieldState extends RenderState {
     const endRow = Math.min(fieldHeight, startRow + SCREEN_ROWS);
     const endCol = Math.min(fieldWidth, startCol + SCREEN_COLUMNS);
 
+    // Loop through the visible portion of the field and render each tile
     for (let i = startRow; i < endRow; i++) {
       for (let j = startCol; j < endCol; j++) {
         if (i < 0 || j < 0) continue;
 
         const crop = data.field.getTileAt(j, i);
 
-        // Determine tile image based on crop image
-        let tileImage = this.images[IMAGE_KEYS.DIRT];
-        switch (crop["stage"]) {
-          case CROP_STAGES.UNPLANTED:
-            tileImage = this.images[IMAGE_KEYS.DIRT];
-            break;
-          case CROP_STAGES.SEEDED:
-            tileImage = this.images[IMAGE_KEYS.SEED];
-            break;
-          case CROP_STAGES.MATURE:
-            switch (crop["type"]) {
-              case CROP_TYPES.WHEAT:
-                tileImage = this.images[IMAGE_KEYS.WHEAT];
-                break;
-              case CROP_TYPES.CORN:
-                tileImage = this.images[IMAGE_KEYS.CORN];
-                break;
-              case CROP_TYPES.SOY:
-                tileImage = this.images[IMAGE_KEYS.SOY];
-                break;
-              default:
-                tileImage = this.images[IMAGE_KEYS.WHEAT];
-            }
-            break;
-        }
+        const tileImage = this.#determineTileImage(crop);
+
         const tileWorldX = j * TILE_WIDTH;
         const tileWorldY = i * TILE_HEIGHT;
 
@@ -95,5 +76,34 @@ export default class RenderFieldState extends RenderState {
         );
       }
     }
+  }
+
+  #determineTileImage(crop) {
+    let tileImage = this.images[IMAGE_KEYS.DIRT];
+
+    switch (crop["stage"]) {
+      case CROP_STAGES.UNPLANTED:
+        tileImage = this.images[IMAGE_KEYS.DIRT];
+        break;
+      case CROP_STAGES.SEEDED:
+        tileImage = this.images[IMAGE_KEYS.SEED];
+        break;
+      case CROP_STAGES.MATURE:
+        switch (crop["type"]) {
+          case CROP_TYPES.WHEAT:
+            tileImage = this.images[IMAGE_KEYS.WHEAT];
+            break;
+          case CROP_TYPES.CORN:
+            tileImage = this.images[IMAGE_KEYS.CORN];
+            break;
+          case CROP_TYPES.SOY:
+            tileImage = this.images[IMAGE_KEYS.SOY];
+            break;
+          default:
+            tileImage = this.images[IMAGE_KEYS.WHEAT];
+        }
+        break;
+    }
+    return tileImage;
   }
 }

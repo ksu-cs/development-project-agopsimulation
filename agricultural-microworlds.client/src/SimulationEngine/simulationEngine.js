@@ -24,9 +24,7 @@ import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
  *
  * TODO:
  * - Change the workspaces for the different vehicles to be modular and dynamically create buttons based on the vehicles present in the state manager
- * - split timestep event into different methods to have it look cleaner maybe the same with engine loop
  * - adding a new method for a new block requires changes in multiple places, make the process of adding a new method to the workers easier
- * - Make render stat and render field state more readable
  * - add comments to all render modules
  * - refactor controls container, currently large and clunky, hard to read
  */
@@ -453,29 +451,12 @@ export default class simulationEngine extends EventTarget {
    * Dispatches an event to obtain a timestamp of the current simulation and its states.
    */
   timeStepEvent() {
-    const tractor = this.stateManager.getState("tractor");
-    const field = this.stateManager.getState("field");
+    // Gather all data from the weather manager
     const weather = this.stateManager.getState("weather");
-    const totalWaterApplied =
-      this.stateManager.getState("totalWaterApplied").toFixed(2) ?? 0;
-    const vehicles = this.stateManager.getState("vehicles");
-    /** @type {TractorManager} */
-    const tractorManager = this.getManager(TractorManager);
-    /** @type {VEHICLES} */
-    const activeVehicleCamera = tractorManager.activeVehicleCamera;
-    let activeVehicle = vehicles?.find((v) => v.type === activeVehicleCamera);
-    tractorManager.updateCameraCoordinates(
-      activeVehicle,
-      this.COLS,
-      this.canvasWidth,
-      this.canvasHeight,
-    );
-
-    if (!tractor || !field || !weather) return;
-
+    // Format time of the simulation
     const currentTime = weather.timeAccumulator;
-
-    // Handle case where startDate is null (initial load before Fetch)
+    const formattedTime = this.#FormatTime(currentTime);
+    // Format the date string
     let dateString = "Not Started";
     if (weather.startDate) {
       const dateObj = new Date(weather.startDate);
@@ -483,9 +464,8 @@ export default class simulationEngine extends EventTarget {
       dateString = dateObj.toLocaleDateString();
     }
 
-    // Calculate strings
     const gddString = weather.cumulativeGDD.toFixed(2);
-    // pick the rain source from WeatherState
+
     const rainValue =
       weather.cumulativeRain ??
       weather.cumulativePrecip ??
@@ -493,6 +473,17 @@ export default class simulationEngine extends EventTarget {
       0;
     const rainString = Number(rainValue).toFixed(2);
 
+    const totalWaterApplied =
+      this.stateManager.getState("totalWaterApplied").toFixed(2) ?? 0;
+
+    // Set up vehicle related data
+    const vehicles = this.stateManager.getState("vehicles");
+    /** @type {TractorManager} */
+    const tractorManager = this.getManager(TractorManager);
+
+    this.#updateCameraCoordinates(tractorManager, vehicles);
+
+    // Set up fuel consumption data
     const totalFuelConsumed = vehicles.reduce(
       (total, v) => total + (v.totalFuelConsumed || 0),
       0,
@@ -509,14 +500,13 @@ export default class simulationEngine extends EventTarget {
       VEHICLE_FUEL_CAPACITY[VEHICLES.COLLECTOR] -
       vehicles[VEHICLES.COLLECTOR]?.fuelInTankUsed;
 
-    const formattedTime = this.#FormatTime(currentTime);
-
+    // Data used to render the simulation stats
     const statData = {
       dateText: dateString,
       gddValue: gddString,
       rainValue: rainString,
       timeText: formattedTime,
-      totalFuelValue: fuelConsumed, 
+      totalFuelValue: fuelConsumed,
       harvesterFuelLevel: harvesterFuelLevel.toFixed(2),
       seederFuelLevel: seederFuelLevel.toFixed(2),
       truckFuelLevel: truckFuelLevel.toFixed(2),
@@ -527,6 +517,8 @@ export default class simulationEngine extends EventTarget {
       waterAppliedValue: totalWaterApplied,
     };
 
+    // Data used to render the field
+    const field = this.stateManager.getState("field");
     const fieldData = {
       fieldWidth: this.COLS,
       fieldHeight: this.ROWS,
@@ -537,6 +529,7 @@ export default class simulationEngine extends EventTarget {
       field: field,
     };
 
+    // Data used to render the implements
     const vehicleData = {
       vehicles: vehicles,
       cameraX: tractorManager.cameraX,
@@ -545,12 +538,14 @@ export default class simulationEngine extends EventTarget {
       crashed: this.stateManager.getState("crash"),
     };
 
+    // Data used to render the day/night cycle effects
     const dayCycleData = {
       currentTime,
       canvasWidth: this.canvasWidth,
       canvasHeight: this.canvasHeight,
     };
 
+    // All render modules condensed to one object and passed to event
     const renderModules = {
       [RENDER_MODULE_KEYS.FIELD]: fieldData,
       [RENDER_MODULE_KEYS.IMPLEMENTS]: vehicleData,
@@ -570,7 +565,7 @@ export default class simulationEngine extends EventTarget {
   }
 
   //#region TimeStepEvent Helper Methods
-    #FormatTime(currentTime){
+  #FormatTime(currentTime) {
     // Format the current time into hours, minutes, and AM/PM.
     const totalHours = 1 + Math.floor((currentTime / 60.0) % 12.0);
     const totalMinutes = Math.floor(currentTime % 60.0);
@@ -580,7 +575,19 @@ export default class simulationEngine extends EventTarget {
     const formattedMeridiem =
       currentTime % (23 * 60) >= 11 * 60 ? "P.M." : "A.M.";
     return `${formattedHours}:${formattedMinutes} ${formattedMeridiem}`;
-    }
+  }
+
+  #updateCameraCoordinates(tractorManager, vehicles) {
+    /** @type {VEHICLES} */
+    const activeVehicleCamera = tractorManager.activeVehicleCamera;
+    let activeVehicle = vehicles?.find((v) => v.type === activeVehicleCamera);
+    tractorManager.updateCameraCoordinates(
+      activeVehicle,
+      this.COLS,
+      this.canvasWidth,
+      this.canvasHeight,
+    );
+  }
   //#endregion
 
   //#region Custom Block Methods

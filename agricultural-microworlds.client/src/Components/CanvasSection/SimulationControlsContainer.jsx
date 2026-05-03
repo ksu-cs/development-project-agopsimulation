@@ -25,12 +25,11 @@ class SimulationControlsContainer extends Component {
     // Harvester = 0, Seeder = 1, Collector = 2
     this.state = {
       selectedVehicle: 0,
-      harvesterXml:
-        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
-      seederXml:
-        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
-      collectorXml:
-        '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      vehiclesXml: {
+        0: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+        1: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+        2: '<xml xmlns="https://developers.google.com/blockly/xml"></xml>',
+      },
       showXmlInput: false,
     };
 
@@ -105,13 +104,6 @@ class SimulationControlsContainer extends Component {
     // Save the currently visible workspace to state so we have the latest code
     const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
-    if (this.state.selectedVehicle === 0) {
-      this.state.harvesterXml = currentXmlText; // Mutate to avoid async delay
-    } else if (this.state.selectedVehicle === 1) {
-      this.state.seederXml = currentXmlText;
-    } else if (this.state.selectedVehicle === 2) {
-      this.state.collectorXml = currentXmlText;
-    }
 
     // Helper to generate code in the background safely
     const generateHeadlessCode = (xmlText) => {
@@ -131,10 +123,6 @@ class SimulationControlsContainer extends Component {
         headless.dispose();
       }
     };
-
-    const harvesterCode = generateHeadlessCode(this.state.harvesterXml);
-    const seederCode = generateHeadlessCode(this.state.seederXml);
-    const collectorCode = generateHeadlessCode(this.state.collectorXml);
 
     this.expectedWorkers = 0;
     this.completedWorkers = 0;
@@ -162,10 +150,12 @@ class SimulationControlsContainer extends Component {
       this.workers.push(worker);
     };
 
-    // 0 = HARVESTER, 1 = SEEDER, 2 = COLLECTOR
-    spawnWorker(harvesterCode, 0);
-    spawnWorker(seederCode, 1);
-    spawnWorker(collectorCode, 2);
+    Object.entries(this.state.vehiclesXml).forEach(([key]) => {
+      if (this.state.selectedVehicle === key) {
+        this.state.vehiclesXml[key] = currentXmlText;
+        spawnWorker(generateHeadlessCode(currentXmlText), parseInt(key));
+      }
+    });
 
     if (this.expectedWorkers > 0) {
       this.simulationEngine.startMoving();
@@ -212,23 +202,15 @@ class SimulationControlsContainer extends Component {
     const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
 
-    if (this.state.selectedVehicle == 0) {
-      this.setState({ harvesterXml: currentXmlText });
-    } else if (this.state.selectedVehicle == 1) {
-      this.setState({ seederXml: currentXmlText });
-    } else if (this.state.selectedVehicle == 2) {
-      this.setState({ collectorXml: currentXmlText });
-    }
+    this.setState((prevState) => ({
+      vehiclesXml: {
+        ...prevState.vehiclesXml,
+        [prevState.selectedVehicle]: currentXmlText,
+      },
+    }));
 
     // Load blocks for new tab
-    let nextXmlText;
-    if (vehicleType == 0) {
-      nextXmlText = this.state.harvesterXml;
-    } else if (vehicleType == 1) {
-      nextXmlText = this.state.seederXml;
-    } else if (vehicleType == 2) {
-      nextXmlText = this.state.collectorXml;
-    }
+    const nextXmlText = this.state.vehiclesXml[vehicleType] || "";
 
     this.setState({ selectedVehicle: vehicleType }, () => {
       this.props.workspace.clear();
@@ -309,23 +291,11 @@ class SimulationControlsContainer extends Component {
     const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
     const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
 
-    // Create JSON object with all workspaces
-    let workspaceData = {
-      harvester: this.state.harvesterXml,
-      seeder: this.state.seederXml,
-      collector: this.state.collectorXml,
-    };
+    // Update the current workspace's XML before exporting
+    this.state.vehiclesXml[this.state.selectedVehicle] = currentXmlText;
 
-    // Update the current selected vehicle's XML with the latest from the workspace
-    if (this.state.selectedVehicle === 0) {
-      workspaceData.harvester = currentXmlText;
-    } else if (this.state.selectedVehicle === 1) {
-      workspaceData.seeder = currentXmlText;
-    } else if (this.state.selectedVehicle === 2) {
-      workspaceData.collector = currentXmlText;
-    }
 
-    const jsonString = JSON.stringify(workspaceData, null, 2);
+    const jsonString = JSON.stringify(this.state.vehiclesXml, null, 2);
     console.log("=== Blockly Workspace JSON ===");
     console.log(jsonString);
     console.log("=== End Blockly Workspace JSON ===");
@@ -352,37 +322,22 @@ class SimulationControlsContainer extends Component {
 
       // Validate that we have the expected fields
       if (
-        !workspaceData.harvester ||
-        !workspaceData.seeder ||
-        !workspaceData.collector
+        !workspaceData[0]
       ) {
         alert(
-          "Invalid JSON format. Expected fields: harvester, seeder, collector",
+          "Invalid JSON format. Must be at least one vehicle XML field",
         );
         return;
       }
 
       // Update state with loaded XML
       this.setState({
-        harvesterXml: workspaceData.harvester,
-        seederXml: workspaceData.seeder,
-        collectorXml: workspaceData.collector,
+        vehiclesXml: workspaceData,
       });
 
-      // Load the current selected vehicle's workspace
-      if (this.state.selectedVehicle === 0) {
-        this.props.workspace.clear();
-        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.harvester);
-        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
-      } else if (this.state.selectedVehicle === 1) {
-        this.props.workspace.clear();
-        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.seeder);
-        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
-      } else if (this.state.selectedVehicle === 2) {
-        this.props.workspace.clear();
-        const xmlDom = Blockly.utils.xml.textToDom(workspaceData.collector);
-        Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
-      }
+      this.props.workspace.clear();
+      const xmlDom = Blockly.utils.xml.textToDom(workspaceData[this.state.selectedVehicle]);
+      Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
 
       alert("Workspace loaded successfully!");
 
@@ -453,6 +408,13 @@ class SimulationControlsContainer extends Component {
           </div>
 
           <div className={styles.buttonGroup}>
+            {
+              Object.entries(this.state.vehiclesXml).map(([index]) => {
+                <button className = {styles.camera_btn} onClick={() => this.handleImplementSelect(index)}>
+                  {index === 0 ? "Harvester" : index === 1 ? "Seeder" : "Collector"}
+                </button>
+              })
+            }
             <button
               id="harvesterCameraButton"
               className={styles.camera_btn}
@@ -500,7 +462,10 @@ class SimulationControlsContainer extends Component {
               className={styles.effectsButton}
               onClick={this.effectsButtonOnClick}
             />
-            <label htmlFor="screenEffectsButton" className={styles.effectsButton}>
+            <label
+              htmlFor="screenEffectsButton"
+              className={styles.effectsButton}
+            >
               Screen Effects
             </label>
           </div>
