@@ -113,10 +113,6 @@ class SimulationControlsContainer extends Component {
       this.simulationEngine.setSpeedMultiplier(parseInt(speedSlider.value));
     }
 
-    // Save the currently visible workspace to state so we have the latest code
-    const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
-    const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
-
     // Helper to generate code in the background safely
     const generateHeadlessCode = (xmlText) => {
       if (!xmlText || !xmlText.includes("xmlns")) return "";
@@ -162,12 +158,17 @@ class SimulationControlsContainer extends Component {
       this.workers.push(worker);
     };
 
-    Object.entries(this.state.vehiclesXml).forEach(([key]) => {
-      if (this.state.selectedVehicle === key) {
-        this.state.vehiclesXml[key].xml = currentXmlText;
-        spawnWorker(generateHeadlessCode(currentXmlText), parseInt(key));
-      }
-    });
+    // Save the currently visible workspace to state so we have the latest code
+    const currentXmlDom = Blockly.Xml.workspaceToDom(this.props.workspace);
+    const currentXmlText = Blockly.Xml.domToText(currentXmlDom);
+
+    // Update the current workspace's XML before generating headless code
+    this.state.vehiclesXml[this.state.selectedVehicle].xml = currentXmlText;
+
+    // Generate headless code for each workspace after updating the current workspace
+    Object.entries(this.state.vehiclesXml).forEach(([key, value]) => {
+      spawnWorker(generateHeadlessCode(value.xml), parseInt(key));
+    })
 
     if (this.expectedWorkers > 0) {
       this.simulationEngine.startMoving();
@@ -337,7 +338,7 @@ class SimulationControlsContainer extends Component {
 
       // Validate that we have the expected fields
       if (
-        !workspaceData[0]
+        !workspaceData[0] || !workspaceData[0].xml
       ) {
         alert(
           "Invalid JSON format. Must be at least one vehicle XML field",
@@ -351,7 +352,7 @@ class SimulationControlsContainer extends Component {
       });
 
       this.props.workspace.clear();
-      const xmlDom = Blockly.utils.xml.textToDom(workspaceData[this.state.selectedVehicle]);
+      const xmlDom = Blockly.utils.xml.textToDom(workspaceData[this.state.selectedVehicle].xml);
       Blockly.Xml.domToWorkspace(xmlDom, this.props.workspace);
 
       alert("Workspace loaded successfully!");
