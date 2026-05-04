@@ -112,6 +112,7 @@ export const getToolbox = (vehicleType = 0) => {
   const controlBlocks = [
     { kind: "block", type: "wait_x_time" },
     { kind: "block", type: "fill_vehicle_fuel_tank" },
+    { kind: "block", type: "function_call" },
   ];
 
   // Vehicle-specific control blocks
@@ -206,7 +207,10 @@ export const getToolbox = (vehicleType = 0) => {
         kind: "category",
         name: "Events",
         categorystyle: "events_category",
-        contents: [{ kind: "block", type: "start_program" }],
+        contents: [
+          { kind: "block", type: "start_program" },
+          { kind: "block", type: "function_event" },
+        ],
       },
     ],
   };
