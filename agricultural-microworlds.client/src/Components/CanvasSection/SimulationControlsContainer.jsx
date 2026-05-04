@@ -229,16 +229,12 @@ class SimulationControlsContainer extends Component {
       Blockly.Xml.domToWorkspace(nextXmlDom, this.props.workspace);
 
       // Show new blocks
-      this.props.workspace.updateToolbox(getToolbox (vehicleType));
+      this.props.workspace.updateToolbox(getToolbox(vehicleType));
 
       if (this.simulationEngine) {
         this.simulationEngine.setMainVehicleCamera(vehicleType);
       }
-
     });
-
-    
-
   };
 
   createWorkerBlob(userCode) {

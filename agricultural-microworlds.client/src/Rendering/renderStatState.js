@@ -116,6 +116,5 @@ export default class RenderStatState extends RenderState {
     if (activeVehicleEl) {
       activeVehicleEl.innerText = "Selected Vehicle: " + typeName;
     }
-
   }
 }

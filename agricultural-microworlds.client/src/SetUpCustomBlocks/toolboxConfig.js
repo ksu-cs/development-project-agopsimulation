@@ -113,7 +113,7 @@ export const getToolbox = (vehicleType = 0) => {
   // Vehicle-specific control blocks
   if (vehicleType === 0) {
     // Harvester-specific blocks
-    controlBlocks.unshift({ kind: "block", type: "toggle_harvesting" });;
+    controlBlocks.unshift({ kind: "block", type: "toggle_harvesting" });
   } else if (vehicleType === 1) {
     // Seeder-specific blocks
     controlBlocks.unshift({ kind: "block", type: "toggle_watering" });
@@ -206,8 +206,7 @@ export const getToolbox = (vehicleType = 0) => {
       },
     ],
   };
-
-}
+};
 
 export const myTheme = Theme.defineTheme("myTheme", {
   base: Themes.Classic,
