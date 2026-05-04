@@ -37,11 +37,11 @@ class CanvasContainer extends Component {
             <p className={styles.statText} id="rainText">
               Precipitation: 0.00
             </p>
-            <p className={styles.statText} id="activeVehicleText">
-              Active Vehicle: Harvester
-            </p>
             <p className={styles.statText} id="fuelText">
               Total Fuel Consumed: 0.00 G
+            </p>
+            <p className={styles.statText} id="activeVehicleText">
+              Active Vehicle: Harvester
             </p>
             <p className={styles.statText} id="waterAppliedText">
               Irrigation Applied: 0.000 G

@@ -415,7 +415,7 @@ export default class simulationEngine extends EventTarget {
     const totalWaterApplied =
       this.stateManager.getState("totalWaterApplied") ?? 0;
     const vehicles = this.stateManager.getState("vehicles");
-    const activeVehicleType = this.stateManager.getState("activeVehicleType");
+    //const activeVehicleType = this.stateManager.getState("activeVehicleType");
     /** @type {TractorManager} */
     const tractorManager = this.getManager(TractorManager);
     /** @type {VEHICLES} */
@@ -470,7 +470,7 @@ export default class simulationEngine extends EventTarget {
       currentDate: dateString,
       cumulativeGDD: gddString,
       rainString,
-      activeVehicleType,
+      activeVehicleType: activeVehicleCamera,
       currentTime,
       fuelConsumed: fuelConsumed,
       harvesterFuelLevel: harvesterFuelLevel.toFixed(2) || "0.00",
@@ -790,7 +790,7 @@ export default class simulationEngine extends EventTarget {
         this.switchCropBeingPlanted(args[0], vehicleType);
         break;
       case "fillVehicleFuelTank":
-        this.fillVehicleFuelTank(args[0]);
+        this.fillVehicleFuelTank(vehicleType);
         break;
       case "toggleWatering":
         this.toggleWatering(args[0], vehicleType);
