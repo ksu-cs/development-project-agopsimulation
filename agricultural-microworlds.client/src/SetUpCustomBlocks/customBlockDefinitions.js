@@ -309,10 +309,10 @@ var onFunction = {
   tooltip: "Is called as a customizable function.",
   args0: [
     {
-      "type": "field_input",
-      "name": "FUNCTIONNAME",
-      "text": "My Function",
-      "spellcheck": false
+      type: "field_input",
+      name: "FUNCTIONNAME",
+      text: "My Function",
+      spellcheck: false,
     },
   ],
 };
@@ -331,10 +331,10 @@ var callFunction = {
   tooltip: "Calls a customizable function.",
   args0: [
     {
-      "type": "field_input",
-      "name": "FUNCTIONNAME",
-      "text": "My Function",
-      "spellcheck": false
+      type: "field_input",
+      name: "FUNCTIONNAME",
+      text: "My Function",
+      spellcheck: false,
     },
   ],
   targetEvents: [],

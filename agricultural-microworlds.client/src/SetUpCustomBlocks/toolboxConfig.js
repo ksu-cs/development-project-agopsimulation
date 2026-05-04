@@ -97,7 +97,7 @@ export const toolbox = {
       categorystyle: "events_category",
       contents: [
         { kind: "block", type: "start_program" },
-        { kind: "block", type: "function_event" }
+        { kind: "block", type: "function_event" },
       ],
     },
   ],

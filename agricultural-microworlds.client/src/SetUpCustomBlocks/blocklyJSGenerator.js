@@ -85,14 +85,21 @@ javascriptGenerator.forBlock["function_call"] = function (block, generator) {
     if (allBlocks.length > 0) {
       allBlocks.forEach((eventBlock) => {
         if (eventBlock && eventBlock.type == "function_event") {
-          const eventName = String(eventBlock.getFieldValue("FUNCTIONNAME")) || "";
+          const eventName =
+            String(eventBlock.getFieldValue("FUNCTIONNAME")) || "";
           if (eventName == functionName) {
-            code += generator.blockToCode(eventBlock) + "\n";
+            try {
+              code += generator.blockToCode(eventBlock);
+            } catch (error) {
+              console.warn("Error while generating function call: " + error); // NOTE: Should attempt to make return nothing at top-level!
+              return `\n`;
+            }
           }
         }
       });
     }
 
+    //console.log(code);
     return code;
   }
 

@@ -117,11 +117,11 @@ class SimulationControlsContainer extends Component {
         const allBlocks = headless.getAllBlocks(false);
 
         if (allBlocks.length > 0) {
-            allBlocks.forEach((block) => {
-              if (block.type == "start_program") {
-                code += javascriptGenerator.blockToCode(block) + "\n";
-              }
-            });
+          allBlocks.forEach((block) => {
+            if (block.type == "start_program") {
+              code += javascriptGenerator.blockToCode(block) + "\n";
+            }
+          });
         }
 
         const vars = Object.values(javascriptGenerator.definitions_).join("\n");
