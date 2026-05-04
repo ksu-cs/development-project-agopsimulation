@@ -5,6 +5,7 @@ import drawCanvas from "../../Rendering/drawCanvas";
 import { javascriptGenerator } from "blockly/javascript";
 import TractorSimManager from "../../Simulation/SimManagers/TractorSimManager";
 import * as Blockly from "blockly";
+import { getToolbox } from "../../SetUpCustomBlocks/toolboxConfig";
 
 /**
  * @classdesc Creates the buttons and other UI components that can control the simulation, aside from the blocks.
@@ -232,6 +233,9 @@ class SimulationControlsContainer extends Component {
       const nextXmlDom = Blockly.utils.xml.textToDom(nextXmlText);
       Blockly.Xml.domToWorkspace(nextXmlDom, this.props.workspace);
 
+      // Show new blocks
+      this.props.workspace.updateToolbox(getToolbox(vehicleType));
+
       if (this.simulationEngine) {
         this.simulationEngine.setMainVehicleCamera(vehicleType);
       }
@@ -269,7 +273,7 @@ class SimulationControlsContainer extends Component {
         toggleSeeding: function(b) { return this._send('toggleSeeding', [b]); },
         switchCropBeingPlanted: function(c) { return this._send('switchCropBeingPlanted', [c]); },
         CheckIfPlantInFront: function(c) { return this._send('CheckIfPlantInFront', [c]); },
-        fillVehicleFuelTank: function(v) { return this._send('fillVehicleFuelTank', [v]); },
+        fillVehicleFuelTank: function() { return this._send('fillVehicleFuelTank', []); },
         toggleWatering: function(b) { return this._send('toggleWatering', [b]); },
       };
 

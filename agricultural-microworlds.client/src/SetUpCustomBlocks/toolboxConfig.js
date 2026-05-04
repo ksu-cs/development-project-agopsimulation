@@ -102,6 +102,112 @@ export const toolbox = {
 /**
  * The themeing for the blocks to follow
  */
+
+export const getToolbox = (vehicleType = 0) => {
+  // Common control blocks for both vehicles
+  const controlBlocks = [
+    { kind: "block", type: "wait_x_time" },
+    { kind: "block", type: "fill_vehicle_fuel_tank" },
+  ];
+
+  // Vehicle-specific control blocks
+  if (vehicleType === 0) {
+    // Harvester-specific blocks
+    controlBlocks.unshift({ kind: "block", type: "toggle_harvesting" });
+  } else if (vehicleType === 1) {
+    // Seeder-specific blocks
+    controlBlocks.unshift({ kind: "block", type: "toggle_watering" });
+    controlBlocks.unshift({ kind: "block", type: "switch_crop_being_planted" });
+    controlBlocks.unshift({ kind: "block", type: "toggle_seeding" });
+  }
+
+  return {
+    kind: "categoryToolbox",
+    contents: [
+      {
+        kind: "category",
+        name: "Movement",
+        categorystyle: "movement_category",
+        contents: [
+          { kind: "block", type: "move_forward" },
+          { kind: "block", type: "turn_left" },
+          { kind: "block", type: "turn_right" },
+          { kind: "block", type: "turn_x_degrees" },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Variables",
+        categorystyle: "variable_category",
+        contents: [
+          {
+            kind: "button",
+            text: "Create variable...",
+            callbackKey: "CREATE_VARIABLE",
+          },
+          { kind: "block", type: "variables_get" },
+          { kind: "block", type: "variables_set" },
+          { kind: "block", type: "get_current_week" },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Numbers",
+        categorystyle: "numbers_category",
+        contents: [
+          { kind: "block", type: "math_number" },
+          { kind: "block", type: "math_random_int" },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Control",
+        categorystyle: "control_category",
+        contents: controlBlocks,
+      },
+      {
+        kind: "category",
+        name: "Logic",
+        categorystyle: "logic_category",
+        contents: [
+          { kind: "block", type: "controls_if" },
+          { kind: "block", type: "logic_boolean" },
+          { kind: "block", type: "is_over_tile" },
+          { kind: "block", type: "custom_compare" },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Loops",
+        categorystyle: "loops_category",
+        contents: [
+          {
+            kind: "block",
+            type: "controls_repeat_ext",
+            inputs: {
+              TIMES: {
+                shadow: {
+                  type: "math_number",
+                  fields: {
+                    NUM: 10,
+                  },
+                },
+              },
+            },
+          },
+          { kind: "block", type: "controls_whileUntil" },
+        ],
+      },
+      {
+        kind: "category",
+        name: "Events",
+        categorystyle: "events_category",
+        contents: [{ kind: "block", type: "start_program" }],
+      },
+    ],
+  };
+};
+
 export const myTheme = Theme.defineTheme("myTheme", {
   base: Themes.Classic,
   categoryStyles: {

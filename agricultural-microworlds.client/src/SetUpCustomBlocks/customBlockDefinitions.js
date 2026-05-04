@@ -353,22 +353,11 @@ Blocks["change_vehicle"] = {
 
 var fillVehicleFuelTank = {
   type: "fill_vehicle_fuel_tank",
-  message0: "Fill %1 fuel tank",
-  args0: [
-    {
-      type: "field_dropdown",
-      name: "toggleVehicle",
-      options: [
-        ["Harvester", "0"],
-        ["Seeder", "1"],
-        ["Collector", "2"],
-      ],
-    },
-  ],
+  message0: "Fill fuel tank",
   previousStatement: null,
   nextStatement: null,
   style: "control_blocks",
-  tooltip: "Fills the fuel tank of the specified vehicle back to full",
+  tooltip: "Fills the fuel tank of the selected vehicle back to full",
 };
 Blocks["fill_vehicle_fuel_tank"] = {
   init: function () {

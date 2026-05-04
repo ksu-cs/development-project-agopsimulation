@@ -35,40 +35,86 @@ export default class RenderStatState extends RenderState {
     if (rainEl)
       rainEl.innerText = "Precipitation: " + Number(r).toFixed(2) + " mm";
 
-    const activeVehicleEl = document.getElementById("activeVehicleText");
-    if (activeVehicleEl) {
-      const typeName = data.activeVehicleType === 1 ? "Seeder" : "Harvester";
-      activeVehicleEl.innerText = "Active Vehicle: " + typeName;
-    }
-
     const fuelEl = document.getElementById("fuelText");
     if (fuelEl)
       fuelEl.innerText = "Total Fuel Consumed: " + data.fuelConsumed + " G";
 
+    const activeVehicleEl = document.getElementById("activeVehicleText");
+    if (activeVehicleEl) {
+      const typeName = data.activeVehicleType === 1 ? "Seeder" : "Harvester";
+      activeVehicleEl.innerText = "Selected Vehicle: " + typeName;
+    }
+
     const harvesterFuelEl = document.getElementById("harvesterFuelLevelText");
-    if (harvesterFuelEl)
-      harvesterFuelEl.innerText =
-        "Harvester Fuel Level: " + data.harvesterFuelLevel + " G";
+    // if (harvesterFuelEl)
+    //   harvesterFuelEl.innerText =
+    //     "Harvester Fuel Level: " + data.harvesterFuelLevel + " G";
 
     const seederFuelEl = document.getElementById("seederFuelLevelText");
-    if (seederFuelEl)
-      seederFuelEl.innerText =
-        "Seeder Fuel Level: " + data.seederFuelLevel + " G";
+    // if (seederFuelEl)
+    //   seederFuelEl.innerText =
+    //     "Seeder Fuel Level: " + data.seederFuelLevel + " G";
 
     const waterAppliedEl = document.getElementById("waterAppliedText");
-    const waterApplied = data.totalWaterApplied ?? 0;
-    if (waterAppliedEl)
-      waterAppliedEl.innerText =
-        "Irrigation Applied: " + Number(waterApplied).toFixed(3);
+    // const waterApplied = data.totalWaterApplied ?? 0;
+    // if (waterAppliedEl)
+    //   waterAppliedEl.innerText =
+    //     "Irrigation Applied: " + Number(waterApplied).toFixed(3);
 
     const truckStorageEl = document.getElementById("truckStorageText");
-    if (truckStorageEl)
-      truckStorageEl.innerText =
-        "Truck Storage: " + (data.truckStorage ?? 0) + " / 5000";
+    // if (truckStorageEl)
+    //   truckStorageEl.innerText =
+    //     "Truck Storage: " + (data.truckStorage ?? 0) + " / 5000";
 
     const truckFuelEl = document.getElementById("truckFuelLevelText");
-    if (truckFuelEl)
-      truckFuelEl.innerText =
-        "Truck Fuel Level: " + (data.truckFuelLevel ?? 0) + " G";
+    // if (truckFuelEl)
+    //   truckFuelEl.innerText =
+    //     "Truck Fuel Level: " + (data.truckFuelLevel ?? 0) + " G";
+
+    if (harvesterFuelEl) harvesterFuelEl.style.display = "none";
+    if (seederFuelEl) seederFuelEl.style.display = "none";
+    if (truckFuelEl) truckFuelEl.style.display = "none";
+    if (waterAppliedEl) waterAppliedEl.style.display = "none";
+    if (truckStorageEl) truckStorageEl.style.display = "none";
+
+    let typeName = "Harvester";
+
+    if (data.activeVehicleType === 1) {
+      typeName = "Seeder";
+      if (seederFuelEl) {
+        seederFuelEl.style.display = "block";
+        seederFuelEl.innerText =
+          "Seeder Fuel Level: " + data.seederFuelLevel + " G";
+      }
+      if (waterAppliedEl) {
+        waterAppliedEl.style.display = "block";
+        const waterApplied = data.totalWaterApplied ?? 0;
+        waterAppliedEl.innerText =
+          "Irrigation Applied: " + Number(waterApplied).toFixed(3);
+      }
+    } else if (data.activeVehicleType === 2) {
+      typeName = "Collector";
+      if (truckFuelEl) {
+        truckFuelEl.style.display = "block";
+        truckFuelEl.innerText =
+          "Collector Fuel Level: " + (data.truckFuelLevel ?? 0) + " G";
+      }
+      if (truckStorageEl) {
+        truckStorageEl.style.display = "block";
+        truckStorageEl.innerText =
+          "Collector Storage: " + (data.truckStorage ?? 0) + " / 5000";
+      }
+    } else {
+      typeName = "Harvester";
+      if (harvesterFuelEl) {
+        harvesterFuelEl.style.display = "block";
+        harvesterFuelEl.innerText =
+          "Harvester Fuel Level: " + data.harvesterFuelLevel + " G";
+      }
+    }
+
+    if (activeVehicleEl) {
+      activeVehicleEl.innerText = "Selected Vehicle: " + typeName;
+    }
   }
 }
