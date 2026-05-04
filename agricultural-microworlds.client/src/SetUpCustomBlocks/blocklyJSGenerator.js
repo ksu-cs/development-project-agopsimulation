@@ -76,6 +76,29 @@ javascriptGenerator.forBlock["function_event"] = function () {
   return `\n`;
 };
 
+javascriptGenerator.forBlock["function_call"] = function (block, generator) {
+  if (block.workspace) {
+    const functionName = String(block.getFieldValue("FUNCTIONNAME")) || "";
+    const allBlocks = block.workspace.getAllBlocks(false);
+    let code = "";
+
+    if (allBlocks.length > 0) {
+      allBlocks.forEach((eventBlock) => {
+        if (eventBlock && eventBlock.type == "function_event") {
+          const eventName = String(eventBlock.getFieldValue("FUNCTIONNAME")) || "";
+          if (eventName == functionName) {
+            code += generator.blockToCode(eventBlock) + "\n";
+          }
+        }
+      });
+    }
+
+    return code;
+  }
+
+  return `\n`;
+};
+
 javascriptGenerator.forBlock["change_vehicle"] = function (block) {
   const toggle = block.getFieldValue("toggleVehicle");
   var vehicle;

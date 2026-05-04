@@ -55,6 +55,7 @@ export const toolbox = {
         { kind: "block", type: "change_vehicle" },
         { kind: "block", type: "fill_vehicle_fuel_tank" },
         { kind: "block", type: "toggle_watering" },
+        { kind: "block", type: "function_call" },
       ],
     },
     {

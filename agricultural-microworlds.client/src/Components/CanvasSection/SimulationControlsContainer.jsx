@@ -118,9 +118,7 @@ class SimulationControlsContainer extends Component {
 
         if (allBlocks.length > 0) {
             allBlocks.forEach((block) => {
-              console.log(block.type);
               if (block.type == "start_program") {
-                //console.log(javascriptGenerator.blockToCode(block));
                 code += javascriptGenerator.blockToCode(block) + "\n";
               }
             });
