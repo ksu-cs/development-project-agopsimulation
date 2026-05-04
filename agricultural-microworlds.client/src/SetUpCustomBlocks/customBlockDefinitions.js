@@ -337,7 +337,6 @@ var callFunction = {
       spellcheck: false,
     },
   ],
-  targetEvents: [],
 };
 Blocks["function_call"] = {
   init: function () {
