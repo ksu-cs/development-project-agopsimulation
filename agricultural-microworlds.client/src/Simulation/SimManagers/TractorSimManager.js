@@ -98,8 +98,8 @@ export default class TractorSimManager extends SimManager {
         }
       }
 
-    //Soil logic
-          if (newTractor.type === VEHICLES.SEEDER && newTractor.isFertilizerOn) {
+      //Soil logic
+      if (newTractor.type === VEHICLES.SEEDER && newTractor.isFertilizerOn) {
         const tiles = this.getTilesCurrentlyOver(
           newTractor,
           newField,
@@ -115,7 +115,7 @@ export default class TractorSimManager extends SimManager {
             const after = Math.min(1.0, before + 0.01 * deltaTime);
             newField.setVariable("fertilizerLevel", after, x, y);
             // how much actually got added
-            const addedFertilizer  = after - before;
+            const addedFertilizer = after - before;
 
             // add to running total
             newState.totalFertilizerApplied =
@@ -123,7 +123,6 @@ export default class TractorSimManager extends SimManager {
           }
         }
       }
-
 
       // Check Harvesting
       if (oldTractor.isHarvestingOn) {

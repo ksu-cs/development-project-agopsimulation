@@ -19,7 +19,6 @@ export default class CropManager extends SimManager {
     const didAdvanceDay = gddToAdd > 0 || rainToApply > 0;
     if (!didAdvanceDay) return;
 
-
     //use is per day
     const CROP_WATER_USE = {
       [CROP_TYPES.EMPTY]: 0.0,
@@ -34,7 +33,7 @@ export default class CropManager extends SimManager {
       [CROP_TYPES.SOY]: { stressStart: 0.18 },
     };
 
-        const CROP_FERTILIZER_USE = {
+    const CROP_FERTILIZER_USE = {
       [CROP_TYPES.EMPTY]: 0.0,
       [CROP_TYPES.WHEAT]: 0.001,
       [CROP_TYPES.CORN]: 0.001,
@@ -50,7 +49,7 @@ export default class CropManager extends SimManager {
     for (let i = 0; i < currentField.rows; i++) {
       for (let j = 0; j < currentField.columns; j++) {
         const fieldTile = currentField.getTileAt(j, i);
-console.log("Before update: ", fieldTile.fertilizerLevel);
+        console.log("Before update: ", fieldTile.fertilizerLevel);
         let waterLevel = fieldTile["waterLevel"] ?? 0;
         let fertilizerLevel = fieldTile["fertilizerLevel"] ?? 0;
 
@@ -87,7 +86,10 @@ console.log("Before update: ", fieldTile.fertilizerLevel);
         fertilizerStress = Math.max(0.0, Math.min(1.0, fertilizerStress));
 
         // hurt yield
-        yieldMultiplier = Math.max(0.0, yieldMultiplier - waterStress * 0.01 - fertilizerStress * 0.01);
+        yieldMultiplier = Math.max(
+          0.0,
+          yieldMultiplier - waterStress * 0.01 - fertilizerStress * 0.01,
+        );
 
         fieldTile["waterLevel"] = waterLevel;
         fieldTile["fertilizerLevel"] = fertilizerLevel;

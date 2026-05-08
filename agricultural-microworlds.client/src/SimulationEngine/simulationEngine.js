@@ -157,7 +157,7 @@ export default class simulationEngine extends EventTarget {
         size: 4,
         type: "float32",
       },
-     ["fertilizerLevel"]: {
+      ["fertilizerLevel"]: {
         size: 4,
         type: "float32",
       },
@@ -754,7 +754,7 @@ export default class simulationEngine extends EventTarget {
     }
   }
 
-    toggleFertilizer(isOn, targetVehicleType) {
+  toggleFertilizer(isOn, targetVehicleType) {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isFertilizerOn = isOn;
@@ -777,7 +777,8 @@ export default class simulationEngine extends EventTarget {
 
   setAllFieldFertilizerLevels(fertilizerValue) {
     const field = this.stateManager.getState("field");
-    if (!field || fertilizerValue === null || fertilizerValue === undefined) return;
+    if (!field || fertilizerValue === null || fertilizerValue === undefined)
+      return;
 
     for (let y = 0; y < this.ROWS; y++) {
       for (let x = 0; x < this.COLS; x++) {
