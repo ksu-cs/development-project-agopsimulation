@@ -19,6 +19,8 @@ export default class CropManager extends SimManager {
     const didAdvanceDay = gddToAdd > 0 || rainToApply > 0;
     if (!didAdvanceDay) return;
 
+
+    //use is per day
     const CROP_WATER_USE = {
       [CROP_TYPES.EMPTY]: 0.0,
       [CROP_TYPES.WHEAT]: 0.002,
@@ -34,9 +36,9 @@ export default class CropManager extends SimManager {
 
         const CROP_FERTILIZER_USE = {
       [CROP_TYPES.EMPTY]: 0.0,
-      [CROP_TYPES.WHEAT]: 0.8,
-      [CROP_TYPES.CORN]: 0.8,
-      [CROP_TYPES.SOY]: 0.8,
+      [CROP_TYPES.WHEAT]: 0.001,
+      [CROP_TYPES.CORN]: 0.001,
+      [CROP_TYPES.SOY]: 0.001,
     };
 
     const CROP_FERTILIZER_RULES = {

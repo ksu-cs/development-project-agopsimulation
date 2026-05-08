@@ -114,7 +114,6 @@ export default class TractorSimManager extends SimManager {
             const before = newField.GetVariableAt(x, y, "fertilizerLevel") ?? 0;
             const after = Math.min(1.0, before + 0.01 * deltaTime);
             newField.setVariable("fertilizerLevel", after, x, y);
-
             // how much actually got added
             const addedFertilizer  = after - before;
 
