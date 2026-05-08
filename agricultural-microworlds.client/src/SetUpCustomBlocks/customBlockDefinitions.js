@@ -301,6 +301,49 @@ Blocks["start_program"] = {
   },
 };
 
+var onFunction = {
+  type: "function_event",
+  message0: "On Function %1",
+  nextStatement: null,
+  style: "event_blocks",
+  tooltip: "Is called as a customizable function.",
+  args0: [
+    {
+      type: "field_input",
+      name: "FUNCTIONNAME",
+      text: "My Function",
+      spellcheck: false,
+    },
+  ],
+};
+Blocks["function_event"] = {
+  init: function () {
+    this.jsonInit(onFunction);
+  },
+};
+
+var callFunction = {
+  type: "function_call",
+  message0: "Call Function %1",
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Calls a customizable function.",
+  args0: [
+    {
+      type: "field_input",
+      name: "FUNCTIONNAME",
+      text: "My Function",
+      spellcheck: false,
+    },
+  ],
+};
+Blocks["function_call"] = {
+  init: function () {
+    this.jsonInit(callFunction);
+  },
+};
+
 var switchCropBeingPlanted = {
   type: "switch_crop_being_planted",
   message0: "Switch crop being planted to %1",

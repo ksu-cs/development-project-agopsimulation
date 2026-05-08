@@ -72,6 +72,40 @@ javascriptGenerator.forBlock["start_program"] = function () {
   return `\n`;
 };
 
+javascriptGenerator.forBlock["function_event"] = function () {
+  return `\n`;
+};
+
+javascriptGenerator.forBlock["function_call"] = function (block, generator) {
+  if (block.workspace) {
+    const functionName = String(block.getFieldValue("FUNCTIONNAME")) || "";
+    const allBlocks = block.workspace.getAllBlocks(false);
+    let code = "";
+
+    if (allBlocks.length > 0) {
+      allBlocks.forEach((eventBlock) => {
+        if (eventBlock && eventBlock.type == "function_event") {
+          const eventName =
+            String(eventBlock.getFieldValue("FUNCTIONNAME")) || "";
+          if (eventName == functionName) {
+            try {
+              code += generator.blockToCode(eventBlock);
+            } catch (error) {
+              console.warn("Error while generating function call: " + error); // NOTE: Should attempt to make return nothing at top-level!
+              return `\n`;
+            }
+          }
+        }
+      });
+    }
+
+    //console.log(code);
+    return code;
+  }
+
+  return `\n`;
+};
+
 javascriptGenerator.forBlock["change_vehicle"] = function (block) {
   const toggle = block.getFieldValue("toggleVehicle");
   var vehicle;
