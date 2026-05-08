@@ -55,6 +55,7 @@ export const toolbox = {
         { kind: "block", type: "change_vehicle" },
         { kind: "block", type: "fill_vehicle_fuel_tank" },
         { kind: "block", type: "toggle_watering" },
+        { kind: "block", type: "toggle_fertilizer" },
         { kind: "block", type: "function_call" },
       ],
     },
@@ -122,6 +123,7 @@ export const getToolbox = (vehicleType = 0) => {
   } else if (vehicleType === 1) {
     // Seeder-specific blocks
     controlBlocks.unshift({ kind: "block", type: "toggle_watering" });
+    controlBlocks.unshift({ kind: "block", type: "toggle_fertilizer" });
     controlBlocks.unshift({ kind: "block", type: "switch_crop_being_planted" });
     controlBlocks.unshift({ kind: "block", type: "toggle_seeding" });
   }

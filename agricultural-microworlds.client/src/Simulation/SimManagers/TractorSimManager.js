@@ -71,7 +71,7 @@ export default class TractorSimManager extends SimManager {
           VEHICLE_FUEL_CONSUMPTION[newTractor.type] * deltaTime;
       }
 
-      // Watering and Soil Logic
+      // Watering Logic
       if (newTractor.type === VEHICLES.SEEDER && newTractor.isWateringOn) {
         const tiles = this.getTilesCurrentlyOver(
           newTractor,
@@ -97,6 +97,34 @@ export default class TractorSimManager extends SimManager {
           }
         }
       }
+
+    //Soil logic
+          if (newTractor.type === VEHICLES.SEEDER && newTractor.isFertilizerOn) {
+        const tiles = this.getTilesCurrentlyOver(
+          newTractor,
+          newField,
+          this.HEADER_OFFSET,
+        );
+
+        for (const tileInfo of tiles) {
+          const x = tileInfo[1];
+          const y = tileInfo[2];
+
+          if (x !== undefined && y !== undefined) {
+            const before = newField.GetVariableAt(x, y, "fertilizerLevel") ?? 0;
+            const after = Math.min(1.0, before + 0.01 * deltaTime);
+            newField.setVariable("fertilizerLevel", after, x, y);
+
+            // how much actually got added
+            const addedFertilizer  = after - before;
+
+            // add to running total
+            newState.totalFertilizerApplied =
+              (newState.totalFertilizerApplied ?? 0) + addedFertilizer;
+          }
+        }
+      }
+
 
       // Check Harvesting
       if (oldTractor.isHarvestingOn) {

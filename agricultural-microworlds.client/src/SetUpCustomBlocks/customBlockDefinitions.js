@@ -432,4 +432,30 @@ Blocks["toggle_watering"] = {
     this.jsonInit(toggleWatering);
   },
 };
+
+var toggleFertilizer = {
+  type: "toggle_Fertilizer",
+  message0: "turn fertilizer %1",
+  args0: [
+    {
+      type: "field_dropdown",
+      name: "toggleType",
+      options: [
+        ["ON", "1"],
+        ["OFF", "0"],
+      ],
+    },
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  style: "control_blocks",
+  tooltip: "Turns fertilizer on seeder on or off",
+};
+
+Blocks["toggle_fertilizer"] = {
+  init: function () {
+    this.jsonInit(toggleFertilizer);
+  },
+};
+
 //#endregion

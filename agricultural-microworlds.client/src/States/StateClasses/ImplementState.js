@@ -42,6 +42,7 @@ export default class ImplementState {
     this.isSeedingOn = false;
     this.cropBeingPlanted = CROP_TYPES.WHEAT;
     this.isWateringOn = false;
+    this.isFertilizerOn = false;
     this.yieldScore = 0;
     this.type = VEHICLES.HARVESTER;
     this.storageCapacity = 0; // Storage capacity for collector
@@ -63,6 +64,7 @@ export default class ImplementState {
     newState.isMoving = this.isMoving;
     newState.isHarvestingOn = this.isHarvestingOn;
     newState.isWateringOn = this.isWateringOn;
+    newState.isFertilizerOn = this.isFertilizerOn;
     newState.isSeedingOn = this.isSeedingOn;
 
     newState.cropBeingPlanted = this.cropBeingPlanted;
