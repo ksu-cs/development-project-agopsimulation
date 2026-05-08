@@ -750,7 +750,6 @@ export default class simulationEngine extends EventTarget {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isWateringOn = isOn;
-      console.log("Watering:", isOn);
     }
   }
 
@@ -758,7 +757,6 @@ export default class simulationEngine extends EventTarget {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isFertilizerOn = isOn;
-      console.log("Fertilizer:", isOn);
     }
   }
 
