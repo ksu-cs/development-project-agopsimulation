@@ -19,11 +19,6 @@ import { RENDER_MODULE_KEYS } from "../Rendering/renderingConstants";
 import TractorSimManager from "../Simulation/SimManagers/TractorSimManager";
 
 /**
- * Known issues:
- * 120 Hz finishes one hour in ~0.8 seconds, 60Hz finishes in ~1 second
- */
-
-/**
  * @classdesc Maintains the official Simulation State, runs the game loop, coordinates simulation managers, and connects asynchronous Blockly commands with the loop.
  */
 export default class simulationEngine extends EventTarget {
