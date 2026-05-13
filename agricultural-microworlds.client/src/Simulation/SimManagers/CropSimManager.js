@@ -49,7 +49,6 @@ export default class CropManager extends SimManager {
     for (let i = 0; i < currentField.rows; i++) {
       for (let j = 0; j < currentField.columns; j++) {
         const fieldTile = currentField.getTileAt(j, i);
-        console.log("Before update: ", fieldTile.fertilizerLevel);
         let waterLevel = fieldTile["waterLevel"] ?? 0;
         let fertilizerLevel = fieldTile["fertilizerLevel"] ?? 0;
 
