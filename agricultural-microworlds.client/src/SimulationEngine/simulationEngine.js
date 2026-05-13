@@ -310,7 +310,7 @@ export default class simulationEngine extends EventTarget {
     const vehicleManager = this.getManager(TractorSimManager);
     const waitingMulti =
       vehicleManager && vehicleManager.areAllVehiclesWaiting(this.stateManager)
-        ? 20
+        ? 2000
         : 1;
     const simDeltaTime = fixedDeltaTime * waitingMulti;
 
