@@ -223,3 +223,9 @@ javascriptGenerator.forBlock["toggle_watering"] = function (block) {
   const inputType = toggle == 0 ? false : true;
   return `simulationMethods.toggleWatering(${inputType});\n`;
 };
+
+javascriptGenerator.forBlock["toggle_fertilizer"] = function (block) {
+  const toggle = block.getFieldValue("toggleType");
+  const inputType = toggle == 0 ? false : true;
+  return `simulationMethods.toggleFertilizer(${inputType});\n`;
+};

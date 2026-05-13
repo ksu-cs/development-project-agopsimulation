@@ -285,6 +285,7 @@ class SimulationControlsContainer extends Component {
         CheckIfPlantInFront: function(c) { return this._send('CheckIfPlantInFront', [c]); },
         fillVehicleFuelTank: function() { return this._send('fillVehicleFuelTank', []); },
         toggleWatering: function(b) { return this._send('toggleWatering', [b]); },
+        toggleFertilizer: function(b) { return this._send('toggleFertilizer', [b]); },
       };
 
       async function runUserCode() {

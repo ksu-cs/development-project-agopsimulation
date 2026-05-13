@@ -152,6 +152,10 @@ export default class simulationEngine extends EventTarget {
         size: 4,
         type: "float32",
       },
+      ["fertilizerLevel"]: {
+        size: 4,
+        type: "float32",
+      },
       ["nitrogen"]: {
         size: 4,
         type: "float32",
@@ -725,9 +729,14 @@ export default class simulationEngine extends EventTarget {
 
       const weatherState = this.stateManager.getState("weather");
       const startingWater = weatherMgr.getInitialSoilWater(weatherState);
+      const startingFertilizer = 1; // default starting fertilizer level (can be adjusted based on weather or user input)
       if (startingWater !== null) {
         this.setAllFieldWaterLevels(startingWater);
         console.log("Starting field water set from VMC5CM:", startingWater);
+      }
+      if (startingFertilizer !== null) {
+        this.setAllFieldFertilizerLevels(startingFertilizer);
+        console.log("Starting field fertilizer set to:", startingFertilizer);
       }
     }
   }
@@ -736,7 +745,13 @@ export default class simulationEngine extends EventTarget {
     const vehicle = this.getTargetVehicle(targetVehicleType);
     if (vehicle && vehicle.type === VEHICLES.SEEDER) {
       vehicle.isWateringOn = isOn;
-      console.log("Watering:", isOn);
+    }
+  }
+
+  toggleFertilizer(isOn, targetVehicleType) {
+    const vehicle = this.getTargetVehicle(targetVehicleType);
+    if (vehicle && vehicle.type === VEHICLES.SEEDER) {
+      vehicle.isFertilizerOn = isOn;
     }
   }
 
@@ -747,6 +762,20 @@ export default class simulationEngine extends EventTarget {
     for (let y = 0; y < this.ROWS; y++) {
       for (let x = 0; x < this.COLS; x++) {
         field.setVariable("waterLevel", waterValue, x, y);
+      }
+    }
+
+    this.stateManager.commitState("field", field);
+  }
+
+  setAllFieldFertilizerLevels(fertilizerValue) {
+    const field = this.stateManager.getState("field");
+    if (!field || fertilizerValue === null || fertilizerValue === undefined)
+      return;
+
+    for (let y = 0; y < this.ROWS; y++) {
+      for (let x = 0; x < this.COLS; x++) {
+        field.setVariable("fertilizerLevel", fertilizerValue, x, y);
       }
     }
 
@@ -789,6 +818,9 @@ export default class simulationEngine extends EventTarget {
         break;
       case "toggleWatering":
         this.toggleWatering(args[0], vehicleType);
+        break;
+      case "toggleFertilizer":
+        this.toggleFertilizer(args[0], vehicleType);
         break;
       case "CheckIfPlantInFront":
         result = this.CheckIfPlantInFront(args[0], vehicleType);
